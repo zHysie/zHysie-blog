@@ -1,0 +1,249 @@
+---
+import { Icon } from "astro-icon/components";
+import type { Locale } from "../../lib/site-config";
+import { t } from "../../i18n/ui";
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = "en" } = Astro.props as Props;
+const labelDark = t(locale, "nav.darkMode");
+const labelLight = t(locale, "nav.lightMode");
+---
+
+<button
+  type="button"
+  class="theme-toggle"
+  aria-label={labelDark}
+  aria-pressed="false"
+  data-theme-toggle
+  data-theme="light"
+>
+  <Icon
+    name="lucide:sun"
+    class="theme-toggle__icon theme-toggle__icon--light"
+  />
+  <Icon
+    name="lucide:moon"
+    class="theme-toggle__icon theme-toggle__icon--dark"
+  />
+  <span class="theme-toggle__label" data-theme-label>{labelDark}</span>
+</button>
+
+<script is:inline define:vars={{ labelDark, labelLight }}>
+  const storageKey = "theme";
+  const starlightKey = "starlight-theme";
+  const root = document.documentElement;
+  const button = document.querySelector("[data-theme-toggle]");
+  const label = button?.querySelector("[data-theme-label]");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let themeTransitionActive = false;
+
+  const syncTheme = (theme) => {
+    const isDark = theme === "dark";
+    root.classList.toggle("dark", isDark);
+    if (button) {
+      button.setAttribute("aria-pressed", String(isDark));
+      button.setAttribute("data-theme", theme);
+      button.setAttribute("aria-label", isDark ? labelLight : labelDark);
+    }
+    if (label) {
+      label.textContent = isDark ? labelLight : labelDark;
+    }
+  };
+
+  const applyTheme = (theme) => {
+    try {
+      // Keep the main site and the Starlight /docs section in sync by mirroring
+      // the choice into both storage keys.
+      localStorage.setItem(storageKey, theme);
+      localStorage.setItem(starlightKey, theme);
+    } catch {
+      // Theme switching should still work when storage is unavailable.
+    }
+    syncTheme(theme);
+  };
+
+  let storedTheme = null;
+  try {
+    storedTheme =
+      localStorage.getItem(storageKey) || localStorage.getItem(starlightKey);
+  } catch {
+    // Ignore storage failures and preserve the bootstrap theme.
+  }
+
+  const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)")
+    .matches
+    ? "dark"
+    : "light";
+  syncTheme(
+    storedTheme === "dark" || storedTheme === "light"
+      ? storedTheme
+      : preferredTheme,
+  );
+
+  button?.addEventListener("click", (event) => {
+    if (themeTransitionActive) return;
+
+    const nextTheme = root.classList.contains("dark") ? "light" : "dark";
+    const startViewTransition = document.startViewTransition?.bind(document);
+
+    if (!startViewTransition || reducedMotion.matches) {
+      applyTheme(nextTheme);
+      return;
+    }
+
+    const rect = button.getBoundingClientRect();
+    const hasPointerPosition = event.clientX !== 0 || event.clientY !== 0;
+    const x = hasPointerPosition ? event.clientX : rect.left + rect.width / 2;
+    const y = hasPointerPosition ? event.clientY : rect.top + rect.height / 2;
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y),
+    );
+
+    let transition;
+    try {
+      transition = startViewTransition(() => applyTheme(nextTheme));
+      themeTransitionActive = true;
+    } catch {
+      applyTheme(nextTheme);
+      return;
+    }
+
+    transition.ready
+      .then(
+        () =>
+          root.animate(
+            {
+              clipPath: [
+                `circle(0px at ${x}px ${y}px)`,
+                `circle(${endRadius}px at ${x}px ${y}px)`,
+              ],
+            },
+            {
+              duration: 500,
+              easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+              fill: "both",
+              pseudoElement: "::view-transition-new(root)",
+            },
+          ).finished,
+      )
+      .catch(() => {});
+
+    transition.finished
+      .finally(() => {
+        themeTransitionActive = false;
+      })
+      .catch(() => {});
+  });
+</script>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    appearance: none;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: none;
+    box-shadow: none;
+    color: var(--color-text-primary);
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    transition:
+      color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .theme-toggle:hover {
+    color: var(--color-brand-primary);
+    background: none;
+    transform: scale(1.05);
+  }
+
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .theme-toggle:active {
+    transform: scale(0.95);
+  }
+
+  .theme-toggle__icon {
+    position: absolute;
+    width: 1.25rem;
+    height: 1.25rem;
+    transition:
+      opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+
+  .theme-toggle__icon--light {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  .theme-toggle__icon--dark {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.65);
+  }
+
+  .theme-toggle[data-theme="dark"] .theme-toggle__icon--light {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.65);
+  }
+
+  .theme-toggle[data-theme="dark"] .theme-toggle__icon--dark {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  .theme-toggle__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  :global(::view-transition-old(root)),
+  :global(::view-transition-new(root)) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  :global(::view-transition-old(root)) {
+    z-index: 0;
+  }
+
+  :global(::view-transition-new(root)) {
+    z-index: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle,
+    .theme-toggle__icon {
+      transition: none;
+    }
+
+    :global(::view-transition-old(root)),
+    :global(::view-transition-new(root)) {
+      animation: none;
+      transition: none;
+    }
+  }
+</style>

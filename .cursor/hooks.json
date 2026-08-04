@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": "node .cursor/hooks/guard-conventions.mjs",
+        "matcher": "Write|TabWrite",
+        "timeout": 20
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "[ ! -f \".cursor/skills/impeccable/scripts/hook-before-edit.mjs\" ] || node \".cursor/skills/impeccable/scripts/hook-before-edit.mjs\"",
+        "timeout": 5
+      }
+    ]
+  }
+}

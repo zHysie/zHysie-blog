@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_图层_1" data-name="图层 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 322.57 482.42">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#_未命名的渐变_225);
+      }
+
+      .cls-2 {
+        fill: url(#_未命名的渐变_7);
+      }
+
+      .cls-3 {
+        fill: url(#_未命名的渐变_193);
+      }
+    </style>
+    <linearGradient id="_未命名的渐变_7" data-name="未命名的渐变 7" x1="47.88" y1="8.36" x2="47.88" y2="475.47" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#71afdf"/>
+      <stop offset="1" stop-color="#519cd3"/>
+    </linearGradient>
+    <linearGradient id="_未命名的渐变_225" data-name="未命名的渐变 225" x1="181.98" y1="116.86" x2="181.35" y2="470.44" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ebb6bf"/>
+      <stop offset="1" stop-color="#d794a2"/>
+    </linearGradient>
+    <linearGradient id="_未命名的渐变_193" data-name="未命名的渐变 193" x1="40.95" y1="292.03" x2="112.58" y2="292.03" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60a5d9"/>
+      <stop offset=".09" stop-color="#60a5d9" stop-opacity=".9"/>
+      <stop offset=".54" stop-color="#60a5d9" stop-opacity=".42"/>
+      <stop offset=".85" stop-color="#60a5d9" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#60a5d9" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <path class="cls-2" d="M0,.06C.98.06,0,447.28,0,447.28c1.93,19.86,16.34,33.36,33.32,35.14,0,0,62.58-.37,62.43,0v-200.97s-56.11-.29-56.11-.29c-2.06,0-3.26-.82-3.26-2.3v-77.74c0-2.09,1.11-2.98,2.59-3.26,0,0,58.06.57,56.78,0V30.98C93.41,11.16,75.92.89,63.96.54,63.96.54.38-.21.38.06"/>
+  <path class="cls-1" d="M181.89,101.64v100.6H40.95v74.55h140.94v169.53c.51,18.57,13.15,33.7,31.4,36.1h52.6s0-205.37,0-205.37h56.68v-46.98c0-17.97-10.85-27.38-28.53-27.38h-27.96s0-101.04,0-101.04h-84.19Z"/>
+  <path class="cls-3" d="M181.89,101.64v100.6H40.95v74.55h140.94v169.53c.51,18.57,13.15,33.7,31.4,36.1h52.6s0-205.37,0-205.37h56.68v-46.98c0-17.97-10.85-27.38-28.53-27.38h-27.96s0-101.04,0-101.04h-84.19Z"/>
+</svg>

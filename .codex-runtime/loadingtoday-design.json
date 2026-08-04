@@ -1,0 +1,182 @@
+{
+  "branding": {
+    "colorScheme": "dark",
+    "fonts": [
+      {
+        "family": "Arial",
+        "role": "body"
+      },
+      {
+        "family": "SFMono-Regular",
+        "role": "monospace"
+      },
+      {
+        "family": "Menlo",
+        "role": "monospace"
+      },
+      {
+        "family": "Monaco",
+        "role": "monospace"
+      },
+      {
+        "family": "Consolas",
+        "role": "monospace"
+      }
+    ],
+    "colors": {
+      "primary": "#0E1825",
+      "secondary": "#9D968E",
+      "accent": "#063039",
+      "background": "#000000",
+      "textPrimary": "#000000",
+      "link": "#063039"
+    },
+    "typography": {
+      "fontFamilies": {
+        "primary": "Arial",
+        "heading": "Arial"
+      },
+      "fontStacks": {
+        "heading": [
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif"
+        ],
+        "body": [
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif"
+        ],
+        "paragraph": [
+          "Geist Pixel Square",
+          "Geist Mono",
+          "ui-monospace",
+          "monospace"
+        ]
+      },
+      "fontSizes": {
+        "h1": "20px",
+        "h2": "14px",
+        "body": "25.92px"
+      }
+    },
+    "spacing": {
+      "baseUnit": 6,
+      "borderRadius": "0px"
+    },
+    "components": {},
+    "images": {
+      "favicon": "https://loadingtoday.webflow.io/favicon.svg",
+      "ogImage": "/og-image.png"
+    },
+    "__llm_logo_reasoning": {
+      "selectedIndex": -1,
+      "reasoning": "No valid brand logo - the only candidate is invisible and does not match the brand 'Loading Today'.",
+      "confidence": 0.3,
+      "rejected": true,
+      "source": "llm"
+    },
+    "personality": {
+      "tone": "modern",
+      "energy": "medium",
+      "targetAudience": "tech-savvy individuals"
+    },
+    "designSystem": {
+      "framework": "custom",
+      "componentLibrary": ""
+    },
+    "confidence": {
+      "buttons": 0,
+      "colors": 0.9,
+      "overall": 0.45
+    },
+    "__llm_metadata": {
+      "logoSelection": {
+        "llmCalled": true,
+        "llmSucceeded": true,
+        "finalSource": "llm",
+        "rawLogoSelection": {
+          "selectedLogoIndex": -1,
+          "selectedLogoReasoning": "No valid brand logo - the only candidate is invisible and does not match the brand 'Loading Today'.",
+          "confidence": 0.3
+        }
+      },
+      "buttonClassification": {
+        "llmCalled": false,
+        "llmSucceeded": false
+      }
+    }
+  },
+  "metadata": {
+    "ogImage": "/og-image.png",
+    "generator": "Astro v6.4.8",
+    "ogDescription": "A playful OS-inspired ambient web experience — track how much of your day has loaded, vibe with animated backgrounds, environmental sounds, and cozy interactions.",
+    "author": "Eric Van Holtz",
+    "theme-color": "#0e0f12",
+    "twitter:title": "Loading Today",
+    "og:description": "A playful OS-inspired ambient web experience — track how much of your day has loaded, vibe with animated backgrounds, environmental sounds, and cozy interactions.",
+    "og:type": "website",
+    "og:title": "Loading Today",
+    "description": "A playful OS-inspired ambient web experience — track how much of your day has loaded, vibe with animated backgrounds, environmental sounds, and cozy interactions.",
+    "title": "Loading Today",
+    "og:image": "/og-image.png",
+    "twitter:card": "summary_large_image",
+    "viewport": "width=device-width",
+    "ogTitle": "Loading Today",
+    "twitter:description": "A playful OS-inspired ambient web experience — track how much of your day has loaded, vibe with animated backgrounds, environmental sounds, and cozy interactions.",
+    "language": "en",
+    "twitter:image": "/og-image.png",
+    "favicon": "https://loadingtoday.webflow.io/favicon.svg",
+    "scrapeId": "019fc79b-0d77-74cc-b508-aec7ee48e37e",
+    "sourceURL": "https://loadingtoday.webflow.io/",
+    "url": "https://loadingtoday.webflow.io/",
+    "statusCode": 200,
+    "contentType": "text/html; charset=utf-8",
+    "timezone": "America/New_York",
+    "proxyUsed": "basic",
+    "indexId": "a4b651f2-0cfb-4135-860e-e8102e8ba7d8",
+    "creditsUsed": 1,
+    "concurrencyLimited": false
+  },
+  "images": [
+    "https://img.youtube.com/vi/pn5Jju4FNG4/mqdefault.jpg",
+    "https://img.youtube.com/vi/fNDSDWJaj2M/mqdefault.jpg",
+    "https://img.youtube.com/vi/3xG2y7Bs0ws/mqdefault.jpg",
+    "https://img.youtube.com/vi/98vk7sXa7p0/mqdefault.jpg",
+    "https://img.youtube.com/vi/bF32laUxoK0/mqdefault.jpg",
+    "https://img.youtube.com/vi/qYx8NX49OS8/mqdefault.jpg",
+    "https://img.youtube.com/vi/BP48Y9JiMUo/mqdefault.jpg",
+    "https://img.youtube.com/vi/ftYmXoH0V5I/mqdefault.jpg",
+    "https://img.youtube.com/vi/V96_3fBgvPA/mqdefault.jpg",
+    "https://img.youtube.com/vi/Is7PCAWLbKc/mqdefault.jpg",
+    "https://img.youtube.com/vi/zR8dUhLPK80/mqdefault.jpg",
+    "https://img.youtube.com/vi/b4HZpv61V1U/mqdefault.jpg",
+    "https://img.youtube.com/vi/8RCL5neas_M/mqdefault.jpg",
+    "https://img.youtube.com/vi/DbaBeLDU-oY/mqdefault.jpg",
+    "https://d3e54v103j8qbb.cloudfront.net/img/webflow-badge-icon-d2.89e12c322e.svg",
+    "https://img.youtube.com/vi/YQ41RpkuhRA/mqdefault.jpg",
+    "https://img.youtube.com/vi/4CxvZwaS2z0/mqdefault.jpg",
+    "https://img.youtube.com/vi/D9lWrkpVUm0/mqdefault.jpg",
+    "https://img.youtube.com/vi/S-XytKfGCO8/mqdefault.jpg",
+    "https://img.youtube.com/vi/wPL13VR88iY/mqdefault.jpg",
+    "https://img.youtube.com/vi/aMfhtFkk1m4/mqdefault.jpg",
+    "https://loadingtoday.webflow.io/codetv/logo-codetv.svg",
+    "https://www.google.com/s2/favicons?domain=okaydev.co&sz=32",
+    "https://img.youtube.com/vi/gAeLTcxF-0o/mqdefault.jpg",
+    "https://img.youtube.com/vi/X2sEoZG8EIw/mqdefault.jpg",
+    "https://img.youtube.com/vi/jVHoffCdKa4/mqdefault.jpg",
+    "https://img.youtube.com/vi/VcjaIbKpaD4/mqdefault.jpg",
+    "https://img.youtube.com/vi/UAjcJPMexfk/mqdefault.jpg",
+    "https://img.youtube.com/vi/8Oxy6WV7zag/mqdefault.jpg",
+    "https://img.youtube.com/vi/ICpQQxD8vc4/mqdefault.jpg",
+    "https://img.youtube.com/vi/_H5pnNeCJWQ/mqdefault.jpg",
+    "https://d3e54v103j8qbb.cloudfront.net/img/webflow-badge-text-d2.c82cec3b78.svg",
+    "https://img.youtube.com/vi/Qt3sbBbVnbs/mqdefault.jpg",
+    "https://www.google.com/s2/favicons?domain=astro.build&sz=32",
+    "https://img.youtube.com/vi/rvr-xOwrY70/mqdefault.jpg",
+    "https://img.youtube.com/vi/I4SBLMGzDss/mqdefault.jpg",
+    "https://img.youtube.com/vi/BOCU-seUXQ8/mqdefault.jpg",
+    "https://img.youtube.com/vi/nUSbmGQRsv4/mqdefault.jpg",
+    "https://img.youtube.com/vi/64Hq1bZfhVs/mqdefault.jpg"
+  ]
+}

@@ -1,0 +1,435 @@
+LOADINGTODAY...
+
+LOADING TODAY
+
+░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+35.5%
+
+ArrangeMinimize allMaximize all
+
+Settings
+
+THEME▾
+
+☀64°FMon Aug 3Info
+
+831
+
+Terminal
+
+\> triangulating visitor origin...
+
+\> origin: Detroit, Michigan, USA
+
+\> device time: 08:31:22 (America/New\_York)
+
+\> locale node: detroit\_
+
+Pep Talk
+
+GenerateCopy
+
+Vibe Monitor
+
+MorningBoot sequence initiated.
+
+Focus Engine15%
+
+One task selected.
+
+Meeting Tolerance100%
+
+Negotiating with calendar…
+
+Creative Spark16%
+
+Creative embers cooling…
+
+Bug Patience45%
+
+Scope creep contained.
+
+Snack Probability27%
+
+Afternoon enabled.
+
+Brain Cache44%
+
+Thoughts defragmenting…
+
+Deadline Outlook36%
+
+Timeline growing abstract.
+
+Vibe Integrity25%
+
+Integrity holding.
+
+Impostor Syndrome Firewall12%
+
+Firewall flickering.
+
+Pixel Alignment49%
+
+Centering divs emotionally…
+
+Design Taste12%
+
+Taste recalibrating…
+
+Clock
+
+Tune the desk clock — time, type, color, and placement.
+
+### Display
+
+Show desk clockColon pulse (seconds)Reset position
+
+### Time
+
+Use this device's timezoneTimezoneAmerica/New YorkAmerica/ChicagoAmerica/DenverAmerica/Los AngelesAmerica/DetroitAmerica/TorontoAmerica/Sao PauloEurope/LondonEurope/ParisEurope/BerlinEurope/AmsterdamAsia/DubaiAsia/KolkataAsia/TokyoAsia/ShanghaiAsia/SingaporeAustralia/SydneyPacific/AucklandUTC
+
+Showing America/New York from this browser.
+
+12-hour format
+
+### Type
+
+Reset style
+
+FontSF Pro RoundedGeist SansGeist MonoGeist Pixel SquareGeist Pixel GridGeist Pixel CircleGeist Pixel TriangleGeist Pixel LineHelvetica NeueInterDM SansInstrument SansIBM Plex SansLibre FranklinManropeSpace GroteskFrauncesFutura / Century Gothic
+
+Weight300Size min8.00remSize preferred8.0vwSize max8.00remLetter spacing-0.050emLine height1.00
+
+### Color
+
+TextShadow
+
+Text color is locked for the Dieter theme.
+
+Text opacity1.00
+
+### Shadow
+
+Shadow is off for the Dieter theme.
+
+Shadow opacity0.30Shadow offset0.00emShadow blur0.30emColon opacity1.00
+
+Reset all settings
+
+Playground
+
+Shortcuts for when the vibes need a nudge.
+
+### Moods
+
+😊Shuffle Vibe😌Summon Focus😌Reboot Mood😌Cozy Mode😐Mute Chaos😌Calm Reset
+
+### Coping
+
+😟Panic Softly😅Generate Excuse😅Pretend Fine
+
+### Work Theater
+
+😌Look Busy😊Take Tiny Win😊Bless Deadline😊Ship It
+
+### Desktop
+
+🪟Reset Layout🔄Reset Preferences
+
+Magic Broom
+
+Summon the broom to sweep fallen digits off the floor. Drag it around the desktop while this app is open.
+
+Close or minimize to stow the broom.
+
+Barista
+
+Are you drinking coffee today?
+
+YesNo
+
+No cups logged yet.
+
+Add Refill
+
+Meetings
+
+#### Today
+
+No meetings scheduled. The calendar is suspiciously quiet.
+
+* * *
+
+Schedule today's meetings. We'll get increasingly nervous before each one.
+
+Title
+
+StartLength5 min10 min15 min20 min30 min45 min1 hr
+
+Add Meeting
+
+Browser
+
+BOOKMARKS
+
+![](https://www.google.com/s2/favicons?domain=okaydev.co&sz=32)OKAY DEV![](https://loadingtoday.webflow.io/codetv/logo-codetv.svg)CodeTV![](https://www.google.com/s2/favicons?domain=astro.build&sz=32)Astro
+
+Internal · Read only
+
+# Productivity Dashboard
+
+Last synced: —
+
+## Today at a glance
+
+- **Tasks queued** 7
+- **Focus score** 82%
+- **Meetings today** 3
+- **Inbox** Manageable (probably)
+
+## Active initiatives
+
+| Project | Owner | Status |
+| --- | --- | --- |
+| Q2 roadmap alignment | Ops | In review |
+| Loading Today refresh | Design | On track |
+| Stakeholder sync deck | You | Drafting |
+| Incident postmortem | Platform | Scheduled |
+
+## Recent activity
+
+1. Updated sprint board — 09:14
+2. Commented on design review — 09:02
+3. Exported weekly metrics — 08:47
+4. Accepted calendar invite — 08:31
+5. Resolved blocker ticket — 08:18
+
+## Notes
+
+Keep momentum on the launch checklist. Confirm dependencies before EOD.
+Document decisions in the shared workspace so nobody asks twice.
+
+Reminder: status update due before standup. Include blockers, wins, and
+anything that needs a decision today.
+
+## System
+
+Session healthy · Cache warm · Nothing on fire (visibly).
+
+About
+
+## Welcome to Loading Today ✨
+
+Loading Today is a playful OS-inspired escape built for the
+[CodeTV Hackathon](https://codetv-gsap-cloud.webflow.io/)
+— a soothing, interactive page you can keep open while you work, vibe, or take a tiny digital breather.
+
+The idea is simple: it shows how much of the day has “loaded” so far — a gentle reminder to pause, look out the window, and take a breath between tasks and tabs.
+
+Time-based details use your browser’s own timezone, so the clock, status bar, moods, meetings, and day progress follow the device you’re actually using. Local weather and a few location-aware terminal moments may use an approximate IP-based location when available.
+
+I’m
+[Eric Van Holtz](https://okaydev.co/u/eric),
+and I built Loading Today to make the browser feel calmer, cozier, and a bit more alive — with animated backgrounds, environmental and interface sounds, fun interactions, and branded moments that feel like part of the world.
+
+A browser extension is on the way, bringing Loading Today to your new tab page as a peaceful place to land every time you open a browser window. The extension will also bring the latest news into one spot, so you can catch up, reset, and get back to your day without bouncing all over the internet.
+
+Interested in sponsoring the project or bringing your brand into the experience? Sponsorships can include a branded theme, custom wallpaper, dedicated app(s), browser home page placement, dock presence, announcements for your brand, products, or services, and more.
+
+Reach out at
+[hello@vanholtz.co](mailto:hello@vanholtz.co)
+
+Want to see what else I’m building? Check out
+[OKAY DEV](https://okaydev.co/)
+— a social network and portfolio platform for designers, developers, and brands to connect, share work, and build cool things together.
+
+Stay cozy. Keep building. 🌿
+
+© 2026 Eric Van Holtz·Privacy
+
+Privacy & Legal
+
+## Privacy & Legal
+
+Loading Today is designed to feel cozy, not creepy. We collect as little as possible and keep most of your settings on your own device.
+
+### Local time
+
+The clock, status bar date, day progress, moods, meetings, and other time-based moments use your browser’s timezone setting.
+
+### Approximate location
+
+Some features may look up your approximate city and coordinates using your IP address via third-party geolocation services. This powers local weather and a few location-aware terminal details. The approximate location result is cached in your browser for up to six hours. If lookup fails, those location-aware features fall back to Detroit, Michigan — where Loading Today was built.
+
+### Weather data
+
+Weather is fetched from
+[Open-Meteo](https://open-meteo.com/)
+using your approximate coordinates. Results are cached in your browser for up to an hour.
+
+### Local storage
+
+Preferences such as your chosen theme, wallpaper, ambient-audio and interface-sound settings, clock style, and window positions are saved in your browser’s local storage. This data never leaves your device unless you clear it.
+
+### Cookies
+
+We set one functional cookie (`loading-today-info-intro-seen`) so the welcome window doesn’t open every time you return. It lasts up to one year and contains no personal information.
+
+### Third-party embeds
+
+Some features load content from other services — for example
+[YouTube](https://www.youtube.com/)
+(Code TV) and
+[Tenor](https://tenor.com/)
+(terminal memes). Those services may set their own cookies or collect usage data under their own policies.
+
+Optional clock typefaces and the Notes handwriting font are loaded from
+[Google Fonts](https://fonts.google.com/)
+when used. That request may share your IP address with Google under
+[Google’s privacy policy](https://policies.google.com/privacy).
+
+### Analytics
+
+We use
+[Fathom Analytics](https://usefathom.com/)
+to understand aggregate traffic — page views, referrers, and general usage patterns. Fathom is cookie-free, does not track individuals across sites, and does not sell data. We do not use advertising trackers.
+
+### Trademarks & third-party content
+
+Loading Today and its original artwork, audio loops, and code are © Eric Van Holtz. All rights reserved.
+
+All third-party product names, logos, brands, trademarks, and trade dress shown or referenced in Loading Today are the property of their respective owners. Their use is for identification and reference only and does not imply affiliation, sponsorship, or endorsement.
+
+References may include
+[CodeTV](https://codetv.dev/),
+[YouTube](https://www.youtube.com/),
+[Tenor](https://tenor.com/),
+the [Geist typeface](https://vercel.com/font) (Vercel, Inc.), and Lucide icons.
+
+### Fonts & software
+
+[Geist](https://vercel.com/font) is used under the
+[Geist Font License](https://github.com/vercel/geist-font/blob/main/LICENSE.txt).
+Clock and Notes fonts from Google Fonts — including Manrope, Fraunces, Inter, DM Sans, Instrument Sans, IBM Plex Sans, Libre Franklin, Space Grotesk, and Nothing You Could Do — are used under their respective open-source licenses.
+Lucide icons are used under the ISC License. Other open-source libraries — including [Astro](https://astro.build/), [Cuelume](https://cuelume-site.pages.dev/), [GSAP](https://gsap.com/), [Pixi.js](https://pixijs.com/), and [Matter.js](https://brm.io/matter-js) — are used under their respective licenses.
+
+### Contact
+
+Questions about privacy? Email
+[hello@vanholtz.co](mailto:hello@vanholtz.co).
+
+Tasks
+
+Filter
+
+Tags appear here as you use them.
+
+Nothing queued yet. The inbox is suspiciously peaceful.
+
+Complete
+
+Remove
+
+Select a task to read and write more.
+
+!
+
+Tags
+
+\+ add
+
+**B**_I_USHLH1H2ULOLHR
+
+### New Task
+
+TitleNotesTags
+
+CancelCreate task
+
+Notes
+
+×
+
+Code TV
+
+![CodeTV](https://loadingtoday.webflow.io/codetv/logo-codetv.svg)
+
+Web Dev Challenge34 episodes
+
+- ![](https://img.youtube.com/vi/Is7PCAWLbKc/mqdefault.jpg)The greatest animated landing page with GSAP \| Web Dev Challenge S3.E5
+- ![](https://img.youtube.com/vi/S-XytKfGCO8/mqdefault.jpg)AT Protocol makes web dev fun again · Web Dev Challenge S3.E4
+- ![](https://img.youtube.com/vi/VcjaIbKpaD4/mqdefault.jpg)Build an app with OpenAI Codex · Web Dev Challenge S3.E3
+- ![](https://img.youtube.com/vi/Qt3sbBbVnbs/mqdefault.jpg)Build an app for building · Web Dev Challenge S3.E2
+- ![](https://img.youtube.com/vi/BP48Y9JiMUo/mqdefault.jpg)Build an app with Google Jules · Web Dev Challenge S3.E1
+- ![](https://img.youtube.com/vi/qYx8NX49OS8/mqdefault.jpg)Build a delightful app · Web Dev Challenge S2.E13
+- ![](https://img.youtube.com/vi/BOCU-seUXQ8/mqdefault.jpg)Build better e-commerce websites · Web Dev Challenge S2.E12
+- ![](https://img.youtube.com/vi/98vk7sXa7p0/mqdefault.jpg)Code-powered phone hotline · Web Dev Challenge S2.E11
+- ![](https://img.youtube.com/vi/4CxvZwaS2z0/mqdefault.jpg)No Keyboards Allowed (build an app in 4 hours) · Web Dev Challenge S2.E10
+- ![](https://img.youtube.com/vi/nUSbmGQRsv4/mqdefault.jpg)The Most Important App of the Day (build an app in 4 hours) · Web Dev Challenge S2.E9
+- ![](https://img.youtube.com/vi/gAeLTcxF-0o/mqdefault.jpg)Personal Software (build an app in 4 hours) · Web Dev Challenge S2.E8
+- ![](https://img.youtube.com/vi/rvr-xOwrY70/mqdefault.jpg)Touch Grass (build an app in 4 hours) · Web Dev Challenge S2.E7
+- ![](https://img.youtube.com/vi/I4SBLMGzDss/mqdefault.jpg)Future UX (build an app in 4 Hours) · Web Dev Challenge S2.E6
+- ![](https://img.youtube.com/vi/YQ41RpkuhRA/mqdefault.jpg)Worst Dev Tendencies (build an app in 4 hours) · Web Dev Challenge S2.E5
+- ![](https://img.youtube.com/vi/3xG2y7Bs0ws/mqdefault.jpg)No Business Value (build an app in 4 hours) · Web Dev Challenge S2.E4
+- ![](https://img.youtube.com/vi/bF32laUxoK0/mqdefault.jpg)Best Worst Video Player (build an app in 4 hours) · Web Dev Challenge S2.E3
+- ![](https://img.youtube.com/vi/ftYmXoH0V5I/mqdefault.jpg)Web Games (build an app in 4 hours) · Web Dev Challenge S2.E2
+- ![](https://img.youtube.com/vi/X2sEoZG8EIw/mqdefault.jpg)Build a custom API + app in 4 hours · Web Dev Challenge S2.E1
+- ![](https://img.youtube.com/vi/_H5pnNeCJWQ/mqdefault.jpg)4 Hours to Save Santa's Workshop — Web Dev Challenge S1E10
+- ![](https://img.youtube.com/vi/ICpQQxD8vc4/mqdefault.jpg)4 hours to build an e-commerce app — Web Dev Challenge S1E9
+- ![](https://img.youtube.com/vi/pn5Jju4FNG4/mqdefault.jpg)4 hours to build a web app with Google Gemini — Web Dev Challenge S1E8
+- ![](https://img.youtube.com/vi/fNDSDWJaj2M/mqdefault.jpg)4 hours to build a haunted app — Web Dev Challenge S1E7
+- ![](https://img.youtube.com/vi/V96_3fBgvPA/mqdefault.jpg)Build an app to capture memories — Web Dev Challenge S1E6
+- ![](https://img.youtube.com/vi/8Oxy6WV7zag/mqdefault.jpg)Build an app to help the local food scene — Web Dev Challenge S1E5
+- ![](https://img.youtube.com/vi/D9lWrkpVUm0/mqdefault.jpg)Build an app for monsters — Web Dev Challenge S1E4
+- ![](https://img.youtube.com/vi/wPL13VR88iY/mqdefault.jpg)Build an e-commerce site... with a twist — Web Dev Challenge S1E3
+- ![](https://img.youtube.com/vi/jVHoffCdKa4/mqdefault.jpg)Build a retro gaming app — Web Dev Challenge S1E2
+- ![](https://img.youtube.com/vi/8RCL5neas_M/mqdefault.jpg)Don't build another effin' chatbot — Web Dev Challenge S1E1
+- ![](https://img.youtube.com/vi/aMfhtFkk1m4/mqdefault.jpg)Build a viral event sharing page
+- ![](https://img.youtube.com/vi/DbaBeLDU-oY/mqdefault.jpg)Build a real-time, multiplayer web app
+- ![](https://img.youtube.com/vi/64Hq1bZfhVs/mqdefault.jpg)Build a habit tracker web app that makes you laugh
+- ![](https://img.youtube.com/vi/UAjcJPMexfk/mqdefault.jpg)Build a small business web app, but make it DnD
+- ![](https://img.youtube.com/vi/zR8dUhLPK80/mqdefault.jpg)Build a custom leaderboard web app
+- ![](https://img.youtube.com/vi/b4HZpv61V1U/mqdefault.jpg)Build a productivity web app that's NOT a todo list
+
+# Productivity Dashboard
+
+- Tasks queued: 7
+- Focus score: 82%
+- Meetings today: 3
+- Inbox: manageable (probably)
+
+TerminalBaristaPep TalkNotesTasksMeetingsBrowserCode TVClockVibe MonitorPlaygroundMagic Broom
+
+## Mood
+
+AutoCalmFocusCozyGoblinChaos
+
+## Branded
+
+DefaultDieter8-bitCodeTV
+
+## Wallpaper
+
+Shadow
+
+LeavesVenetian
+
+RainAnimate
+Apply to All
+Sound FX
+
+FX Vol
+
+Audio Loops
+
+ThunderstormRainClear DaySpaceship
+
+Vol
+
+## Rain tuning
+
+SizeGravityStrengthIntensityDropsColor
+
+[![](https://d3e54v103j8qbb.cloudfront.net/img/webflow-badge-icon-d2.89e12c322e.svg)![Made in Webflow](https://d3e54v103j8qbb.cloudfront.net/img/webflow-badge-text-d2.c82cec3b78.svg)](https://webflow.com/?utm_campaign=brandjs)

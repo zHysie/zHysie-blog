@@ -1,0 +1,223 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e7]:
+    - button [ref=f1e8] [cursor=pointer]:
+      - img "Author" [ref=f1e10]
+    - generic [ref=f1e14]: Grtsinry43 的前端札记
+  - generic [ref=f1e16]:
+    - main [ref=f1e17]:
+      - generic [ref=f1e19]:
+        - generic [ref=f1e21]:
+          - img "Author" [ref=f1e25]
+          - generic [ref=f1e27]:
+            - generic [ref=f1e28]:
+              - heading "Hi! 👋" [level=1] [ref=f1e29]
+              - heading "I'm grtsinry43" [level=1] [ref=f1e30]
+            - paragraph [ref=f1e31]: Java/Kotlin + JavaScript/Typescript 全栈开发者 // 正在努力学习前端基建和架构设计
+          - generic [ref=f1e33]:
+            - link [ref=f1e35] [cursor=pointer]:
+              - /url: https://github.com/grtsinry43
+            - link [ref=f1e42] [cursor=pointer]:
+              - /url: mailto:grtsinry43@outlook.com
+            - link [ref=f1e48] [cursor=pointer]:
+              - /url: ./feed
+        - generic [ref=f1e56]:
+          - generic [ref=f1e57]:
+            - generic [ref=f1e58]:
+              - generic [ref=f1e60]:
+                - heading "最近文章" [level=2] [ref=f1e63]
+                - link "查看全部" [ref=f1e64] [cursor=pointer]:
+                  - /url: ./posts
+              - generic [ref=f1e68]:
+                - link "我是怎样使用 AI Agent 写代码的 5 天前" [ref=f1e69] [cursor=pointer]:
+                  - /url: ./posts/coding-with-ai-agent
+                  - generic [ref=f1e70]:
+                    - heading "我是怎样使用 AI Agent 写代码的" [level=3] [ref=f1e71]
+                    - generic [ref=f1e73]: 5 天前
+                - link "「手搓系列 02」深入浅出 Agent Skills：架构、实现与思考 大约 2 个月前" [ref=f1e78] [cursor=pointer]:
+                  - /url: ./posts/agent-skills-deep-dive
+                  - generic [ref=f1e79]:
+                    - heading "「手搓系列 02」深入浅出 Agent Skills：架构、实现与思考" [level=3] [ref=f1e80]
+                    - generic [ref=f1e82]: 大约 2 个月前
+                - link "我患上了 token 的瘾 大约 3 个月前" [ref=f1e87] [cursor=pointer]:
+                  - /url: ./posts/token-addiction
+                  - generic [ref=f1e88]:
+                    - heading "我患上了 token 的瘾" [level=3] [ref=f1e89]
+                    - generic [ref=f1e91]: 大约 3 个月前
+                - link "Xiaomi 17 标准版刷机折腾记：解锁、官改ROM与必备模块 大约 4 个月前" [ref=f1e96] [cursor=pointer]:
+                  - /url: ./posts/xiaomi-17-bootloader-unlock-custom-rom
+                  - generic [ref=f1e97]:
+                    - heading "Xiaomi 17 标准版刷机折腾记：解锁、官改ROM与必备模块" [level=3] [ref=f1e98]
+                    - generic [ref=f1e100]: 大约 4 个月前
+                - link "从 v1 到 v2，谈谈这个简单博客背后的架构演进与实现 大约 4 个月前" [ref=f1e105] [cursor=pointer]:
+                  - /url: ./posts/grtblog-v2-architecture
+                  - generic [ref=f1e106]:
+                    - heading "从 v1 到 v2，谈谈这个简单博客背后的架构演进与实现" [level=3] [ref=f1e107]
+                    - generic [ref=f1e109]: 大约 4 个月前
+            - generic [ref=f1e114]:
+              - generic [ref=f1e116]:
+                - heading "最近手记" [level=2] [ref=f1e119]
+                - link "查看全部" [ref=f1e120] [cursor=pointer]:
+                  - /url: ./moments
+              - generic [ref=f1e124]:
+                - link "从头开始的勇气 大约 2 周前" [ref=f1e125] [cursor=pointer]:
+                  - /url: ./moments/2026/07/12/courage-to-start-over
+                  - generic [ref=f1e126]:
+                    - heading "从头开始的勇气" [level=3] [ref=f1e127]
+                    - generic [ref=f1e133]: 大约 2 周前
+                - link "列车上的生活 大约 1 个月前" [ref=f1e138] [cursor=pointer]:
+                  - /url: ./moments/2026/06/06/life-on-train
+                  - generic [ref=f1e139]:
+                    - heading "列车上的生活" [level=3] [ref=f1e140]
+                    - generic [ref=f1e142]: 大约 1 个月前
+                - link "分享一点体测的小事 大约 2 个月前" [ref=f1e147] [cursor=pointer]:
+                  - /url: ./moments/2026/05/17/physicial-exercise-something
+                  - generic [ref=f1e148]:
+                    - heading "分享一点体测的小事" [level=3] [ref=f1e149]
+                    - generic [ref=f1e151]: 大约 2 个月前
+                - link "路的尽头还是路 大约 3 个月前" [ref=f1e156] [cursor=pointer]:
+                  - /url: ./moments/2026/04/19/never-ending-ways
+                  - generic [ref=f1e157]:
+                    - heading "路的尽头还是路" [level=3] [ref=f1e158]
+                    - generic [ref=f1e160]: 大约 3 个月前
+                - link "二十一岁，然后...... 大约 3 个月前" [ref=f1e165] [cursor=pointer]:
+                  - /url: ./moments/2026/04/03/21-years-old
+                  - generic [ref=f1e166]:
+                    - heading "二十一岁，然后......" [level=3] [ref=f1e167]
+                    - generic [ref=f1e169]: 大约 3 个月前
+          - generic [ref=f1e174]:
+            - heading "灵感与实验场" [level=2] [ref=f1e178]
+            - generic [ref=f1e179]:
+              - generic [ref=f1e184]:
+                - paragraph [ref=f1e185]: “Nothing but enthusiasm brightens up the endless years.”
+                - paragraph [ref=f1e186]: — Alan Kay
+              - generic [ref=f1e188]:
+                - generic [ref=f1e189]: Now / 正在
+                - generic [ref=f1e193]:
+                  - generic [ref=f1e199]:
+                    - generic [ref=f1e200]: Coding
+                    - generic [ref=f1e201]: grtblog-v2
+                  - generic [ref=f1e205]:
+                    - generic [ref=f1e206]: Reading
+                    - generic [ref=f1e207]: The Design of Everyday Things
+                  - generic [ref=f1e211]:
+                    - generic [ref=f1e212]: Learning
+                    - generic [ref=f1e213]: Svelte 5 & Runes
+              - generic [ref=f1e214]: High Energy
+              - generic [ref=f1e223]:
+                - generic [ref=f1e224]: 396.2K
+                - generic [ref=f1e225]: Words
+              - generic [ref=f1e231]:
+                - generic [ref=f1e232]: "613"
+                - generic [ref=f1e233]: Commits
+              - generic [ref=f1e237]:
+                - generic [ref=f1e238]: ∞
+                - generic [ref=f1e239]: Coffee
+              - generic [ref=f1e241]:
+                - generic [ref=f1e242]: Tech Stack
+                - generic [ref=f1e243]:
+                  - generic [ref=f1e244]: Java
+                  - generic [ref=f1e245]: TypeScript
+                  - generic [ref=f1e246]: Go
+                  - generic [ref=f1e247]: Svelte
+                  - generic [ref=f1e248]: Rust
+          - generic [ref=f1e258]:
+            - generic [ref=f1e260]:
+              - generic [ref=f1e261]:
+                - heading "创作律动" [level=2] [ref=f1e264]
+                - paragraph [ref=f1e265]: 近一年的数字足迹：逻辑的向上生长，感性的向下扎根。
+              - generic [ref=f1e266]:
+                - generic [ref=f1e267]:
+                  - generic [ref=f1e268]: Articles
+                  - generic [ref=f1e269]: "11"
+                - generic [ref=f1e270]:
+                  - generic [ref=f1e271]: Moments
+                  - generic [ref=f1e272]: "9"
+                - generic [ref=f1e273]:
+                  - generic [ref=f1e274]: Status
+                  - generic [ref=f1e275]: Quiet
+            - generic [ref=f1e278]:
+              - group [ref=f1e279]
+              - group [ref=f1e282]
+              - group [ref=f1e285]
+              - group [ref=f1e288]
+              - group [ref=f1e291]
+              - group [ref=f1e294]
+              - group [ref=f1e297]
+              - group [ref=f1e300]
+              - group [ref=f1e303]
+              - group [ref=f1e306]
+              - group [ref=f1e309]
+              - group [ref=f1e312]
+              - group [ref=f1e315]
+              - group [ref=f1e318]
+              - group [ref=f1e321]
+              - group [ref=f1e324]
+              - group [ref=f1e327]
+              - group [ref=f1e330]
+              - group [ref=f1e333]
+              - group [ref=f1e336]
+              - group [ref=f1e339]
+              - group [ref=f1e342]
+              - group [ref=f1e345]
+            - generic [ref=f1e348]:
+              - generic [ref=f1e349]: 365 Days Ago
+              - generic [ref=f1e350]:
+                - generic [ref=f1e351]: Article
+                - generic [ref=f1e354]: Moment
+              - generic [ref=f1e357]: Today
+          - generic [ref=f1e360]:
+            - generic [ref=f1e361]:
+              - heading "订阅更新" [level=2] [ref=f1e362]
+              - paragraph [ref=f1e363]: 欢迎通过邮件或 RSS 订阅，第一时间获取最新文章和手记等内容的更新通知。
+            - generic [ref=f1e364]:
+              - button "邮件订阅" [ref=f1e365] [cursor=pointer]
+              - link "RSS 订阅" [ref=f1e370] [cursor=pointer]:
+                - /url: ./feed
+    - contentinfo [ref=f1e376]:
+      - generic [ref=f1e377]:
+        - generic [ref=f1e378]:
+          - generic [ref=f1e379]:
+            - generic [ref=f1e380]:
+              - text: 想要了解我 >
+              - generic [ref=f1e381]: ">"
+            - generic [ref=f1e382]:
+              - link "关于我" [ref=f1e383] [cursor=pointer]:
+                - /url: ./about
+              - link "本站历史" [ref=f1e384] [cursor=pointer]:
+                - /url: ./about-site
+              - link "关于此项目" [ref=f1e385] [cursor=pointer]:
+                - /url: ./about-grtblog
+          - generic [ref=f1e386]:
+            - generic [ref=f1e387]:
+              - text: 你也许在找 >
+              - generic [ref=f1e388]: ">"
+            - generic [ref=f1e389]:
+              - link "时间线" [ref=f1e390] [cursor=pointer]:
+                - /url: ./timeline
+              - link "友链" [ref=f1e391] [cursor=pointer]:
+                - /url: ./friends
+              - link "RSS" [ref=f1e392] [cursor=pointer]:
+                - /url: ./feed
+              - link "监控" [ref=f1e393] [cursor=pointer]:
+                - /url: https://status.grtsinry43.com
+          - generic [ref=f1e394]:
+            - generic [ref=f1e395]:
+              - text: 联系我叭 >
+              - generic [ref=f1e396]: ">"
+            - generic [ref=f1e397]:
+              - link "写留言" [ref=f1e398] [cursor=pointer]:
+                - /url: ./message
+              - link "发邮件" [ref=f1e399] [cursor=pointer]:
+                - /url: mailto:grtsinry43@outlook.com
+              - link "GitHub" [ref=f1e400] [cursor=pointer]:
+                - /url: https://github.com/grtsinry43
+          - generic [ref=f1e401]:
+            - generic [ref=f1e402]:
+              - generic [ref=f1e403]: grtsinry43's Blog.
+              - paragraph [ref=f1e404]: 总之岁月漫长，然而值得等待
+            - button "正在同步在线状态..." [ref=f1e405] [cursor=pointer]
+        - generic [ref=f1e411]:
+          - paragraph [ref=f1e412]: Copyright © 2022 - 2026 grtsinry43. All rights reserved.
+          - link "湘ICP备2023033970号-1" [ref=f1e414] [cursor=pointer]:
+            - /url: https://beian.miit.gov.cn/
+  - region "Notifications alt+T"

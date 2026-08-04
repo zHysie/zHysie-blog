@@ -1,0 +1,8 @@
+---
+import BaseHero from "./hero/Hero.astro";
+---
+
+<BaseHero {...Astro.props}>
+  {Astro.slots.has("eyebrow") && <slot name="eyebrow" slot="eyebrow" />}
+  {Astro.slots.has("image") && <slot name="image" slot="image" />}
+</BaseHero>

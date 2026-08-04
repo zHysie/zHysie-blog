@@ -1,0 +1,186 @@
+- generic [active] [ref=f7e1]:
+  - link "Skip to main content" [ref=f7e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner
+  - main [ref=f7e3]:
+    - generic [ref=f7e4]:
+      - heading [level=1] [ref=f7e8]:
+        - generic "只要不失去你的崇高，整个世界都会向你敞开" [ref=f7e9]: "|"
+      - generic [ref=f7e13]:
+        - paragraph [ref=f7e14]: 永远对世界保持好奇
+        - link "Scroll to the next section" [ref=f7e15] [cursor=pointer]:
+          - /url: "#home-content"
+    - generic [ref=f7e18]:
+      - generic [ref=f7e19]:
+        - paragraph [ref=f7e20]: Why this stack
+        - heading "Built for performance and scale" [level=2] [ref=f7e21]
+        - paragraph [ref=f7e22]: Everything you need to ship a fast marketing site.
+      - generic [ref=f7e24]:
+        - tablist "Feature tabs" [ref=f7e25]:
+          - tab "Performance" [selected] [ref=f7e26] [cursor=pointer]
+          - tab "Content" [ref=f7e31] [cursor=pointer]
+          - tab "Growth" [ref=f7e36] [cursor=pointer]
+        - tabpanel "Performance" [ref=f7e42]:
+          - generic [ref=f7e43]:
+            - heading "Performance" [level=3] [ref=f7e44]
+            - paragraph [ref=f7e45]: A lightweight, static-first stack that ships minimal JavaScript and renders from Cloudflare's edge network.
+            - list [ref=f7e46]:
+              - listitem [ref=f7e47]:
+                - generic [ref=f7e50]: Static-first rendering by default
+              - listitem [ref=f7e51]:
+                - generic [ref=f7e54]: Zero-JS islands architecture
+              - listitem [ref=f7e55]:
+                - generic [ref=f7e58]: Edge delivery with smart caching
+          - generic [ref=f7e59]: $ npm run build ✓ 25 pages built in 6.4s → Deployed to the edge
+    - generic [ref=f7e65]:
+      - heading "Powered by a modern stack" [level=2] [ref=f7e67]
+      - list [ref=f7e69]:
+        - listitem [ref=f7e70]:
+          - generic [ref=f7e73]: Astro
+          - generic [ref=f7e74]: 7.0.x
+        - listitem [ref=f7e75]:
+          - generic [ref=f7e78]: Tailwind CSS
+          - generic [ref=f7e79]: 4.x
+        - listitem [ref=f7e80]:
+          - generic [ref=f7e83]: Cloudflare Pages
+        - listitem [ref=f7e84]:
+          - generic [ref=f7e87]: Astro
+          - generic [ref=f7e88]: 7.0.x
+        - listitem [ref=f7e89]:
+          - generic [ref=f7e92]: Tailwind CSS
+          - generic [ref=f7e93]: 4.x
+        - listitem [ref=f7e94]:
+          - generic [ref=f7e97]: Cloudflare Pages
+        - listitem [ref=f7e98]:
+          - generic [ref=f7e101]: Astro
+          - generic [ref=f7e102]: 7.0.x
+        - listitem [ref=f7e103]:
+          - generic [ref=f7e106]: Tailwind CSS
+          - generic [ref=f7e107]: 4.x
+        - listitem [ref=f7e108]:
+          - generic [ref=f7e111]: Cloudflare Pages
+        - listitem [ref=f7e112]:
+          - generic [ref=f7e115]: Astro
+          - generic [ref=f7e116]: 7.0.x
+        - listitem [ref=f7e117]:
+          - generic [ref=f7e120]: Tailwind CSS
+          - generic [ref=f7e121]: 4.x
+        - listitem [ref=f7e122]:
+          - generic [ref=f7e125]: Cloudflare Pages
+        - listitem [ref=f7e126]:
+          - generic [ref=f7e129]: Astro
+          - generic [ref=f7e130]: 7.0.x
+        - listitem [ref=f7e131]:
+          - generic [ref=f7e134]: Tailwind CSS
+          - generic [ref=f7e135]: 4.x
+        - listitem [ref=f7e136]:
+          - generic [ref=f7e139]: Cloudflare Pages
+        - listitem [ref=f7e140]:
+          - generic [ref=f7e143]: Astro
+          - generic [ref=f7e144]: 7.0.x
+        - listitem [ref=f7e145]:
+          - generic [ref=f7e148]: Tailwind CSS
+          - generic [ref=f7e149]: 4.x
+        - listitem [ref=f7e150]:
+          - generic [ref=f7e153]: Cloudflare Pages
+    - generic [ref=f7e155]:
+      - generic [ref=f7e156]:
+        - generic [ref=f7e157]:
+          - definition [ref=f7e158]: 55+
+          - term [ref=f7e159]: Pages
+        - generic [ref=f7e160]:
+          - definition [ref=f7e161]: 100%
+          - term [ref=f7e162]: Static-first
+        - generic [ref=f7e163]:
+          - definition [ref=f7e164]: A11y
+          - term [ref=f7e165]: WCAG AA
+      - generic [ref=f7e166]:
+        - generic [ref=f7e167]: Astro
+        - generic [ref=f7e168]: Cloudflare
+        - generic [ref=f7e169]: Tailwind
+    - generic [ref=f7e170]:
+      - generic [ref=f7e171]:
+        - heading "Perfect Lighthouse scores" [level=2] [ref=f7e172]
+        - paragraph [ref=f7e173]: Target scores, verified with Lighthouse — optimized out of the box for performance, accessibility, and SEO.
+      - list [ref=f7e174]:
+        - listitem [ref=f7e175]:
+          - strong [ref=f7e177]: "100"
+          - generic [ref=f7e178]: Performance
+        - listitem [ref=f7e179]:
+          - strong [ref=f7e181]: "100"
+          - generic [ref=f7e182]: Accessibility
+        - listitem [ref=f7e183]:
+          - strong [ref=f7e185]: "100"
+          - generic [ref=f7e186]: Best Practices
+        - listitem [ref=f7e187]:
+          - strong [ref=f7e189]: "100"
+          - generic [ref=f7e190]: SEO
+    - generic [ref=f7e191]:
+      - heading "Frequently asked questions" [level=2] [ref=f7e192]
+      - generic [ref=f7e193]:
+        - group [ref=f7e194]:
+          - generic "Is this multilanguage-ready?" [ref=f7e195] [cursor=pointer]
+        - group [ref=f7e199]:
+          - generic "Is SEO handled out of the box?" [ref=f7e200] [cursor=pointer]
+        - group [ref=f7e204]:
+          - generic "Where does it deploy?" [ref=f7e205] [cursor=pointer]
+        - group [ref=f7e209]:
+          - generic "How do I manage content?" [ref=f7e210] [cursor=pointer]
+    - generic [ref=f7e217]:
+      - paragraph [ref=f7e218]: Get started
+      - heading "Ready to build your site?" [level=2] [ref=f7e219]
+      - paragraph [ref=f7e220]: Explore the services or dive into the docs — the whole stack is ready to go.
+      - generic [ref=f7e221]:
+        - link "Explore services" [ref=f7e222] [cursor=pointer]:
+          - /url: /services
+        - link "Read the docs" [ref=f7e223] [cursor=pointer]:
+          - /url: /docs
+  - contentinfo [ref=f7e224]:
+    - generic [ref=f7e225]:
+      - generic [ref=f7e226]:
+        - generic [ref=f7e227]:
+          - link "Astro Cloudflare" [ref=f7e228] [cursor=pointer]:
+            - /url: /
+          - paragraph [ref=f7e230]: Marketing, blog, and docs starter built with Astro and Cloudflare Pages — multilanguage-ready
+        - generic [ref=f7e231]:
+          - heading "Services" [level=2] [ref=f7e232]
+          - list [ref=f7e233]:
+            - listitem [ref=f7e234]:
+              - link "Services" [ref=f7e235] [cursor=pointer]:
+                - /url: /services
+            - listitem [ref=f7e236]:
+              - link "Pricing" [ref=f7e237] [cursor=pointer]:
+                - /url: /pricing
+        - generic [ref=f7e238]:
+          - heading "Contact" [level=2] [ref=f7e239]
+          - list [ref=f7e240]:
+            - listitem [ref=f7e241]:
+              - link "Privacy Policy" [ref=f7e242] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=f7e243]:
+              - link "Terms & Conditions" [ref=f7e244] [cursor=pointer]:
+                - /url: /terms
+        - generic [ref=f7e245]:
+          - heading "Social" [level=2] [ref=f7e246]
+          - list [ref=f7e247]:
+            - listitem [ref=f7e248]:
+              - link "GitHub" [ref=f7e249] [cursor=pointer]:
+                - /url: https://github.com/zHysie
+            - listitem [ref=f7e253]:
+              - link "LinkedIn" [ref=f7e254] [cursor=pointer]:
+                - /url: https://www.linkedin.com/in/milzamsz/
+            - listitem [ref=f7e258]:
+              - link "Email" [ref=f7e259] [cursor=pointer]:
+                - /url: mailto:milzamsz@gmail.com
+      - generic [ref=f7e263]:
+        - paragraph [ref=f7e264]: © 2026 Astro Cloudflare
+        - generic [ref=f7e265]:
+          - link "Privacy Policy" [ref=f7e266] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms & Conditions" [ref=f7e267] [cursor=pointer]:
+            - /url: /terms
+  - generic [ref=f7e270]:
+    - button [ref=f7e271]
+    - button [ref=f7e277]
+    - button [ref=f7e281]
+    - button [ref=f7e286]

@@ -1,0 +1,255 @@
+---
+import MarketingLayout from "../layouts/MarketingLayout.astro";
+import Hero from "../components/Hero.astro";
+import FAQ from "../components/FAQ.astro";
+import CTA from "../components/CTA.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+import {
+  FeatureTabs,
+  StackMarquee,
+  Credibility,
+  LighthouseScores,
+} from "../components/landing/index";
+import { t } from "../i18n/ui";
+
+const stackEntries = (await getCollection("stack"))
+  .sort(
+    (a: CollectionEntry<"stack">, b: CollectionEntry<"stack">) =>
+      a.data.order - b.data.order,
+  )
+  .map((entry: CollectionEntry<"stack">) => entry.data);
+
+const locale = (Astro.currentLocale || "en") as "en";
+const tabs = [
+  {
+    id: "performance",
+    icon: "zap",
+    heading: "Performance",
+    description:
+      "A lightweight, static-first stack that ships minimal JavaScript and renders from Cloudflare's edge network.",
+    points: [
+      "Static-first rendering by default",
+      "Zero-JS islands architecture",
+      "Edge delivery with smart caching",
+    ],
+    visual: "$ npm run build\n✓ 25 pages built in 6.4s\n→ Deployed to the edge",
+  },
+  {
+    id: "content",
+    icon: "pen-line",
+    heading: "Content",
+    description:
+      "Author in Markdown with a Git-based workflow. Blog, docs, and services are type-safe content collections.",
+    points: [
+      "Type-safe Markdown collections",
+      "Versioned and reviewed in Git",
+      "Blog, docs, and service pages",
+    ],
+    visual: "src/content/\n├─ blog/\n├─ docs/\n├─ services/\n└─ pages/",
+  },
+  {
+    id: "growth",
+    icon: "trending-up",
+    heading: "Growth",
+    description:
+      "Everything search engines and social platforms need is generated for you on every build.",
+    points: [
+      "Sitemap, RSS, and robots.txt",
+      "Canonical URLs and JSON-LD",
+      "Dynamic Open Graph images",
+    ],
+    visual:
+      '<meta property="og:image" ... />\n<link rel="canonical" ... />\n<script type="application/ld+json">',
+  },
+];
+---
+
+<MarketingLayout
+  title={t(locale, "nav.home")}
+  description="A boilerplate for fast marketing websites."
+  locale={locale}
+  path="/"
+>
+  <Hero
+    extendBehindHeader={true}
+    fullViewport={true}
+    variant="centered"
+    size="xl"
+    headline="只要不失去你的崇高，整个世界都会向你敞开"
+    animatedHeadlineText="只要不失去你的崇高，整个世界都会向你敞开"
+    typewriterLoop={true}
+    scrollZoom={true}
+    footerText="永远对世界保持好奇"
+    scrollTarget="home-content"
+    scrollLabel="Scroll to the next section"
+    locale={locale}
+  >
+    <span
+      slot="eyebrow"
+      class="welcome-intro"
+      aria-label="Hi there, I'm zHysie."
+    >
+      <span aria-hidden="true">Hi there, I'm</span>
+      <span class="welcome-intro__brand" aria-hidden="true">
+        <img
+          class="welcome-intro__logo welcome-intro__logo--light"
+          src="/logos/zHysie_logo.svg"
+          alt=""
+          width="1959"
+          height="1050"
+        />
+        <img
+          class="welcome-intro__logo welcome-intro__logo--dark"
+          src="/logos/zHysie_logo-dark.svg"
+          alt=""
+          width="1959"
+          height="1050"
+        />
+      </span>
+    </span>
+    <div slot="image" class="welcome-mark" aria-hidden="true">
+      <img
+        src="/favicon.svg"
+        alt=""
+        width="512"
+        height="512"
+        data-hero-brand-mark
+      />
+    </div>
+  </Hero>
+
+  <section id="home-content" class="container py-16">
+    <header class="section-head">
+      <p class="section-head__eyebrow">Why this stack</p>
+      <h2 class="section-head__title">Built for performance and scale</h2>
+      <p class="section-head__lead">
+        Everything you need to ship a fast marketing site.
+      </p>
+    </header>
+    <FeatureTabs client:visible tabs={tabs} />
+  </section>
+
+  <section class="container py-10">
+    <header class="section-head">
+      <h2 class="section-head__title">Powered by a modern stack</h2>
+    </header>
+    <StackMarquee items={stackEntries} />
+  </section>
+
+  <section class="container py-16">
+    <Credibility
+      stats={[
+        { value: "55+", label: "Pages" },
+        { value: "100%", label: "Static-first" },
+        { value: "A11y", label: "WCAG AA" },
+      ]}
+      logos={[
+        { name: "Astro", src: undefined },
+        { name: "Cloudflare", src: undefined },
+        { name: "Tailwind", src: undefined },
+      ]}
+    />
+  </section>
+
+  <section class="container py-16">
+    <header class="section-head">
+      <h2 class="section-head__title">Perfect Lighthouse scores</h2>
+      <p class="section-head__lead">
+        Target scores, verified with Lighthouse — optimized out of the box for
+        performance, accessibility, and SEO.
+      </p>
+    </header>
+    <LighthouseScores />
+  </section>
+
+  <FAQ
+    title="Frequently asked questions"
+    items={[
+      {
+        question: "Is this multilanguage-ready?",
+        answer:
+          "Yes. The i18n engine is wired up and ships English-first, so adding more locales is a matter of dropping in translations and content.",
+      },
+      {
+        question: "Is SEO handled out of the box?",
+        answer:
+          "Meta tags, canonical URLs, sitemap, RSS, JSON-LD, and dynamic OG images are all connected by default.",
+      },
+      {
+        question: "Where does it deploy?",
+        answer:
+          "It's built for Cloudflare Pages with optional R2 media storage, but the static output runs on any modern host.",
+      },
+      {
+        question: "How do I manage content?",
+        answer:
+          "Content lives in Markdown collections (blog, docs, services, pages) that are versioned and reviewed in Git.",
+      },
+    ]}
+  />
+
+  <CTA
+    eyebrow="Get started"
+    title="Ready to build your site?"
+    content="Explore the services or dive into the docs — the whole stack is ready to go."
+    ctaText="Explore services"
+    ctaHref="/services"
+    secondaryText="Read the docs"
+    secondaryHref="/docs"
+    locale={locale}
+  />
+</MarketingLayout>
+
+<style>
+  .welcome-intro {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    white-space: nowrap;
+  }
+
+  .welcome-intro__brand {
+    display: inline-grid;
+    width: auto;
+    height: 1.2em;
+    aspect-ratio: 1959 / 1050;
+    flex: 0 0 auto;
+    transform: translateY(0.04em);
+  }
+
+  .welcome-intro__logo {
+    grid-area: 1 / 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .welcome-intro__logo--dark {
+    display: none;
+  }
+
+  :global(html.dark) .welcome-intro__logo--light {
+    display: none;
+  }
+
+  :global(html.dark) .welcome-intro__logo--dark {
+    display: block;
+  }
+
+  .welcome-mark {
+    width: clamp(6.5rem, 14vw, 9rem);
+  }
+
+  .welcome-mark img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  @media (max-width: 48rem) {
+    .welcome-mark {
+      width: clamp(5.5rem, 24vw, 7rem);
+    }
+  }
+</style>

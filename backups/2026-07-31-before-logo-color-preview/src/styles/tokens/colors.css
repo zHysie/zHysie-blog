@@ -1,0 +1,163 @@
+/**
+ * Color tokens — Semantic design tokens for light and dark modes
+ * Warm-neutral OKLCH palette:
+ *   rgb(20, 20, 19) foreground on rgb(240, 238, 230) in light mode,
+ *   inverted in dark mode. The tiny chroma in these two brand neutrals keeps
+ *   the paper-like warmth while functional status colors remain distinct.
+ * These map to Tailwind via @theme block in global.css.
+ */
+
+:root {
+  /* === Brand anchors === */
+  --brand-paper: oklch(0.9485 0.0109 95.166deg);
+  --brand-ink: oklch(0.1908 0.002 106.586deg);
+
+  /* === Core surfaces === */
+  --background: var(--brand-paper);
+  --foreground: var(--brand-ink);
+  --card: var(--brand-paper);
+  --card-foreground: var(--brand-ink);
+  --popover: var(--brand-paper);
+  --popover-foreground: var(--brand-ink);
+
+  /* === Primary — neutral (near-black) === */
+  --primary: var(--brand-ink);
+  --primary-foreground: var(--brand-paper);
+  --primary-hover: oklch(0.27 0 0deg);
+  --primary-active: oklch(0.32 0 0deg);
+  --primary-muted: oklch(0.97 0 0deg);
+
+  /* === Secondary === */
+  --secondary: oklch(0.97 0 0deg);
+  --secondary-foreground: var(--brand-ink);
+  --secondary-hover: oklch(0.94 0 0deg);
+
+  /* === Accent === */
+  --accent: oklch(0.97 0 0deg);
+  --accent-foreground: var(--brand-ink);
+  --accent-hover: oklch(0.94 0 0deg);
+
+  /* === Muted === */
+  --muted: oklch(0.97 0 0deg);
+
+  /* 0.50 keeps secondary text >= WCAG AA (>=4.5:1) on both white and muted bg */
+  --muted-foreground: oklch(0.5 0 0deg);
+
+  /* === Border & Ring === */
+  --border: oklch(0.922 0 0deg);
+  --ring: oklch(0.45 0 0deg);
+  --ring-offset: var(--brand-paper);
+
+  /* === Semantic (functional status — kept chromatic) === */
+  --destructive: oklch(0.577 0.245 27.325deg);
+  --destructive-foreground: var(--brand-paper);
+  --success: oklch(0.62 0.16 150deg);
+  --success-foreground: var(--brand-paper);
+  --warning: oklch(0.75 0.16 75deg);
+  --warning-foreground: var(--brand-ink);
+  --info: oklch(0.45 0 0deg);
+  --info-foreground: var(--brand-paper);
+
+  /* === Surface invert (for dark sections on light bg) === */
+  --surface-invert: var(--brand-ink);
+  --surface-invert-foreground: var(--brand-paper);
+  --surface-invert-border: oklch(0.32 0 0deg);
+}
+
+.dark {
+  /* === Core surfaces === */
+  --background: var(--brand-ink);
+  --foreground: var(--brand-paper);
+  --card: oklch(0.205 0 0deg);
+  --card-foreground: var(--brand-paper);
+  --popover: oklch(0.205 0 0deg);
+  --popover-foreground: var(--brand-paper);
+
+  /* === Primary — neutral (near-white) === */
+  --primary: var(--brand-paper);
+  --primary-foreground: var(--brand-ink);
+  --primary-hover: oklch(0.9 0 0deg);
+  --primary-active: oklch(0.82 0 0deg);
+  --primary-muted: oklch(0.269 0 0deg);
+
+  /* === Secondary === */
+  --secondary: oklch(0.269 0 0deg);
+  --secondary-foreground: var(--brand-paper);
+  --secondary-hover: oklch(0.32 0 0deg);
+
+  /* === Accent === */
+  --accent: oklch(0.269 0 0deg);
+  --accent-foreground: var(--brand-paper);
+  --accent-hover: oklch(0.32 0 0deg);
+
+  /* === Muted === */
+  --muted: oklch(0.269 0 0deg);
+
+  /* 0.74 keeps secondary text >= WCAG AA (>=4.5:1) on dark muted bg */
+  --muted-foreground: oklch(0.74 0 0deg);
+
+  /* === Border & Ring === */
+  --border: oklch(0.32 0 0deg);
+  --ring: oklch(0.6 0 0deg);
+  --ring-offset: var(--brand-ink);
+
+  /* === Semantic (functional status — kept chromatic) === */
+  --destructive: oklch(0.704 0.191 22.216deg);
+  --destructive-foreground: var(--brand-paper);
+  --success: oklch(0.7 0.15 150deg);
+  --success-foreground: var(--brand-ink);
+  --warning: oklch(0.8 0.15 80deg);
+  --warning-foreground: var(--brand-ink);
+  --info: oklch(0.708 0 0deg);
+  --info-foreground: var(--brand-ink);
+
+  /* === Surface invert (for light sections on dark bg) === */
+  --surface-invert: var(--brand-paper);
+  --surface-invert-foreground: var(--brand-ink);
+  --surface-invert-border: oklch(0.85 0 0deg);
+}
+
+/* === Radius === */
+:root {
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+}
+
+/**
+ * === Legacy color aliases (compatibility bridge) ===
+ * The component layer references an earlier token scheme that was never
+ * migrated. These aliases map the old names onto the current semantic tokens.
+ * Because custom properties resolve at use-time, a single :root definition
+ * automatically tracks light/dark (the semantic tokens swap under .dark).
+ */
+:root {
+  --color-bg-primary: var(--background);
+  --color-bg-secondary: var(--secondary);
+  --color-bg-tertiary: var(--accent);
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --color-brand-primary: var(--primary);
+  --color-brand-secondary: var(--info);
+  --color-border: var(--border);
+}
+
+/* === Shadow scale (subtle, dark-mode aware) === */
+:root {
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 5%);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 8%), 0 2px 4px -2px rgb(0 0 0 / 5%);
+  --shadow-lg:
+    0 12px 28px -6px rgb(0 0 0 / 12%), 0 4px 8px -4px rgb(0 0 0 / 6%);
+}
+
+.dark {
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 40%);
+  --shadow-md:
+    0 4px 12px -2px rgb(0 0 0 / 50%), 0 2px 4px -2px rgb(0 0 0 / 40%);
+  --shadow-lg:
+    0 12px 28px -6px rgb(0 0 0 / 60%), 0 4px 8px -4px rgb(0 0 0 / 45%);
+}

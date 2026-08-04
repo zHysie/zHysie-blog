@@ -1,0 +1,85 @@
+/* Temporary logo-palette preview. Scoped so the current site stays untouched. */
+html[data-color-preview="true"] {
+  --brand-logo-z: #335961;
+  --brand-logo-l: #3f8fa8;
+  --brand-logo-t: #c8a8ad;
+  --brand-logo-wordmark: #30343b;
+
+  --background: #f0eee6;
+  --foreground: var(--brand-logo-wordmark);
+  --card: #f7f5ef;
+  --card-foreground: var(--brand-logo-wordmark);
+  --popover: #f7f5ef;
+  --popover-foreground: var(--brand-logo-wordmark);
+
+  --primary: var(--brand-logo-z);
+  --primary-foreground: #f0eee6;
+  --primary-hover: #27474d;
+  --primary-active: #203c42;
+  --primary-muted: color-mix(in oklab, var(--brand-logo-z) 10%, #f0eee6);
+
+  --secondary: color-mix(in oklab, var(--brand-logo-t) 25%, #f0eee6);
+  --secondary-foreground: var(--brand-logo-wordmark);
+  --secondary-hover: color-mix(in oklab, var(--brand-logo-t) 36%, #f0eee6);
+
+  --accent: color-mix(in oklab, var(--brand-logo-l) 9%, #f0eee6);
+  --accent-foreground: var(--brand-logo-wordmark);
+  --accent-hover: color-mix(in oklab, var(--brand-logo-l) 15%, #f0eee6);
+
+  --muted: color-mix(in oklab, var(--brand-logo-wordmark) 6%, #f0eee6);
+  --muted-foreground: #626b70;
+  --border: #cbd2cf;
+  --input: #cbd2cf;
+  --ring: var(--brand-logo-l);
+  --ring-offset: #f0eee6;
+
+  --info: var(--brand-logo-l);
+  --info-foreground: #f0eee6;
+  --surface-invert: var(--brand-logo-z);
+  --surface-invert-foreground: #f0eee6;
+  --surface-invert-border: #27474d;
+}
+
+html[data-color-preview="true"] .logo__name {
+  color: #141413;
+}
+
+html[data-color-preview="true"].dark {
+  --background: #182326;
+  --foreground: #f0eee6;
+  --card: #223136;
+  --card-foreground: #f0eee6;
+  --popover: #223136;
+  --popover-foreground: #f0eee6;
+
+  --primary: #84b4c0;
+  --primary-foreground: #182326;
+  --primary-hover: #9ac4cd;
+  --primary-active: #aed0d6;
+  --primary-muted: color-mix(in oklab, #84b4c0 12%, #182326);
+
+  --secondary: color-mix(in oklab, #c8a8ad 18%, #182326);
+  --secondary-foreground: #f0eee6;
+  --secondary-hover: color-mix(in oklab, #c8a8ad 27%, #182326);
+
+  --accent: color-mix(in oklab, #3f8fa8 18%, #182326);
+  --accent-foreground: #f0eee6;
+  --accent-hover: color-mix(in oklab, #3f8fa8 28%, #182326);
+
+  --muted: #223136;
+  --muted-foreground: #b7c0c0;
+  --border: #3a4a4e;
+  --input: #3a4a4e;
+  --ring: #74b5c9;
+  --ring-offset: #182326;
+
+  --info: #74b5c9;
+  --info-foreground: #182326;
+  --surface-invert: #f0eee6;
+  --surface-invert-foreground: #182326;
+  --surface-invert-border: #b7c0c0;
+}
+
+html[data-color-preview="true"].dark .logo__name {
+  color: #f0eee6;
+}

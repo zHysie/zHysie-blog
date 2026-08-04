@@ -1,0 +1,35 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import SEO from "../components/seo/SEO.astro";
+import { type Locale } from "../lib/site-config";
+
+export interface Props {
+  title: string;
+  description: string;
+  locale: Locale;
+  path: string;
+  colorPreview?: boolean;
+}
+
+const { title, description, locale, path, colorPreview = false } =
+  Astro.props as Props;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  locale={locale}
+  path={path}
+  showThemeToggle={true}
+  colorPreview={colorPreview}
+>
+  <SEO
+    slot="seo"
+    title={title}
+    description={description}
+    locale={locale}
+    path={path}
+    ogImage={path === "/" ? `/og/home/${locale}` : `/og/page/${locale}${path}`}
+  />
+  <slot />
+</BaseLayout>

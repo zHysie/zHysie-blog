@@ -1,0 +1,202 @@
+{
+  "branding": {
+    "colorScheme": "light",
+    "fonts": [
+      {
+        "family": "Google Sans",
+        "role": "body"
+      },
+      {
+        "family": "PingFang SC",
+        "role": "body"
+      },
+      {
+        "family": "Microsoft YaHei",
+        "role": "body"
+      },
+      {
+        "family": "Segoe UI",
+        "role": "body"
+      },
+      {
+        "family": "Roboto",
+        "role": "body"
+      }
+    ],
+    "colors": {
+      "primary": "#0D9488",
+      "secondary": "#E7000B",
+      "accent": "#0D9488",
+      "background": "#FAFAF9",
+      "textPrimary": "#1C1917",
+      "link": "#3E908A"
+    },
+    "typography": {
+      "fontFamilies": {
+        "primary": "Google Sans",
+        "heading": "Google Sans"
+      },
+      "fontStacks": {
+        "heading": [
+          "Victor Mono Variable",
+          "JetBrains Mono",
+          "monospace"
+        ],
+        "body": [
+          "Google Sans",
+          "system-ui",
+          "-apple-system",
+          "PingFang SC",
+          "Microsoft YaHei",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica",
+          "Arial",
+          "sans-serif",
+          "Apple Color Emoji"
+        ],
+        "paragraph": [
+          "Victor Mono Variable",
+          "JetBrains Mono",
+          "monospace"
+        ]
+      },
+      "fontSizes": {
+        "h1": "36px",
+        "h2": "20px",
+        "body": "16px"
+      }
+    },
+    "spacing": {
+      "baseUnit": 6,
+      "borderRadius": "3px"
+    },
+    "components": {
+      "buttonPrimary": {
+        "background": "#0D9488",
+        "textColor": "#FFFFFF",
+        "borderRadius": "3px",
+        "borderRadiusCorners": {
+          "topLeft": "3px",
+          "topRight": "3px",
+          "bottomRight": "3px",
+          "bottomLeft": "3px"
+        },
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.703744 -0.122869 -0.00535977 / 0.1) 0px 1px 3px 0px, oklab(0.703744 -0.122869 -0.00535977 / 0.1) 0px 1px 2px -1px"
+      },
+      "buttonSecondary": {
+        "background": "#F5FCFA",
+        "textColor": "#0F766E",
+        "borderColor": "#C0F8EC",
+        "borderRadius": "3px",
+        "borderRadiusCorners": {
+          "topLeft": "3px",
+          "topRight": "3px",
+          "bottomRight": "3px",
+          "bottomLeft": "3px"
+        },
+        "shadow": "none"
+      }
+    },
+    "images": {
+      "logo": "https://dogeoss.grtsinry43.com/img/author.jpeg",
+      "favicon": "https://dogeoss.grtsinry43.com/img/author.jpeg",
+      "ogImage": "https://blog.grtsinry43.com/og-image.png",
+      "logoHref": "/",
+      "logoAlt": "Author"
+    },
+    "__llm_logo_reasoning": {
+      "selectedIndex": 6,
+      "reasoning": "Selected #6 because it is visible, located in the header, links to the homepage, and matches the favicon, indicating it is the main brand logo.",
+      "confidence": 0.95,
+      "source": "llm"
+    },
+    "__llm_button_reasoning": {
+      "primary": {
+        "index": 1,
+        "text": "邮件订阅",
+        "reasoning": "Button #1 has a vibrant background color (#0D9488) which matches the brand's primary color, making it the most prominent CTA."
+      },
+      "secondary": {
+        "index": 0,
+        "text": "RSS 订阅",
+        "reasoning": "Button #0 has a different background color (#F5FCFA) and serves as a secondary action with less prominence."
+      },
+      "confidence": 0.95
+    },
+    "personality": {
+      "tone": "professional",
+      "energy": "medium",
+      "targetAudience": "tech enthusiasts and developers"
+    },
+    "designSystem": {
+      "framework": "tailwind",
+      "componentLibrary": ""
+    },
+    "confidence": {
+      "buttons": 0.95,
+      "colors": 0.9,
+      "overall": 0.925
+    },
+    "__llm_metadata": {
+      "logoSelection": {
+        "llmCalled": true,
+        "llmSucceeded": true,
+        "finalSource": "llm",
+        "rawLogoSelection": {
+          "selectedLogoIndex": 6,
+          "selectedLogoReasoning": "Selected #6 because it is visible, located in the header, links to the homepage, and matches the favicon, indicating it is the main brand logo.",
+          "confidence": 0.95
+        }
+      },
+      "buttonClassification": {
+        "llmCalled": true,
+        "llmSucceeded": true
+      }
+    }
+  },
+  "metadata": {
+    "ogSiteName": "Grtsinry43的前端札记",
+    "twitter:description": "总之岁月漫长，然而值得等待",
+    "og:description": "总之岁月漫长，然而值得等待",
+    "keywords": "编程,前端,学习,后端,生活,记录,前端学习笔记,Web开发教程,编程入门指南,JavaScript实战,React项目,Vue源码,大学生技术博客",
+    "twitter:image": "https://blog.grtsinry43.com/og-image.png",
+    "og:url": "https://blog.grtsinry43.com/",
+    "og:image:width": "1200",
+    "og:image:type": "image/png",
+    "title": "大三技术成长实录 & 学习笔记 | 「岁月漫长，值得等待」| Grtsinry43 的前端札记",
+    "ogDescription": "总之岁月漫长，然而值得等待",
+    "viewport": [
+      "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+      "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    ],
+    "og:site_name": "Grtsinry43的前端札记",
+    "og:image:height": "630",
+    "robots": "index,follow",
+    "twitter:card": "summary_large_image",
+    "ogImage": "https://blog.grtsinry43.com/og-image.png",
+    "description": "一名大三前端学习者的实战记录，分享JavaScript/React/Vue技术解析、项目复盘总结、编程学习心得，持续输出Web开发学习记录，助力新手少走弯路。「路虽远行则将至」这里记录Web开发学习笔记 | 技术踩坑指南 | 成长思考碎片 总之岁月漫长，然而值得等待。",
+    "ogTitle": "大三技术成长实录 & 学习笔记 | 「岁月漫长，值得等待」| Grtsinry43 的前端札记",
+    "language": "en",
+    "og:title": "大三技术成长实录 & 学习笔记 | 「岁月漫长，值得等待」| Grtsinry43 的前端札记",
+    "author": "grtinry43",
+    "og:type": "website",
+    "og:image": "https://blog.grtsinry43.com/og-image.png",
+    "twitter:title": "大三技术成长实录 & 学习笔记 | 「岁月漫长，值得等待」| Grtsinry43 的前端札记",
+    "ogUrl": "https://blog.grtsinry43.com/",
+    "favicon": "https://dogeoss.grtsinry43.com/img/author.jpeg",
+    "scrapeId": "019fc79b-71c0-70cd-a191-f7c4796c2953",
+    "sourceURL": "https://blog.grtsinry43.com/",
+    "url": "https://blog.grtsinry43.com/",
+    "statusCode": 200,
+    "contentType": "text/html",
+    "timezone": "America/New_York",
+    "proxyUsed": "basic",
+    "indexId": "17fc3770-d9d8-4def-809e-6fe69b7eec1e",
+    "creditsUsed": 1,
+    "concurrencyLimited": false
+  },
+  "images": [
+    "https://dogeoss.grtsinry43.com/img/author.jpeg"
+  ]
+}
