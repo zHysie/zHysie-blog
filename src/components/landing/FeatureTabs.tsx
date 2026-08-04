@@ -115,7 +115,7 @@ export default function FeatureTabs({ tabs }: Props) {
         className="feature-tabs__panel"
         tabIndex={0}
       >
-        <div className="feature-tabs__content">
+        <div className="feature-tabs__content" key={`content-${activeTab.id}`}>
           <h3 className="feature-tabs__heading">{activeTab.heading}</h3>
           <p className="feature-tabs__description">{activeTab.description}</p>
           {activeTab.points && activeTab.points.length > 0 && (
@@ -129,7 +129,7 @@ export default function FeatureTabs({ tabs }: Props) {
             </ul>
           )}
         </div>
-        <div className="feature-tabs__window" aria-hidden="true">
+        <div className="feature-tabs__window" aria-hidden="true" key={`window-${activeTab.id}`}>
           <div className="feature-tabs__window-bar">
             <span />
             <span />

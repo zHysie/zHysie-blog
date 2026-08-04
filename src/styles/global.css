@@ -195,6 +195,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background-image: url("/noise.png");
+  opacity: 0.02;
+}
+
 /* Headings */
 h1,
 h2,
@@ -452,7 +462,11 @@ code {
   font-size: 0.9375rem;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .feature-tabs__tab:hover {
@@ -476,7 +490,7 @@ code {
 }
 
 .feature-tabs__tab:active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.97);
 }
 
 .feature-tabs__tab-icon {
@@ -580,5 +594,24 @@ code {
   .feature-tabs__panel {
     grid-template-columns: 1fr;
     align-items: stretch;
+  }
+}
+
+.feature-tabs__content,
+.feature-tabs__window {
+  animation: tab-fade-in 250ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes tab-fade-in {
+  from {
+    opacity: 0%;
+    filter: blur(3px);
+    transform: translateY(4px) scale(0.99);
+  }
+
+  to {
+    opacity: 100%;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
   }
 }

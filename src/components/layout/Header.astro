@@ -254,11 +254,6 @@ const revealNavigationOnScroll = contentPath === "/";
 </header>
 
 <script>
-  import { gsap } from "gsap";
-  import { Flip } from "gsap/Flip";
-
-  gsap.registerPlugin(Flip);
-
   const header = document.querySelector<HTMLElement>("[data-header]");
   const menuToggle =
     header?.querySelector<HTMLButtonElement>("[data-menu-toggle]");
@@ -280,409 +275,63 @@ const revealNavigationOnScroll = contentPath === "/";
     });
   }
 
+  // Scroll Animation Logic
   if (header) {
-    const root = document.documentElement;
-    const threshold = Number(header.dataset.navThreshold ?? 96);
-    const flipTargets = Array.from(
-      header.querySelectorAll<HTMLElement>("[data-nav-flip]"),
-    );
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const revealOnScroll = header.hasAttribute("data-scroll-reveal");
-    const media = gsap.matchMedia();
+    const logo = header.querySelector<HTMLElement>(".header__logo");
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+    let isHidden = false;
 
-    media.add("(min-width: 60.0625rem)", () => {
-      let railActive: boolean | null = null;
-      let scrollFrame = 0;
-      let dockFrame = 0;
-      let pointerY = 0;
-      let currentFlip: ReturnType<typeof Flip.from> | null = null;
-      let currentReveal: gsap.core.Timeline | null = null;
-      let dockResetCall: gsap.core.Tween | null = null;
-      let brandResizeFrame = 0;
-      const dock = header.querySelector<HTMLElement>(".header__list");
-      const heroBrandSource = document.querySelector<HTMLImageElement>(
-        "[data-hero-brand-mark]",
-      );
-      const headerBrandTarget =
-        header.querySelector<HTMLImageElement>(".logo__mark-image");
-      const brandFlightDistance = 260;
-      const brandXAxisEase = gsap.parseEase("power1.inOut");
-      const brandYAxisEase = gsap.parseEase("power2.inOut");
-      const brandScaleEase = gsap.parseEase("power2.inOut");
-      let brandFlight: HTMLImageElement | null = null;
-      let brandStart: {
-        left: number;
-        top: number;
-        width: number;
-        height: number;
-      } | null = null;
-      let brandEnd: {
-        left: number;
-        top: number;
-        width: number;
-        height: number;
-      } | null = null;
-      const dockLinks = Array.from(
-        header.querySelectorAll<HTMLElement>(
-          ".header__item > a, .header__dropdown > a",
-        ),
-      );
-      const dockMotion = dockLinks.map((item) => ({
-        item,
-        shell: item.closest<HTMLElement>(".header__item") ?? item,
-      }));
+    const updateLogoOffset = () => {
+      if (!logo) return;
+      const wasHidden = isHidden;
+      if (wasHidden) header.classList.remove("is-scrolling-down");
+      
+      const rect = logo.getBoundingClientRect();
+      
+      // 添加微距边缘留白：左侧 4px，顶部 4px
+      const safePaddingLeft = 4;
+      const safePaddingTop = 4;
+      
+      header.style.setProperty("--logo-offset-x", `-${rect.left - safePaddingLeft}px`);
+      header.style.setProperty("--logo-offset-y", `-${rect.top - safePaddingTop}px`);
+      
+      if (wasHidden) header.classList.add("is-scrolling-down");
+    };
 
-      const measureBrandFlight = () => {
-        if (!heroBrandSource || !headerBrandTarget) return;
-
-        const sourceRect = heroBrandSource.getBoundingClientRect();
-        const sourceWidth = heroBrandSource.offsetWidth;
-        const sourceHeight = heroBrandSource.offsetHeight;
-        brandStart = {
-          left: sourceRect.left + (sourceRect.width - sourceWidth) / 2,
-          top:
-            sourceRect.top +
-            window.scrollY +
-            (sourceRect.height - sourceHeight) / 2,
-          width: sourceWidth,
-          height: sourceHeight,
-        };
-
-        const previousClassName = header.className;
-        if (!header.classList.contains("nav-left")) {
-          header.classList.remove("nav-top", "nav-hidden");
-          header.classList.add("nav-left");
+    const updateHeader = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > 60) {
+        if (currentScrollY > lastScrollY && !isHidden) {
+          isHidden = true;
+          header.classList.add("is-scrolling-down");
+        } else if (currentScrollY < lastScrollY && isHidden) {
+          isHidden = false;
+          header.classList.remove("is-scrolling-down");
         }
-        const targetRect = headerBrandTarget.getBoundingClientRect();
-        brandEnd = {
-          left: targetRect.left,
-          top: targetRect.top,
-          width: targetRect.width,
-          height: targetRect.height,
-        };
-        header.className = previousClassName;
+      } else if (currentScrollY <= 60 && isHidden) {
+        isHidden = false;
+        header.classList.remove("is-scrolling-down");
+      }
+      
+      lastScrollY = currentScrollY;
+      ticking = false;
+    };
 
-        if (!brandFlight && !reducedMotion.matches) {
-          brandFlight = heroBrandSource.cloneNode(false) as HTMLImageElement;
-          brandFlight.removeAttribute("data-hero-brand-mark");
-          brandFlight.className = "header__brand-flight";
-          brandFlight.setAttribute("aria-hidden", "true");
-          document.body.append(brandFlight);
-          heroBrandSource.style.visibility = "hidden";
-          header.toggleAttribute("data-brand-flight", true);
-        }
+    window.addEventListener("scroll", () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateHeader);
+        ticking = true;
+      }
+    }, { passive: true });
 
-        if (brandFlight) {
-          gsap.set(brandFlight, {
-            left: brandStart.left,
-            top: brandStart.top,
-            width: brandStart.width,
-            height: brandStart.height,
-          });
-        }
-      };
-
-      const syncBrandFlight = () => {
-        if (!brandFlight || !brandStart || !brandEnd) return;
-
-        const progress = Math.min(
-          Math.max(window.scrollY / brandFlightDistance, 0),
-          1,
-        );
-        const flightPose = Math.sin(Math.PI * progress);
-        const settleProgress = Math.min(
-          Math.max((progress - 0.72) / 0.28, 0),
-          1,
-        );
-        const settlePulse = Math.sin(Math.PI * settleProgress);
-        const xProgress = brandXAxisEase(progress) + settlePulse * 0.05;
-        const yProgress = brandYAxisEase(progress) + settlePulse * 0.018;
-        const scaleProgress = brandScaleEase(progress);
-        const targetScale = brandEnd.width / brandStart.width;
-
-        gsap.set(brandFlight, {
-          x: (brandEnd.left - brandStart.left) * xProgress,
-          y: (brandEnd.top - brandStart.top) * yProgress - flightPose * 14,
-          scale: 1 + (targetScale - 1) * scaleProgress - settlePulse * 0.012,
-          rotation: flightPose * -5.5 + settlePulse * 1.2,
-          force3D: true,
-        });
-      };
-
-      const onBrandResize = () => {
-        if (brandResizeFrame) return;
-        brandResizeFrame = window.requestAnimationFrame(() => {
-          brandResizeFrame = 0;
-          measureBrandFlight();
-          syncBrandFlight();
-        });
-      };
-
-      const resetDockMotion = (animate = true) => {
-        if (dockFrame) {
-          window.cancelAnimationFrame(dockFrame);
-          dockFrame = 0;
-        }
-        if (dockResetCall) {
-          dockResetCall.kill();
-          dockResetCall = null;
-        }
-
-        dockMotion.forEach(({ item }) => {
-          item.style.setProperty("--dock-scale", "1");
-          item.style.setProperty("--dock-x", "0px");
-          item.style.setProperty("--dock-y", "0px");
-          item.style.zIndex = "";
-        });
-
-        if (!animate || reducedMotion.matches) {
-          dockLinks.forEach((item) => {
-            item.style.removeProperty("--dock-scale");
-            item.style.removeProperty("--dock-x");
-            item.style.removeProperty("--dock-y");
-            item.style.removeProperty("transform-origin");
-            item.style.removeProperty("will-change");
-            item.style.removeProperty("z-index");
-          });
-          return;
-        }
-
-        dockResetCall = gsap.delayedCall(0.28, () => {
-          dockLinks.forEach((item) => {
-            item.style.removeProperty("--dock-scale");
-            item.style.removeProperty("--dock-x");
-            item.style.removeProperty("--dock-y");
-            item.style.removeProperty("will-change");
-            item.style.removeProperty("z-index");
-          });
-          dockResetCall = null;
-        });
-      };
-
-      const updateDockMagnification = () => {
-        dockFrame = 0;
-        if (
-          reducedMotion.matches ||
-          header.dataset.navState !== "rail" ||
-          header.hasAttribute("data-nav-animating")
-        ) {
-          resetDockMotion(false);
-          return;
-        }
-
-        const influenceRadius = 116;
-        const maximumScale = 1.46;
-
-        dockMotion.forEach(({ item, shell }) => {
-          const rect = shell.getBoundingClientRect();
-          const distance = pointerY - (rect.top + rect.height / 2);
-          const proximity = Math.max(
-            0,
-            1 - Math.abs(distance) / influenceRadius,
-          );
-          const curve = 0.5 - 0.5 * Math.cos(Math.PI * proximity);
-
-          item.style.setProperty(
-            "--dock-scale",
-            String(1 + (maximumScale - 1) * curve),
-          );
-          item.style.setProperty("--dock-x", `${curve * 5}px`);
-          item.style.setProperty(
-            "--dock-y",
-            `${-Math.sign(distance) * curve * 5}px`,
-          );
-          item.style.zIndex = String(Math.round(curve * 10));
-        });
-      };
-
-      const onDockPointerEnter = () => {
-        if (reducedMotion.matches) return;
-        if (dockResetCall) {
-          dockResetCall.kill();
-          dockResetCall = null;
-        }
-        dockLinks.forEach((item) => {
-          item.style.transformOrigin = "left center";
-          item.style.willChange = "transform";
-        });
-      };
-
-      const onDockPointerMove = (event: PointerEvent) => {
-        pointerY = event.clientY;
-        if (!dockFrame) {
-          dockFrame = window.requestAnimationFrame(updateDockMagnification);
-        }
-      };
-
-      const onDockPointerLeave = () => resetDockMotion();
-
-      const clearRevealStyles = () => {
-        gsap.set(flipTargets, {
-          clearProps: "opacity,visibility,transform",
-        });
-        header.removeAttribute("data-nav-animating");
-      };
-
-      const applyState = (nextRail: boolean, animate = true) => {
-        if (nextRail === railActive) return;
-
-        if (heroBrandSource && !brandFlight) {
-          heroBrandSource.style.visibility = nextRail ? "hidden" : "";
-        }
-
-        if (currentFlip) {
-          currentFlip.progress(1).kill();
-          currentFlip = null;
-        }
-        if (currentReveal) {
-          currentReveal.kill();
-          currentReveal = null;
-        }
-        Flip.killFlipsOf(flipTargets, true);
-
-        if (revealOnScroll) {
-          railActive = nextRail;
-          header.dataset.navState = nextRail ? "rail" : "hidden";
-          root.toggleAttribute("data-nav-layout", nextRail);
-
-          if (!nextRail) {
-            resetDockMotion(false);
-            header.classList.remove("nav-top", "nav-left");
-            header.classList.add("nav-hidden");
-            clearRevealStyles();
-            return;
-          }
-
-          header.classList.remove("nav-top", "nav-hidden");
-          header.classList.add("nav-left");
-
-          if (!animate || reducedMotion.matches) {
-            clearRevealStyles();
-            return;
-          }
-
-          const frame = flipTargets[0];
-          const items = flipTargets.slice(1);
-          const finishReveal = () => {
-            currentReveal = null;
-            clearRevealStyles();
-          };
-
-          header.toggleAttribute("data-nav-animating", true);
-          currentReveal = gsap.timeline({
-            onComplete: finishReveal,
-            onInterrupt: () => {
-              currentReveal = null;
-              clearRevealStyles();
-            },
-          });
-
-          currentReveal
-            .fromTo(
-              frame,
-              { autoAlpha: 0, x: -12, scale: 0.985 },
-              {
-                autoAlpha: 1,
-                x: 0,
-                scale: 1,
-                duration: 0.42,
-                ease: "power3.out",
-              },
-              0,
-            )
-            .fromTo(
-              items,
-              { autoAlpha: 0, x: -8 },
-              {
-                autoAlpha: 1,
-                x: 0,
-                duration: 0.3,
-                ease: "power3.out",
-                stagger: 0.018,
-              },
-              0.06,
-            );
-          return;
-        }
-
-        const state =
-          animate && !reducedMotion.matches ? Flip.getState(flipTargets) : null;
-
-        railActive = nextRail;
-        header.classList.toggle("nav-left", nextRail);
-        header.classList.toggle("nav-top", !nextRail);
-        header.dataset.navState = nextRail ? "rail" : "top";
-        root.toggleAttribute("data-nav-layout", nextRail);
-
-        if (!state) return;
-
-        header.toggleAttribute("data-nav-animating", true);
-        currentFlip = Flip.from(state, {
-          targets: flipTargets,
-          duration: 0.56,
-          ease: "power3.inOut",
-          absolute: false,
-          nested: true,
-          scale: true,
-          stagger: 0.012,
-          onComplete: () => {
-            currentFlip = null;
-            header.removeAttribute("data-nav-animating");
-          },
-          onInterrupt: () => {
-            currentFlip = null;
-            header.removeAttribute("data-nav-animating");
-          },
-        });
-      };
-
-      const syncFromScroll = (animate = true) => {
-        syncBrandFlight();
-        applyState(window.scrollY > threshold, animate);
-        scrollFrame = 0;
-      };
-
-      const onScroll = () => {
-        if (!scrollFrame) {
-          scrollFrame = window.requestAnimationFrame(() => syncFromScroll());
-        }
-      };
-
-      measureBrandFlight();
-      window.addEventListener("scroll", onScroll, { passive: true });
-      window.addEventListener("resize", onBrandResize, { passive: true });
-      dock?.addEventListener("pointerenter", onDockPointerEnter);
-      dock?.addEventListener("pointermove", onDockPointerMove, {
-        passive: true,
-      });
-      dock?.addEventListener("pointerleave", onDockPointerLeave);
-      dock?.addEventListener("pointercancel", onDockPointerLeave);
-      syncFromScroll(false);
-
-      return () => {
-        window.removeEventListener("scroll", onScroll);
-        window.removeEventListener("resize", onBrandResize);
-        dock?.removeEventListener("pointerenter", onDockPointerEnter);
-        dock?.removeEventListener("pointermove", onDockPointerMove);
-        dock?.removeEventListener("pointerleave", onDockPointerLeave);
-        dock?.removeEventListener("pointercancel", onDockPointerLeave);
-        if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
-        if (brandResizeFrame) window.cancelAnimationFrame(brandResizeFrame);
-        resetDockMotion(false);
-        if (currentFlip) currentFlip.kill();
-        if (currentReveal) currentReveal.kill();
-        Flip.killFlipsOf(flipTargets, true);
-        clearRevealStyles();
-        header.classList.remove("nav-left", "nav-hidden");
-        header.classList.add("nav-top");
-        header.dataset.navState = "top";
-        header.removeAttribute("data-nav-animating");
-        header.removeAttribute("data-brand-flight");
-        brandFlight?.remove();
-        heroBrandSource?.style.removeProperty("visibility");
-        root.removeAttribute("data-nav-layout");
-      };
-    });
+    window.addEventListener("resize", () => {
+      window.requestAnimationFrame(updateLogoOffset);
+    }, { passive: true });
+    
+    // Initial calculation
+    setTimeout(updateLogoOffset, 50);
   }
 </script>
 
@@ -705,17 +354,25 @@ const revealNavigationOnScroll = contentPath === "/";
     background: color-mix(in srgb, var(--color-bg-primary) 86%, transparent);
     backdrop-filter: blur(0.75rem) saturate(1.15);
     pointer-events: auto;
+    transition: 
+      background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  :global(.header__brand-flight) {
-    position: fixed;
-    z-index: calc(var(--z-index-sticky) + 1);
-    display: block;
-    margin: 0;
-    object-fit: contain;
+  /* Scroll Down States */
+  .header.is-scrolling-down .header__frame {
+    background-color: transparent !important;
+    border-bottom-color: transparent !important;
+    backdrop-filter: none !important;
+  }
+
+  .header.is-scrolling-down .header__desktop-nav,
+  .header.is-scrolling-down .header__actions,
+  .header.is-scrolling-down .header__menu-button {
+    opacity: 0;
     pointer-events: none;
-    transform-origin: top left;
-    will-change: transform;
+    transform: translateY(-20px);
   }
 
   .header__bar {
@@ -733,6 +390,12 @@ const revealNavigationOnScroll = contentPath === "/";
     display: grid;
     place-items: center;
     flex: 0 0 auto;
+    transform-origin: top left;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .header.is-scrolling-down .header__logo {
+    transform: translate(var(--logo-offset-x, 0), var(--logo-offset-y, 0));
   }
 
   .header :global(.logo) {
@@ -743,7 +406,7 @@ const revealNavigationOnScroll = contentPath === "/";
   .header :global(.logo__name),
   .header :global(.logo__mark) {
     transition:
-      opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       visibility 0s linear 0s;
   }
 
@@ -757,8 +420,19 @@ const revealNavigationOnScroll = contentPath === "/";
     opacity: 0;
   }
 
+  .header.is-scrolling-down :global(.logo__name) {
+    opacity: 0 !important;
+  }
+
+  .header.is-scrolling-down :global(.logo__mark) {
+    opacity: 1 !important;
+  }
+
   .header__desktop-nav {
     flex: 1;
+    transition: 
+      opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .header__list {
@@ -813,6 +487,11 @@ const revealNavigationOnScroll = contentPath === "/";
     color: var(--color-text-primary);
   }
 
+  .header__item > a:active,
+  .header__dropdown > a:active {
+    transform: scale(0.97);
+  }
+
   .header__item > a:hover::after,
   .header__item > a:focus-visible::after,
   .header__dropdown > a:hover::after,
@@ -835,8 +514,8 @@ const revealNavigationOnScroll = contentPath === "/";
     transform: scale(0.72);
     flex: 0 0 auto;
     transition:
-      opacity 0.18s ease,
-      transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity 160ms ease-out,
+      transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   .header__item-label {
@@ -856,11 +535,22 @@ const revealNavigationOnScroll = contentPath === "/";
     border-radius: var(--radius-xl);
     background: var(--color-bg-primary);
     box-shadow: var(--shadow-md);
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+    transform-origin: top;
+    transition: opacity 200ms ease-out, transform 200ms ease-out, display 200ms ease-out allow-discrete;
   }
 
   .header__dropdown:hover .header__dropdown-panel,
   .header__dropdown:focus-within .header__dropdown-panel {
     display: flex;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+
+    @starting-style {
+      opacity: 0;
+      transform: translateY(4px) scale(0.96);
+    }
   }
 
   .header__dropdown-panel a {
@@ -878,6 +568,9 @@ const revealNavigationOnScroll = contentPath === "/";
     align-items: center;
     gap: var(--space-xs);
     flex: 0 0 auto;
+    transition: 
+      opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .header__utility {
@@ -903,6 +596,7 @@ const revealNavigationOnScroll = contentPath === "/";
     font-size: var(--text-xs);
     cursor: pointer;
     transition:
+      transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
       color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
       background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
       border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1);
@@ -915,6 +609,7 @@ const revealNavigationOnScroll = contentPath === "/";
 
   .header__icon-button:active {
     background: var(--color-bg-tertiary);
+    transform: scale(0.97);
   }
 
   .header__search {
@@ -1010,304 +705,6 @@ const revealNavigationOnScroll = contentPath === "/";
     gap: var(--space-xs);
     margin-top: var(--space-xs);
     padding-left: var(--space-md);
-  }
-
-  @media (min-width: 60.0625rem) {
-    .header[data-scroll-reveal].nav-top .header__frame,
-    .header.nav-hidden .header__frame {
-      visibility: hidden;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .header.nav-hidden {
-      pointer-events: none;
-    }
-
-    .header.nav-left {
-      pointer-events: none;
-    }
-
-    .header.nav-left .header__frame {
-      position: fixed;
-      top: var(--space-sm);
-      bottom: var(--space-sm);
-      left: var(--space-sm);
-      width: var(--nav-rail-width);
-      height: auto;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      box-shadow: none;
-      backdrop-filter: none;
-      pointer-events: auto;
-    }
-
-    .header.nav-left .header__bar {
-      width: 100%;
-      max-width: none;
-      height: 100%;
-      flex-direction: column;
-      justify-content: flex-start;
-      gap: var(--space-sm);
-      padding: var(--space-sm) 0;
-    }
-
-    .header.nav-left .header__logo {
-      width: var(--nav-control-size);
-      height: var(--nav-control-size);
-      border: 0;
-      border-radius: var(--radius-lg);
-      background: transparent;
-    }
-
-    .header.nav-left .header__logo :global(.logo) {
-      display: grid;
-      width: 100%;
-      height: 100%;
-      place-items: center;
-    }
-
-    .header.nav-left .header__logo :global(.logo__name) {
-      position: absolute;
-      visibility: hidden;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .header.nav-left .header__logo :global(.logo__mark) {
-      position: static;
-      visibility: visible;
-      width: 1.75rem;
-      height: 1.75rem;
-      opacity: 1;
-      transform: none;
-    }
-
-    .header[data-brand-flight].nav-left .header__logo :global(.logo__mark) {
-      opacity: 0;
-    }
-
-    .header.nav-left .header__desktop-nav {
-      display: flex;
-      width: 100%;
-      min-height: 0;
-      flex: 1;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .header.nav-left .header__list {
-      width: 100%;
-      flex-direction: column;
-      gap: var(--space-md);
-    }
-
-    .header.nav-left .header__item,
-    .header.nav-left .header__dropdown {
-      display: grid;
-      width: 100%;
-      place-items: center;
-    }
-
-    .header.nav-left .header__item > a,
-    .header.nav-left .header__dropdown > a {
-      width: var(--nav-control-size);
-      height: var(--nav-control-size);
-      min-height: 0;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      background: transparent;
-      padding: 0;
-      color: var(--color-text-secondary);
-      opacity: 0.8;
-      transform: translate3d(var(--dock-x, 0px), var(--dock-y, 0px), 0)
-        scale(var(--dock-scale, 1));
-      transform-origin: left center;
-      transition:
-        transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-        background-color 0.22s ease,
-        border-color 0.22s ease,
-        box-shadow 0.22s ease,
-        color 0.22s ease,
-        opacity 0.22s ease;
-    }
-
-    .header.nav-left .header__item > a:hover,
-    .header.nav-left .header__item > a:focus-visible,
-    .header.nav-left .header__dropdown > a:hover,
-    .header.nav-left .header__dropdown > a:focus-visible {
-      border-color: var(--color-text-secondary);
-      background: color-mix(
-        in srgb,
-        var(--color-bg-primary) 86%,
-        var(--color-text-primary) 7%
-      );
-      box-shadow: 0 0 0 1px
-        color-mix(in srgb, var(--color-text-primary) 14%, transparent);
-      color: var(--color-text-primary);
-      opacity: 1;
-    }
-
-    .header.nav-left .header__item > a[aria-current="page"],
-    .header.nav-left .header__dropdown > a[aria-current="page"] {
-      border-color: var(--color-text-secondary);
-      background: transparent;
-      box-shadow: 0 0 0 1px
-        color-mix(in srgb, var(--color-text-primary) 12%, transparent);
-      color: var(--color-text-primary);
-      opacity: 1;
-    }
-
-    .header.nav-left .header__item > a[aria-current="page"]::before,
-    .header.nav-left .header__dropdown > a[aria-current="page"]::before {
-      position: absolute;
-      top: 50%;
-      left: calc(var(--space-sm) * -1);
-      width: var(--spacing-1);
-      height: var(--spacing-1);
-      border-radius: var(--radius-full);
-      background: currentColor;
-      content: "";
-      transform: translateY(-50%);
-    }
-
-    .header.nav-left .header__item-icon {
-      position: static;
-      opacity: 0.78;
-      transform: none;
-      transition: opacity 0.22s ease;
-    }
-
-    .header.nav-left .header__item > a:hover .header__item-icon,
-    .header.nav-left .header__item > a:focus-visible .header__item-icon,
-    .header.nav-left .header__item > a[aria-current="page"] .header__item-icon,
-    .header.nav-left .header__dropdown > a:hover .header__item-icon,
-    .header.nav-left .header__dropdown > a:focus-visible .header__item-icon,
-    .header.nav-left
-      .header__dropdown
-      > a[aria-current="page"]
-      .header__item-icon {
-      opacity: 1;
-    }
-
-    .header.nav-left .header__item-label {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
-
-    .header.nav-left .header__item > a::after,
-    .header.nav-left .header__dropdown > a::after,
-    .header.nav-left .header__utility::after,
-    .header.nav-left .header__logo::after {
-      position: absolute;
-      top: 50%;
-      bottom: auto;
-      left: calc(100% + var(--space-sm));
-      right: auto;
-      z-index: var(--z-index-popover);
-      width: max-content;
-      height: auto;
-      max-width: 12rem;
-      padding: 0.35rem 0.65rem;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      background: var(--popover);
-      box-shadow: var(--shadow-sm);
-      color: var(--popover-foreground);
-      font-size: var(--text-xs);
-      font-weight: var(--font-weight-medium);
-      line-height: var(--leading-normal);
-      white-space: nowrap;
-      content: attr(aria-label);
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transform: translateY(-50%) translateX(-0.25rem);
-      transform-origin: left center;
-      transition:
-        opacity 0.15s ease,
-        transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-        visibility 0s linear 0.15s;
-    }
-
-    .header.nav-left .header__utility::after,
-    .header.nav-left .header__logo::after {
-      content: attr(data-tooltip);
-    }
-
-    .header.nav-left .header__item > a:hover::after,
-    .header.nav-left .header__item > a:focus-visible::after,
-    .header.nav-left .header__dropdown > a:hover::after,
-    .header.nav-left .header__dropdown > a:focus-visible::after,
-    .header.nav-left .header__utility:hover::after,
-    .header.nav-left .header__utility:focus-within::after,
-    .header.nav-left .header__logo:hover::after,
-    .header.nav-left .header__logo:focus-within::after {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(-50%) translateX(0);
-      transition-delay: 0.15s, 0.15s, 0s;
-    }
-
-    .header.nav-left .header__dropdown-panel {
-      top: 0;
-      left: calc(100% + var(--space-sm));
-    }
-
-    .header.nav-left .header__actions {
-      width: 100%;
-      flex-direction: column;
-      gap: var(--space-xs);
-    }
-
-    .header.nav-left .header__icon-button,
-    .header.nav-left .header__utility :global(.theme-toggle),
-    .header.nav-left .header__utility :global(.language-switcher) {
-      width: var(--nav-control-size);
-      height: var(--nav-control-size);
-      border: 0;
-      border-radius: var(--radius-lg);
-      background: transparent;
-      box-shadow: none;
-      opacity: 0.8;
-      overflow: visible;
-      transition:
-        background-color 0.22s ease,
-        color 0.22s ease,
-        opacity 0.22s ease;
-    }
-
-    .header.nav-left .header__icon-button:hover,
-    .header.nav-left .header__utility :global(.theme-toggle:hover),
-    .header.nav-left .header__utility :global(.language-switcher:hover) {
-      border: 0;
-      background-color: var(--color-bg-secondary) !important;
-      box-shadow: none;
-      color: var(--color-text-primary);
-      opacity: 1;
-      transform: none;
-    }
-
-    .header.nav-left .header__kbd {
-      display: none;
-    }
-  }
-
-  @media (min-width: 60.0625rem) and (max-width: 86rem) {
-    :global(#main-content .container),
-    :global(.footer__inner) {
-      transition: padding-inline-start 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    :global(html[data-nav-layout="rail"] #main-content .container),
-    :global(html[data-nav-layout="rail"] .footer__inner) {
-      padding-inline-start: calc(var(--header-height-mobile) + var(--space-lg));
-    }
   }
 
   @media (max-width: 60rem) {

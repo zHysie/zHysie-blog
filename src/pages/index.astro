@@ -10,6 +10,7 @@ import {
   Credibility,
   LighthouseScores,
 } from "../components/landing/index";
+import { ActivityPulse } from "../components/landing/ActivityPulse";
 import { t } from "../i18n/ui";
 
 const stackEntries = (await getCollection("stack"))
@@ -18,6 +19,37 @@ const stackEntries = (await getCollection("stack"))
       a.data.order - b.data.order,
   )
   .map((entry: CollectionEntry<"stack">) => entry.data);
+
+// Calculate Activity Pulse data for the last 365 days
+const allPosts = await getCollection("blog");
+const allDaily = await getCollection("daily");
+
+const today = new Date();
+const past365Days = new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000);
+
+const dateMap = new Map();
+// Pre-fill the last 365 days to ensure empty days are represented
+for (let i = 0; i < 365; i++) {
+  const d = new Date(past365Days.getTime() + i * 24 * 60 * 60 * 1000);
+  const dateString = d.toISOString().split("T")[0];
+  dateMap.set(dateString, { date: dateString, posts: 0, daily: 0 });
+}
+
+allPosts.forEach((post) => {
+  const dateString = new Date(post.data.publishDate).toISOString().split("T")[0];
+  if (dateMap.has(dateString)) {
+    dateMap.get(dateString).posts += 1;
+  }
+});
+
+allDaily.forEach((daily) => {
+  const dateString = new Date(daily.data.publishDate).toISOString().split("T")[0];
+  if (dateMap.has(dateString)) {
+    dateMap.get(dateString).daily += 1;
+  }
+});
+
+const activityData = Array.from(dateMap.values());
 
 const locale = (Astro.currentLocale || "en") as "en";
 const tabs = [
@@ -127,6 +159,10 @@ const tabs = [
       </p>
     </header>
     <FeatureTabs client:visible tabs={tabs} />
+  </section>
+
+  <section class="container py-10">
+    <ActivityPulse client:visible data={activityData} />
   </section>
 
   <section class="container py-10">

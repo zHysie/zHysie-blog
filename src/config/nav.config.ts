@@ -20,19 +20,20 @@ export interface NavItem {
 /** Main navigation items for header */
 export const mainNav: NavItem[] = [
   { href: "/", labelKey: "nav.home", icon: "lucide:house" },
-  { href: "/about", labelKey: "nav.about", icon: "lucide:user-round" },
+  { href: "/blog", labelKey: "nav.posts", icon: "lucide:pen-tool" },
+  { href: "/daily", labelKey: "nav.daily", icon: "lucide:coffee" },
+  { href: "/timeline", labelKey: "nav.timeline", icon: "lucide:clock" },
   {
-    href: "/services",
-    labelKey: "nav.services",
-    icon: "lucide:briefcase-business",
+    href: "#",
+    labelKey: "nav.more",
+    icon: "lucide:more-horizontal",
+    children: [
+      { href: "/about", labelKey: "nav.about", icon: "lucide:user-round" },
+      { href: "/lab", labelKey: "nav.lab", icon: "lucide:flask-conical" },
+      { href: "/uses", labelKey: "nav.uses", icon: "lucide:laptop" },
+      { href: "/tags", labelKey: "nav.tags", icon: "lucide:hash" },
+    ],
   },
-  {
-    href: "/pricing",
-    labelKey: "nav.pricing",
-    icon: "lucide:badge-dollar-sign",
-  },
-  { href: "/blog", labelKey: "nav.blog", icon: "lucide:book-open-text" },
-  { href: "/contact", labelKey: "nav.contact", icon: "lucide:mail" },
 ] as const;
 
 /** Footer navigation grouped by section */

@@ -173,6 +173,18 @@ const settings = defineCollection({
   }),
 });
 
+const daily = defineCollection({
+  loader: glob({
+    pattern: "**/*.{md,mdx}",
+    base: "./src/content/daily",
+    generateId: ({ entry }) => entry.replace(/\.[^/.]+$/, ""),
+  }),
+  schema: z.object({
+    title: z.string().optional(),
+    publishDate: z.date(),
+  }),
+});
+
 export const collections = {
   blog,
   docs,
@@ -182,4 +194,5 @@ export const collections = {
   authors,
   faqs,
   stack,
+  daily,
 };
