@@ -1,0 +1,267 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { Icon } from "astro-icon/components";
+
+export interface Props {
+  daily: CollectionEntry<"daily">[];
+  locale?: string;
+}
+
+const { daily, locale = "en" } = Astro.props;
+---
+
+<div class="grt-section">
+  <div class="grt-section__header">
+    <div class="flex items-center gap-3">
+      <span class="grt-section__indicator"></span>
+      <h2 class="m-0 font-serif text-xl font-medium text-black dark:text-white">
+        日常
+      </h2>
+    </div>
+    <!-- Since the user wants 'daily' instead of 'moments', we point this to a generic path or ignore for now, assuming there's no dedicated page yet. -->
+    <a href="#" class="grt-section__more group">
+      <span>查看全部</span>
+      <Icon
+        name="lucide:arrow-right"
+        class="grt-section__icon group-hover:translate-x-1"
+      />
+    </a>
+  </div>
+
+  <div class="grt-list">
+    {
+      daily.map((entry) => {
+        const dateObj = new Date(entry.data.publishDate);
+        const formattedDate = dateObj.toLocaleDateString(
+          locale === "en" ? "en-US" : "zh-CN",
+          {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          },
+        );
+
+        // Use title if exists, otherwise a snippet of body
+        const displayTitle =
+          entry.data.title ||
+          (entry.body ? entry.body.slice(0, 30) + "..." : "记录");
+
+        return (
+          <a href="#" class="grt-card grt-card--moment">
+            <div class="grt-card__content">
+              <h3 class="grt-card__title">
+                <span class="grt-card__title-text">{displayTitle}</span>
+              </h3>
+              <div class="grt-card__meta">
+                <span>{formattedDate}</span>
+                <Icon name="lucide:arrow-right" class="grt-card__arrow" />
+              </div>
+            </div>
+          </a>
+        );
+      })
+    }
+  </div>
+</div>
+
+<script>
+  // Add mouse tracking for the radial gradient spotlight effect
+  function initHoverEffectsMoments() {
+    const cards = document.querySelectorAll<HTMLElement>(".grt-card--moment");
+    cards.forEach((card) => {
+      card.addEventListener("mousemove", (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty("--mouse-x", `${x}px`);
+        card.style.setProperty("--mouse-y", `${y}px`);
+        card.setAttribute("data-hovered", "true");
+      });
+      card.addEventListener("mouseleave", () => {
+        card.setAttribute("data-hovered", "false");
+      });
+    });
+  }
+
+  initHoverEffectsMoments();
+  document.addEventListener("astro:page-load", initHoverEffectsMoments);
+</script>
+
+<style>
+  .grt-section {
+    --color-primary: var(--color-brand-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .grt-section__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-sm);
+  }
+
+  .grt-section__indicator {
+    display: inline-block;
+    height: 1px;
+    width: 2rem;
+    background-color: var(--color-primary);
+    opacity: 0.4;
+  }
+
+  .grt-section__more {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: var(--text-xs);
+    font-family: var(--font-sans);
+    color: var(--color-text-tertiary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .grt-section__more:hover {
+    color: var(--color-primary);
+  }
+
+  .grt-section__icon {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s ease;
+  }
+
+  .grt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Card styling mimicking HomeMomentItem */
+  .grt-card {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    overflow: hidden;
+    isolation: isolate;
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    transition:
+      background-color 220ms ease,
+      border-color 220ms ease,
+      box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .grt-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      240px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      color-mix(in srgb, var(--color-primary) 14%, transparent),
+      transparent 72%
+    );
+    transition: opacity 240ms ease;
+  }
+
+  .grt-card::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 2px;
+    height: 0;
+    transform: translateY(-50%);
+    border-radius: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      color-mix(in srgb, var(--color-primary) 60%, transparent),
+      color-mix(in srgb, var(--color-primary) 85%, transparent),
+      color-mix(in srgb, var(--color-primary) 60%, transparent),
+      transparent
+    );
+    transition: height 260ms ease;
+  }
+
+  .grt-card__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .grt-card__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium); /* Chinese gets medium weight */
+    line-height: 1.5;
+    padding-bottom: 4px; /* Prevent descenders and underline from being clipped by overflow:hidden */
+    color: var(--color-text-primary);
+    transition: color 220ms ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .grt-card__meta {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--text-xs);
+    font-family: var(--font-mono);
+    color: var(--color-text-tertiary);
+  }
+
+  .grt-card__arrow {
+    width: 14px;
+    height: 14px;
+    opacity: 0.55;
+    transition:
+      transform 220ms ease,
+      opacity 220ms ease,
+      color 220ms ease;
+  }
+
+  /* Hover states */
+  .grt-card:hover,
+  .grt-card[data-hovered="true"] {
+    background-color: var(--color-bg-primary);
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+  }
+
+  .grt-card:hover::before,
+  .grt-card[data-hovered="true"]::before {
+    opacity: 1;
+  }
+
+  .grt-card:hover::after,
+  .grt-card[data-hovered="true"]::after {
+    height: 24px;
+  }
+
+  .grt-card:hover .grt-card__title,
+  .grt-card[data-hovered="true"] .grt-card__title {
+    color: var(--color-primary);
+  }
+
+  .grt-card:hover .grt-card__arrow,
+  .grt-card[data-hovered="true"] .grt-card__arrow {
+    transform: translateX(4px);
+    opacity: 0.8;
+    color: var(--color-primary);
+  }
+</style>

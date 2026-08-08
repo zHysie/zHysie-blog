@@ -6,11 +6,11 @@
 :root {
   /* === Font families === */
   --font-body-en:
-    "Anthropic Sans", "Anthropic Sans Fallback", arial, system-ui,
-    -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
+    "Anthropic Sans", "Noto Serif SC", "Anthropic Sans Fallback", arial,
+    system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
   --font-heading-en:
-    "Anthropic Serif", "Anthropic Serif Fallback", georgia, "Times New Roman",
-    serif;
+    "Anthropic Serif", "Noto Serif SC", "Anthropic Serif Fallback", georgia,
+    "Times New Roman", serif;
   --font-sans: var(--font-body-en);
   --font-heading: var(--font-heading-en);
   /* Homepage typewriter identity: intentionally independent from all language fonts. */

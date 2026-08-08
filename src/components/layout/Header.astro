@@ -286,22 +286,28 @@ const revealNavigationOnScroll = contentPath === "/";
       if (!logo) return;
       const wasHidden = isHidden;
       if (wasHidden) header.classList.remove("is-scrolling-down");
-      
+
       const rect = logo.getBoundingClientRect();
-      
+
       // 添加微距边缘留白：左侧 4px，顶部 4px
       const safePaddingLeft = 4;
       const safePaddingTop = 4;
-      
-      header.style.setProperty("--logo-offset-x", `-${rect.left - safePaddingLeft}px`);
-      header.style.setProperty("--logo-offset-y", `-${rect.top - safePaddingTop}px`);
-      
+
+      header.style.setProperty(
+        "--logo-offset-x",
+        `-${rect.left - safePaddingLeft}px`,
+      );
+      header.style.setProperty(
+        "--logo-offset-y",
+        `-${rect.top - safePaddingTop}px`,
+      );
+
       if (wasHidden) header.classList.add("is-scrolling-down");
     };
 
     const updateHeader = () => {
       const currentScrollY = window.scrollY;
-      
+
       if (currentScrollY > 60) {
         if (currentScrollY > lastScrollY && !isHidden) {
           isHidden = true;
@@ -314,22 +320,30 @@ const revealNavigationOnScroll = contentPath === "/";
         isHidden = false;
         header.classList.remove("is-scrolling-down");
       }
-      
+
       lastScrollY = currentScrollY;
       ticking = false;
     };
 
-    window.addEventListener("scroll", () => {
-      if (!ticking) {
-        window.requestAnimationFrame(updateHeader);
-        ticking = true;
-      }
-    }, { passive: true });
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          window.requestAnimationFrame(updateHeader);
+          ticking = true;
+        }
+      },
+      { passive: true },
+    );
 
-    window.addEventListener("resize", () => {
-      window.requestAnimationFrame(updateLogoOffset);
-    }, { passive: true });
-    
+    window.addEventListener(
+      "resize",
+      () => {
+        window.requestAnimationFrame(updateLogoOffset);
+      },
+      { passive: true },
+    );
+
     // Initial calculation
     setTimeout(updateLogoOffset, 50);
   }
@@ -354,7 +368,7 @@ const revealNavigationOnScroll = contentPath === "/";
     background: color-mix(in srgb, var(--color-bg-primary) 86%, transparent);
     backdrop-filter: blur(0.75rem) saturate(1.15);
     pointer-events: auto;
-    transition: 
+    transition:
       background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -430,7 +444,7 @@ const revealNavigationOnScroll = contentPath === "/";
 
   .header__desktop-nav {
     flex: 1;
-    transition: 
+    transition:
       opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -460,26 +474,14 @@ const revealNavigationOnScroll = contentPath === "/";
     padding: 0.4rem 0.65rem;
     color: var(--color-text-secondary);
     text-decoration: none;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
     font-weight: var(--font-weight-medium);
     white-space: nowrap;
     transition:
       color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
       border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1),
       background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .header__item > a::after,
-  .header__dropdown > a::after {
-    position: absolute;
-    right: 0.65rem;
-    bottom: 0.15rem;
-    left: 0.65rem;
-    height: 1px;
-    background: var(--color-text-primary);
-    content: "";
-    transform: scaleX(0);
-    transform-origin: right center;
-    transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .header__item > a:hover,
@@ -492,12 +494,54 @@ const revealNavigationOnScroll = contentPath === "/";
     transform: scale(0.97);
   }
 
-  .header__item > a:hover::after,
-  .header__item > a:focus-visible::after,
-  .header__dropdown > a:hover::after,
-  .header__dropdown > a:focus-visible::after {
-    transform: scaleX(1);
+  .header__item-label {
+    display: inline-block;
+    position: relative;
+    padding: 2px 0;
+  }
+
+  .header__item-label::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--color-brand-secondary);
+    transform: translateZ(0) scaleX(0);
+    transform-origin: right center;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    backface-visibility: hidden;
+  }
+
+  .header__item-label::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--color-brand-primary);
+    transform: translateZ(0) scaleX(0);
     transform-origin: left center;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    backface-visibility: hidden;
+  }
+
+  .header__item > a:hover .header__item-label::before,
+  .header__dropdown > a:hover .header__item-label::before,
+  .header__item > a:focus-visible .header__item-label::before,
+  .header__dropdown > a:focus-visible .header__item-label::before {
+    transform: translateZ(0) scaleX(1);
+    transform-origin: left center;
+  }
+
+  .header__item > a:hover .header__item-label::after,
+  .header__dropdown > a:hover .header__item-label::after,
+  .header__item > a:focus-visible .header__item-label::after,
+  .header__dropdown > a:focus-visible .header__item-label::after {
+    transform: translateZ(0) scaleX(1);
+    transform-origin: right center;
   }
 
   .header__item > a[aria-current="page"],
@@ -538,7 +582,10 @@ const revealNavigationOnScroll = contentPath === "/";
     opacity: 0;
     transform: translateY(4px) scale(0.96);
     transform-origin: top;
-    transition: opacity 200ms ease-out, transform 200ms ease-out, display 200ms ease-out allow-discrete;
+    transition:
+      opacity 200ms ease-out,
+      transform 200ms ease-out,
+      display 200ms ease-out allow-discrete;
   }
 
   .header__dropdown:hover .header__dropdown-panel,
@@ -568,7 +615,7 @@ const revealNavigationOnScroll = contentPath === "/";
     align-items: center;
     gap: var(--space-xs);
     flex: 0 0 auto;
-    transition: 
+    transition:
       opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }

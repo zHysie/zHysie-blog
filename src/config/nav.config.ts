@@ -20,7 +20,7 @@ export interface NavItem {
 /** Main navigation items for header */
 export const mainNav: NavItem[] = [
   { href: "/", labelKey: "nav.home", icon: "lucide:house" },
-  { href: "/blog", labelKey: "nav.posts", icon: "lucide:pen-tool" },
+  { href: "/posts", labelKey: "nav.posts", icon: "lucide:pen-tool" },
   { href: "/daily", labelKey: "nav.daily", icon: "lucide:coffee" },
   { href: "/timeline", labelKey: "nav.timeline", icon: "lucide:clock" },
   {
