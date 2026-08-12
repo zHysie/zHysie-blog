@@ -1,0 +1,14 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { PersonalPage } from "../components/sections";
+import { labPage } from "../data/personal-pages";
+---
+
+<BaseLayout
+  title="实验室"
+  description={labPage.lead}
+  locale="zh-CN"
+  path="/lab"
+>
+  <PersonalPage data={labPage} />
+</BaseLayout>

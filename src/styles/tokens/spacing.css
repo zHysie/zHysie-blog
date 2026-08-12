@@ -23,7 +23,8 @@
   --container-narrow-lg: 42rem; /* ~672px */
   --container-narrow-xl: 48rem; /* ~768px */
   --container-wide: 56rem; /* ~896px */
-  --container-max: 80rem; /* ~1280px (design max width) */
+  --container-paper: 68rem; /* ~1088px, editorial page frame */
+  --container-max: var(--container-paper);
 
   /* === Section padding === */
   --section-py: var(--spacing-16); /* vertical sections */

@@ -1,0 +1,199 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { t } from "../../i18n/ui";
+import type { Locale } from "../../lib/site-config";
+import DailyEntry from "../daily/DailyEntry.astro";
+import { Icon } from "../ui/index";
+
+export interface Props {
+  entries: CollectionEntry<"daily">[];
+  locale?: Locale;
+}
+
+const { entries, locale = "zh-CN" } = Astro.props as Props;
+const entriesByYear = new Map<number, CollectionEntry<"daily">[]>();
+
+for (const entry of entries) {
+  const year = new Date(entry.data.publishDate).getUTCFullYear();
+  const group = entriesByYear.get(year) ?? [];
+  group.push(entry);
+  entriesByYear.set(year, group);
+}
+---
+
+<section class="daily-archive container" aria-labelledby="daily-title">
+  <!-- DAILY-SURFACE-0d6b0acd
+  THESIS: 日常是一张持续生长的个人记录索引，不是卡片墙或月历。
+  OWN-WORLD: 暖白纸面、墨色正文、粉色微标记，以及年份和日期构成的编辑式层级。
+  STORY: 访客先理解记录范围，再按年份和日期自然向下阅读每条完整日常。
+  FIRST VIEWPORT: 左侧标题与说明，右侧记录数量；下方立即进入最新年份和第一条记录。
+  FORM: 按年份分组的纵向记录流；结构候选 3；seed 0d6b0acd。
+  FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+  -->
+  <header class="daily-archive__header">
+    <div class="daily-archive__intro">
+      <h1 id="daily-title">{t(locale, "daily.title")}</h1>
+      <p>{t(locale, "daily.lead")}</p>
+    </div>
+
+    <p class="daily-archive__count">
+      <Icon name="lucide:calendar-days" size="1rem" decorative />
+      <span class="daily-archive__count-number">{entries.length}</span>
+      <span>{t(locale, "daily.records")}</span>
+    </p>
+  </header>
+
+  {
+    entries.length > 0 ? (
+      <div class="daily-archive__years">
+        {[...entriesByYear.entries()].map(([year, yearEntries]) => (
+          <section class="daily-year" aria-labelledby={`daily-year-${year}`}>
+            <header class="daily-year__header">
+              <h2 id={`daily-year-${year}`}>{year}</h2>
+              <span>
+                {yearEntries.length} {t(locale, "daily.records")}
+              </span>
+            </header>
+            <ol class="daily-year__entries">
+              {yearEntries.map((entry) => (
+                <DailyEntry entry={entry} />
+              ))}
+            </ol>
+          </section>
+        ))}
+      </div>
+    ) : (
+      <p class="daily-archive__empty">{t(locale, "daily.empty")}</p>
+    )
+  }
+</section>
+
+<style>
+  .daily-archive {
+    padding-block: calc(var(--header-height-mobile) + var(--space-2xl))
+      var(--space-3xl);
+  }
+
+  .daily-archive__header {
+    display: grid;
+    gap: var(--space-xl);
+    align-items: end;
+    max-width: var(--container-wide);
+    margin-inline: auto;
+    padding-bottom: var(--space-3xl);
+  }
+
+  .daily-archive__intro {
+    max-width: var(--container-narrow);
+  }
+
+  .daily-archive__intro h1 {
+    margin: 0;
+    font-family: var(--font-cjk-serif);
+    font-size: var(--text-3xl);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: var(--tracking-wide);
+    line-height: var(--leading-tight);
+  }
+
+  .daily-archive__intro p {
+    margin: var(--space-md) 0 0;
+    color: var(--color-text-secondary);
+    font-family: var(--font-cjk-sans);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+  }
+
+  .daily-archive__count {
+    display: inline-flex;
+    gap: var(--space-xs);
+    align-items: center;
+    justify-self: start;
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-family: var(--font-cjk-sans);
+    font-size: var(--text-xs);
+  }
+
+  .daily-archive__count :global(svg) {
+    stroke-width: 1.5;
+  }
+
+  .daily-archive__count-number {
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .daily-archive__years {
+    display: grid;
+    gap: var(--space-3xl);
+    max-width: var(--container-wide);
+    margin-inline: auto;
+  }
+
+  .daily-year {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .daily-year__header {
+    display: flex;
+    gap: var(--space-md);
+    align-items: baseline;
+  }
+
+  .daily-year__header h2 {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-normal);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .daily-year__header span {
+    color: var(--color-text-secondary);
+    font-family: var(--font-cjk-sans);
+    font-size: var(--text-xs);
+  }
+
+  .daily-year__header::after {
+    content: "";
+    width: var(--space-2xl);
+    height: 1px;
+    margin-left: auto;
+    background: var(--brand-logo-pink);
+    opacity: 0.5;
+  }
+
+  .daily-year__entries {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .daily-archive__empty {
+    max-width: var(--container-wide);
+    padding-block: var(--space-xl);
+    margin: 0 auto;
+    border-block: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-family: var(--font-cjk-sans);
+  }
+
+  @media (width >= 48rem) {
+    .daily-archive {
+      padding-top: calc(var(--header-height) + var(--space-3xl));
+    }
+
+    .daily-archive__header {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .daily-archive__count {
+      justify-self: end;
+    }
+  }
+</style>

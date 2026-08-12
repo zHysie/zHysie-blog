@@ -19,8 +19,8 @@ export interface I18nConfig {
 
 export const i18nConfig: I18nConfig = {
   enabled: true,
-  locales: ["en"],
-  defaultLocale: "en",
+  locales: ["zh-CN"],
+  defaultLocale: "zh-CN",
   routing: {
     prefixDefaultLocale: false,
   },

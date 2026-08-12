@@ -7,6 +7,7 @@ import { ActivityPulse } from "../components/landing/ActivityPulse";
 import RecentPosts from "../components/landing/RecentPosts.astro";
 import RecentDaily from "../components/landing/RecentDaily.astro";
 import { t } from "../i18n/ui";
+import heroAsciiLandscape from "../assets/images/hero-ascii-landscape.webp";
 
 // Calculate Activity Pulse data for the last 365 days
 const allPosts = (await getCollection("blog")) as CollectionEntry<"blog">[];
@@ -52,7 +53,7 @@ const recentDaily = allDaily
   .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf())
   .slice(0, 5);
 
-const locale = (Astro.currentLocale || "en") as "en";
+const locale = "zh-CN" as const;
 ---
 
 <MarketingLayout
@@ -60,6 +61,7 @@ const locale = (Astro.currentLocale || "en") as "en";
   description="zHysie - 永远对世界保持好奇"
   locale={locale}
   path="/"
+  deferPageResources={true}
 >
   <Hero
     extendBehindHeader={true}
@@ -74,6 +76,8 @@ const locale = (Astro.currentLocale || "en") as "en";
     scrollTarget="home-content"
     scrollLabel="Scroll to the next section"
     locale={locale}
+    asciiBackground={heroAsciiLandscape}
+    asciiEntrance="ripple"
   >
     <span
       slot="eyebrow"
@@ -84,32 +88,23 @@ const locale = (Astro.currentLocale || "en") as "en";
       <span class="welcome-intro__brand" aria-hidden="true">
         <img
           class="welcome-intro__logo welcome-intro__logo--light"
-          src="/logos/zHysie_logo.svg"
+          data-home-src="/logos/zHysie_logo.svg"
           alt=""
           width="1959"
           height="1050"
         />
         <img
           class="welcome-intro__logo welcome-intro__logo--dark"
-          src="/logos/zHysie_logo-dark.svg"
+          data-home-src="/logos/zHysie_logo-dark.svg"
           alt=""
           width="1959"
           height="1050"
         />
       </span>
     </span>
-    <div slot="image" class="welcome-mark" aria-hidden="true">
-      <img
-        src="/favicon.svg"
-        alt=""
-        width="512"
-        height="512"
-        data-hero-brand-mark
-      />
-    </div>
   </Hero>
 
-  <section id="home-content" class="container py-10">
+  <section id="home-content" class="container py-10" data-home-deferred>
     <div class="home-grid">
       <div class="home-grid__main">
         <RecentPosts posts={recentPosts} locale={locale} />
@@ -120,12 +115,131 @@ const locale = (Astro.currentLocale || "en") as "en";
     </div>
   </section>
 
-  <section class="container pb-24">
-    <ActivityPulse client:visible data={activityData} />
+  <section class="container pb-24" data-home-deferred>
+    <ActivityPulse client:hero-ready data={activityData} />
   </section>
 </MarketingLayout>
 
+<script>
+  const connectHomeResourceGate = () => {
+    const hero = document.querySelector<HTMLElement>(
+      '[data-ascii-entrance="ripple"]',
+    );
+    if (!hero || hero.dataset.homeResourceGate === "connected") return;
+
+    hero.dataset.homeResourceGate = "connected";
+    const release = () =>
+      window.dispatchEvent(new CustomEvent("home-resources-release"));
+
+    if (hero.dataset.asciiEntranceState === "complete") {
+      release();
+      return;
+    }
+
+    hero.addEventListener("hero-ascii-ready", release, { once: true });
+    window.requestAnimationFrame(() => {
+      if (hero.dataset.asciiEntranceState === "complete") release();
+    });
+  };
+
+  connectHomeResourceGate();
+  document.addEventListener("astro:page-load", connectHomeResourceGate);
+</script>
+
 <style>
+  :global(html[data-home-resource-state="waiting"] [data-header]),
+  :global(html[data-home-resource-state="loading"] [data-header]),
+  :global(html[data-home-resource-state="waiting"] .hero__eyebrow),
+  :global(html[data-home-resource-state="loading"] .hero__eyebrow),
+  :global(html[data-home-resource-state="waiting"] .hero__headline),
+  :global(html[data-home-resource-state="loading"] .hero__headline),
+  :global(html[data-home-resource-state="waiting"] .hero__footer),
+  :global(html[data-home-resource-state="loading"] .hero__footer),
+  :global(html[data-home-resource-state="waiting"] [data-home-deferred]),
+  :global(html[data-home-resource-state="loading"] [data-home-deferred]),
+  :global(html[data-home-resource-state="waiting"] .footer),
+  :global(html[data-home-resource-state="loading"] .footer) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  :global(html[data-home-resource-state="waiting"] [data-header]),
+  :global(html[data-home-resource-state="loading"] [data-header]),
+  :global(html[data-home-resource-state="waiting"] .hero__eyebrow),
+  :global(html[data-home-resource-state="loading"] .hero__eyebrow),
+  :global(html[data-home-resource-state="waiting"] .hero__headline),
+  :global(html[data-home-resource-state="loading"] .hero__headline),
+  :global(html[data-home-resource-state="waiting"] .hero__footer),
+  :global(html[data-home-resource-state="loading"] .hero__footer) {
+    opacity: 0;
+  }
+
+  :global(html[data-home-resource-state="waiting"] [data-header]),
+  :global(html[data-home-resource-state="loading"] [data-header]) {
+    translate: 0 -0.5rem;
+  }
+
+  :global(html[data-home-resource-state="waiting"] .hero__eyebrow),
+  :global(html[data-home-resource-state="loading"] .hero__eyebrow),
+  :global(html[data-home-resource-state="waiting"] .hero__headline),
+  :global(html[data-home-resource-state="loading"] .hero__headline),
+  :global(html[data-home-resource-state="waiting"] .hero__footer),
+  :global(html[data-home-resource-state="loading"] .hero__footer) {
+    translate: 0 0.5rem;
+  }
+
+  :global(html[data-home-resource-state="revealing"] [data-header]) {
+    animation: home-reveal-from-above 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  :global(html[data-home-resource-state="revealing"] .hero__eyebrow) {
+    animation: home-reveal-from-below 600ms cubic-bezier(0.16, 1, 0.3, 1) 80ms
+      both;
+  }
+
+  :global(html[data-home-resource-state="revealing"] .hero__headline) {
+    animation: home-reveal-from-below 650ms cubic-bezier(0.16, 1, 0.3, 1) 160ms
+      both;
+  }
+
+  :global(html[data-home-resource-state="revealing"] .hero__footer) {
+    animation: home-reveal-from-below 550ms cubic-bezier(0.16, 1, 0.3, 1) 260ms
+      both;
+  }
+
+  :global(html[data-home-resource-state="revealing"] [data-header]),
+  :global(html[data-home-resource-state="revealing"] .hero__eyebrow),
+  :global(html[data-home-resource-state="revealing"] .hero__headline),
+  :global(html[data-home-resource-state="revealing"] .hero__footer) {
+    visibility: visible;
+    pointer-events: auto;
+    will-change: opacity, translate;
+  }
+
+  @keyframes home-reveal-from-above {
+    from {
+      opacity: 0;
+      translate: 0 -0.5rem;
+    }
+
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  @keyframes home-reveal-from-below {
+    from {
+      opacity: 0;
+      translate: 0 0.5rem;
+    }
+
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
   .welcome-intro {
     display: inline-flex;
     align-items: center;
@@ -162,32 +276,32 @@ const locale = (Astro.currentLocale || "en") as "en";
     display: block;
   }
 
-  .welcome-mark {
-    width: clamp(6.5rem, 14vw, 9rem);
-  }
-
-  .welcome-mark img {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-
   .home-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-2xl);
+  }
+
+  .home-grid > * {
+    min-width: 0;
   }
 
   @media (min-width: 64rem) {
     .home-grid {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 3rem;
     }
   }
 
-  @media (max-width: 48rem) {
-    .welcome-mark {
-      width: clamp(5.5rem, 24vw, 7rem);
+  @media (prefers-reduced-motion: reduce) {
+    :global(html[data-home-resource-state="revealing"] [data-header]),
+    :global(html[data-home-resource-state="revealing"] .hero__eyebrow),
+    :global(html[data-home-resource-state="revealing"] .hero__headline),
+    :global(html[data-home-resource-state="revealing"] .hero__footer) {
+      opacity: 1;
+      animation: none;
+      translate: 0 0;
+      will-change: auto;
     }
   }
 </style>

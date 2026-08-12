@@ -1,34 +1,31 @@
 ---
-locale: en
+locale: zh-CN
 slug: terms
-title: Terms & Conditions
-description: Terms and conditions for using this boilerplate website.
+title: 使用说明
+description: 阅读、引用和使用这个个人网站内容时需要了解的基本边界。
 sections:
   - type: hero
-    title: Terms & Conditions
-    content: The basic rules for using our website and services.
+    title: 使用说明
+    content: 欢迎阅读、讨论和分享，但请保留内容来源与必要上下文。
 isLegal: true
 order: 6
 translationKey: terms
 ---
 
-Last updated: June 24, 2026.
+最后更新：2026 年 8 月 13 日。
 
-These terms govern your use of this website. This is placeholder copy provided
-with the template — replace it with terms reviewed by your own legal counsel
-before launch.
+## 内容使用
 
-## Use of Service
+除另有说明外，本站文章、图形与代码示例用于学习和交流。引用时请注明作者和原始链接；不要把经过删改的内容误称为作者原意。
 
-By using this website, you agree to:
-- Comply with all applicable laws and regulations
-- Not misuse the available services
-- Maintain the confidentiality of your account information
+## 准确性
 
-## Intellectual Property
+文章记录的是发布时的理解与实践，可能随着软件版本和认识变化而更新。技术内容不能替代针对具体环境的专业判断。
 
-All content on this website is protected by copyright and other intellectual property rights.
+## 外部资源
 
-## Limitation of Liability
+本站不控制外部链接的内容、可用性与条款。使用第三方代码、服务或资料前，请自行确认许可证和适用条件。
 
-We are not liable for damages arising from the use of this website.
+## 联系
+
+如发现署名、链接或内容问题，请通过 `milzamsz@gmail.com` 联系我。

@@ -1,0 +1,14 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { PersonalPage } from "../components/sections";
+import { usesPage } from "../data/personal-pages";
+---
+
+<BaseLayout
+  title="装备"
+  description={usesPage.lead}
+  locale="zh-CN"
+  path="/uses"
+>
+  <PersonalPage data={usesPage} />
+</BaseLayout>

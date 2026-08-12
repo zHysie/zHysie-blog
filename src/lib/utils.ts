@@ -14,6 +14,10 @@ export function formatDateShort(date: Date, locale: string) {
   }).format(date);
 }
 
+export function formatNumericDate(date: Date) {
+  return `${date.getUTCFullYear()}/${date.getUTCMonth() + 1}/${date.getUTCDate()}`;
+}
+
 export function slugify(str: string) {
   return str
     .normalize("NFKD")

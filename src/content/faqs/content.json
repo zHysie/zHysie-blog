@@ -1,7 +1,7 @@
 {
-  "question": "How do I add a new blog post?",
-  "answer": "Create a new Markdown file in `src/content/blog/` with frontmatter including `title`, `description`, `locale`, `publishDate`, and optional fields like `tags`, `featured`, and `uid`. Commit it and open a pull request to publish.",
-  "category": "content",
+  "question": "这个博客怎样新增文章？",
+  "answer": "在 `src/content/blog/` 新建 Markdown 文件，填写标题、语言、发布日期等元数据。文章会经过类型、链接和构建检查后随站点一起发布。",
+  "category": "内容",
   "order": 2,
-  "locale": "en"
+  "locale": "zh-CN"
 }

@@ -1,9 +1,9 @@
 ---
 title: Documentation
-description: Learn how to use this starter template.
+description: Development and maintenance notes for the zHysie personal blog.
 ---
 
-Welcome to the project documentation.
+Welcome to the development documentation for the zHysie personal blog.
 
 This site is built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build). Use the sidebar to navigate the guides.
 

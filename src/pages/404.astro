@@ -1,0 +1,20 @@
+---
+import { NotFoundSection } from "../components/sections";
+import { t } from "../i18n/ui";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import type { Locale } from "../lib/site-config";
+
+const locale = "zh-CN" as Locale;
+---
+
+<BaseLayout
+  title={t(locale, "notfound.metaTitle")}
+  description={t(locale, "notfound.desc")}
+  locale={locale}
+  path="/404"
+  showFooter={false}
+  preloadPrimaryFonts={false}
+>
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+  <NotFoundSection locale={locale} />
+</BaseLayout>

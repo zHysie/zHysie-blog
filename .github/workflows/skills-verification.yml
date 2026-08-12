@@ -2,9 +2,9 @@ name: Skills Verification
 
 on:
   push:
-    branches: [main, content-preview]
+    branches: [master, content-preview]
   pull_request:
-    branches: [main, content-preview]
+    branches: [master, content-preview]
 
 permissions:
   contents: read

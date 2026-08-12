@@ -1,5 +1,5 @@
 /**
- * global.css — Main CSS entry point for the Astro Cloudflare starter
+ * global.css — zHysie 博客的全局样式入口
  *
  * Architecture:
  *   1. Tailwind CSS import
@@ -21,6 +21,11 @@
 
 /* ─── 3. Self-hosted font imports ─── */
 @import "@fontsource-variable/jetbrains-mono";
+
+/* Vite emits these unicode-range subsets under /_astro; no font CDN is used. */
+@import "@fontsource/noto-sans-sc/400.css";
+@import "@fontsource/noto-sans-sc/500.css";
+@import "@fontsource/noto-sans-sc/700.css";
 @import "@fontsource/noto-serif-sc/400.css";
 @import "@fontsource/noto-serif-sc/500.css";
 @import "@fontsource/noto-serif-sc/700.css";
@@ -134,12 +139,15 @@
 /* ─── 7. Base styles ─── */
 
 :root {
-  --gradient-brand: linear-gradient(135deg, #519bd3, #db94a5);
+  --gradient-brand: linear-gradient(
+    135deg,
+    var(--brand-logo-blue),
+    var(--brand-logo-pink)
+  );
 }
 
 .text-gradient-brand {
   background-image: var(--gradient-brand);
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
@@ -222,7 +230,7 @@ body::after {
   z-index: 9999;
   pointer-events: none;
   background-image: url("/noise.png");
-  opacity: 0.02;
+  opacity: 2%;
 }
 
 /* Headings */
@@ -607,11 +615,11 @@ code {
   font-size: var(--text-code-sm);
   line-height: 1.7;
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: anywhere;
   overflow-x: auto;
 }
 
-@media (max-width: 48rem) {
+@media (width <= 48rem) {
   .feature-tabs__panel {
     grid-template-columns: 1fr;
     align-items: stretch;

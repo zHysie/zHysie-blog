@@ -93,10 +93,9 @@ export const siteConfig: SiteConfig = {
    * Replace with your production domain when forking this template. */
   url: "https://zhysie.com",
   name: "zHysie",
-  description: "zHysie's personal website and blog.",
+  description: "zHysie 的个人网站：记录学习、开发、写作与日常。",
   author: "zHysie",
-  email: "zhysie@example.com",
-  authorImage: "/images/author.jpg",
+  email: "milzamsz@gmail.com",
 
   /* Social links */
   socialLinks: [
@@ -104,11 +103,6 @@ export const siteConfig: SiteConfig = {
       platform: "github",
       url: "https://github.com/zHysie",
       label: "GitHub",
-    },
-    {
-      platform: "linkedin",
-      url: "https://www.linkedin.com/in/milzamsz/",
-      label: "LinkedIn",
     },
     { platform: "email", url: "mailto:milzamsz@gmail.com", label: "Email" },
   ],
@@ -160,7 +154,7 @@ export const siteConfig: SiteConfig = {
       primary: "#141413",
       secondary: "#737373",
       accent: "#404040",
-      background: "#f0eee6",
+      background: "#f7f6f2",
       foreground: "#141413",
       border: "#e5e5e5",
       ring: "#141413",
@@ -175,8 +169,8 @@ export const siteConfig: SiteConfig = {
   /* i18n configuration (matches i18n.config.ts) */
   i18n: {
     enabled: true,
-    locales: ["en"],
-    defaultLocale: "en",
+    locales: ["zh-CN"],
+    defaultLocale: "zh-CN",
     routing: { prefixDefaultLocale: false },
   },
 } as const;

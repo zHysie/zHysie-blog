@@ -1,6 +1,6 @@
 # Copilot instructions
 
-This project is an AI-operable Astro starter. Follow the canonical conventions —
+This project is an AI-operable Astro personal site. Follow the canonical conventions —
 do not improvise design or architecture.
 
 ## Read first
@@ -18,8 +18,8 @@ do not improvise design or architecture.
   `var(--muted-foreground)`). Palette is monochrome OKLCH.
 - **Dark mode** uses the `.dark` class; never hand-invert colors.
 - **Three tiers:** Components → Sections (`src/components/sections`) → Pages.
-- **i18n:** English default + Indonesian `/id/`; add every route in both
-  `src/pages/x.astro` and `src/pages/[locale]/x.astro`.
+- **i18n:** Chinese public site (`zh-CN`) with unprefixed routes; English is retained
+  in Starlight docs only. Add every public route once under `src/pages/`.
 - **Preserve:** Git-based Markdown content, Cloudflare Pages, SEO/OG/RSS/
   sitemap/llms.txt, Pagefind, Starlight docs.
 

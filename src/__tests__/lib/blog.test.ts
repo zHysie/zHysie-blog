@@ -1,42 +1,34 @@
-import { describe, it, expect } from "vitest";
-import { paginate } from "../../lib/blog";
+import { describe, expect, it } from "vitest";
+import { getMarkdownExcerpt } from "../../lib/blog";
 
-describe("paginate", () => {
-  const items = [1, 2, 3, 4, 5, 6, 7];
-
-  it("returns the first page slice", () => {
-    const result = paginate(items, 1, 3);
-    expect(result.posts).toEqual([1, 2, 3]);
-    expect(result.currentPage).toBe(1);
-    expect(result.totalPages).toBe(3);
-    expect(result.hasNext).toBe(true);
-    expect(result.hasPrev).toBe(false);
+describe("getMarkdownExcerpt", () => {
+  it("returns the first Chinese body paragraph", () => {
+    expect(
+      getMarkdownExcerpt("## 标题\n\n这是正文第一段。\n\n这是第二段。"),
+    ).toBe("这是正文第一段。");
   });
 
-  it("returns a middle page with prev + next", () => {
-    const result = paginate(items, 2, 3);
-    expect(result.posts).toEqual([4, 5, 6]);
-    expect(result.hasNext).toBe(true);
-    expect(result.hasPrev).toBe(true);
+  it("joins wrapped English lines and removes inline Markdown", () => {
+    expect(
+      getMarkdownExcerpt(
+        "## Heading\n\nA **short** paragraph with [a link](https://example.com)\nacross two lines.",
+      ),
+    ).toBe("A short paragraph with a link across two lines.");
   });
 
-  it("returns the last page without next", () => {
-    const result = paginate(items, 3, 3);
-    expect(result.posts).toEqual([7]);
-    expect(result.hasNext).toBe(false);
-    expect(result.hasPrev).toBe(true);
+  it("skips fenced code before body text", () => {
+    expect(
+      getMarkdownExcerpt(
+        "```ts\nconst hidden = true;\n```\n\nVisible paragraph.",
+      ),
+    ).toBe("Visible paragraph.");
   });
 
-  it("clamps a page below 1 to page 1", () => {
-    const result = paginate(items, 0, 3);
-    expect(result.currentPage).toBe(1);
+  it("truncates long text with an ellipsis", () => {
+    expect(getMarkdownExcerpt("abcdefghijklmnop", 10)).toBe("abcdefghi…");
   });
 
-  it("handles an empty list", () => {
-    const result = paginate([], 1, 3);
-    expect(result.posts).toEqual([]);
-    expect(result.totalPages).toBe(1);
-    expect(result.hasNext).toBe(false);
-    expect(result.hasPrev).toBe(false);
+  it("returns an empty string when no body text exists", () => {
+    expect(getMarkdownExcerpt("# Heading\n\n![Cover](cover.webp)")).toBe("");
   });
 });

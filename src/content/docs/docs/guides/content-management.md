@@ -11,19 +11,19 @@ pull request — Cloudflare Pages rebuilds on merge.
 
 ## Content Collections
 
-| Collection | Description | Files |
-| --- | --- | --- |
-| **Pages** | Marketing pages (about, contact, pricing…) | `src/content/pages/*.md` |
-| **Services** | Service offerings with pricing | `src/content/services/*.md` |
-| **Blog** | Articles and news posts | `src/content/blog/*.md` |
-| **Docs** | Documentation pages | `src/content/docs/**` (Starlight) |
+| Collection   | Description                                | Files                             |
+| ------------ | ------------------------------------------ | --------------------------------- |
+| **Pages**    | Marketing pages (about, contact, pricing…) | `src/content/pages/*.md`          |
+| **Services** | Service offerings with pricing             | `src/content/services/*.md`       |
+| **Blog**     | Articles and news posts                    | `src/content/blog/*.md`           |
+| **Docs**     | Documentation pages                        | `src/content/docs/**` (Starlight) |
 
 Collection schemas are defined in `src/content.config.ts` (or `src/content/config.ts`),
 so frontmatter is type-checked at build time.
 
 ## Locale Convention
 
-The starter is English-only by default, so each entry uses a plain `<slug>.md`
+The public site is Chinese-only, so each entry uses a plain `<slug>.md`
 file (e.g. `about.md`) with `locale: "en"` in its frontmatter.
 
 The `locale` frontmatter field determines which language the content belongs to.
@@ -35,7 +35,7 @@ with `locale: "id"`). See the [Internationalization guide](/docs/guides/internat
 1. Create or edit a Markdown file under `src/content`.
 2. Run `pnpm dev` to preview locally.
 3. Commit and open a pull request.
-4. Merging to `main` triggers a Cloudflare Pages production deploy.
+4. Publishing to `master` triggers the Cloudflare Pages production flow.
 
 ## Media
 

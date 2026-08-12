@@ -17,7 +17,7 @@
 - [ ] `pnpm lint` passes
 - [ ] `pnpm build` succeeds
 - [ ] `pnpm test` passes (if applicable)
-- [ ] Verified in both locales (en / id) where relevant
+- [ ] Verified the Chinese public site and English `/docs` where relevant
 - [ ] No hardcoded colors — design tokens only
 - [ ] Docs updated if behavior changed
 

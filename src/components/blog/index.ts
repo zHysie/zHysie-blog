@@ -1,5 +1,7 @@
 export { default as BlogCard } from "./BlogCard.astro";
+export { default as PostArchiveItem } from "./PostArchiveItem.astro";
 export { default as ArticleHero } from "./ArticleHero.astro";
+export { default as ArticleReadingBar } from "./ArticleReadingBar.astro";
 export { default as TableOfContents } from "./TableOfContents.astro";
 export { default as ShareButtons } from "./ShareButtons.astro";
 export { default as RelatedPosts } from "./RelatedPosts.astro";

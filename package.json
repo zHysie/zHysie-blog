@@ -1,8 +1,8 @@
 {
-  "name": "astro-cloudflare",
+  "name": "zhysie-blog",
   "version": "1.0.0",
   "private": true,
-  "description": "Multilingual marketing + blog + docs starter with Astro and Cloudflare Pages",
+  "description": "zHysie 的个人博客与实验网站",
   "license": "MIT",
   "packageManager": "pnpm@8.15.0",
   "type": "module",
@@ -38,6 +38,7 @@
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@fontsource-variable/manrope": "^5.2.8",
     "@fontsource-variable/outfit": "^5.2.8",
+    "@fontsource/noto-sans-sc": "^5.2.8",
     "@fontsource/noto-serif-sc": "^5.2.8",
     "@iconify-json/lucide": "^1.2.117",
     "@iconify-json/simple-icons": "^1.2.90",

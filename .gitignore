@@ -41,6 +41,14 @@ cloudflare-pages-report.html
 
 # Dev verification artifacts
 screenshots/
+.firecrawl/
+.impeccable/
+.playwright-cli/
+.playwright-mcp/
+output/playwright/
+test-results/
+*-final.png
+posts-review-desktop.png
 
 # Agentic Kanban (local task board — not part of the template)
 .agentkanban/

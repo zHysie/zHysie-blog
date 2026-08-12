@@ -1,64 +1,30 @@
 ---
 translationKey: seo-guide
-locale: en
-title: Optimizing SEO for Multilingual Websites
-description: Technical SEO best practices for sites with multiple languages.
+locale: zh-CN
+title: 为内容网站整理 SEO 基础
+description: 从规范链接、结构化数据、站点地图和性能四个方面整理这个中文博客的 SEO 基础。
 publishDate: 2026-06-22
 draft: false
+category: 技术实践
 tags:
-  - seo
-  - i18n
-  - performance
-author: Admin
+  - SEO
+  - Astro
+  - 性能
+author: zHysie
 ---
 
-## Why SEO Matters for Multilingual Sites
+## 先让每篇内容有唯一地址
 
-Search engines need clear signals about language and regional targeting. A well-structured multilingual site can rank in multiple countries simultaneously.
+这个博客的公开内容使用中文，页面仍需要稳定的规范链接。规范链接会告诉搜索引擎哪一个地址是当前内容的主要版本，也能避免查询参数或旧路径造成重复收录。
 
-## Hreflang Tags
+## 让元数据来自同一个配置
 
-Hreflang tells Google which language version of a page to show:
+站点名称、描述、作者、域名和默认分享图集中放在配置中，由页面布局生成标题、描述、Open Graph 和结构化数据。这样修改品牌信息时，不需要逐页寻找旧模板文字。
 
-```html
-<link rel="alternate" hreflang="en" href="https://example.com/en/about" />
-<link rel="alternate" hreflang="id" href="https://example.com/id/about" />
-<link rel="alternate" hreflang="x-default" href="https://example.com/about" />
-```
+## 站点地图、RSS 与搜索索引
 
-This starter includes automatic hreflang generation via the `hreflangLinks()` function in `src/lib/seo.ts`.
+Astro 在构建时生成站点地图，RSS 提供按时间排序的文章入口，Pagefind 则为静态页面生成站内搜索索引。三者使用相同的公开路由，才能避免搜索结果指向不存在的地址。
 
-## Canonical URLs
+## 性能也是可发现性的一部分
 
-Every page should have a self-referencing canonical URL:
-
-```typescript
-export function canonicalUrl(locale: Locale, path: string): string {
-  const prefix = localePrefix(locale);
-  const normalized = path.replace(/\/$/, "");
-  return `${SITE_CONFIG.url}${prefix}${normalized || ""}`;
-}
-```
-
-## Structured Data (JSON-LD)
-
-Use `jsonLdWebSite()` for the home page and `jsonLdBlogPost()` for articles:
-
-```typescript
-const websiteJsonLd = jsonLdWebSite({
-  title: "My Site",
-  description: "Site description",
-  locale: "en",
-  url: "https://example.com",
-});
-```
-
-## Sitemap
-
-The `@astrojs/sitemap` integration generates a sitemap-index.xml that includes all locale variants of every page, ensuring search engines discover all language versions.
-
-## Performance Considerations
-
-- **Static generation**: Pages are pre-built, ensuring fast load times
-- **CDN delivery**: Cloudflare's global network caches content at the edge
-- **Core Web Vitals**: Astro's zero-JS architecture helps achieve good scores
+页面优先输出静态 HTML，只在确实需要交互的区域加载脚本。图片尺寸、字体加载和动效降级都会影响实际阅读体验，因此性能检查和内容检查应该一起完成。

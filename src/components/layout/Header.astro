@@ -13,12 +13,18 @@ export interface Props {
   currentLocale: Locale;
   currentPath?: string;
   showThemeToggle?: boolean;
+  showBrand?: boolean;
+  monochrome?: boolean;
+  deferBrandLoading?: boolean;
 }
 
 const {
   currentLocale,
   currentPath = "/",
   showThemeToggle = true,
+  showBrand = true,
+  monochrome = false,
+  deferBrandLoading = false,
 } = Astro.props as Props;
 const detectedLocale = detectLocale(currentPath);
 const effectiveLocale = detectedLocale || currentLocale;
@@ -43,6 +49,8 @@ const revealNavigationOnScroll = contentPath === "/";
 <header
   class="header nav-top"
   data-header
+  data-brandless={showBrand ? undefined : ""}
+  data-monochrome={monochrome ? "" : undefined}
   data-nav-state="top"
   data-nav-threshold="96"
   data-scroll-reveal={revealNavigationOnScroll ? "" : undefined}
@@ -54,14 +62,21 @@ const revealNavigationOnScroll = contentPath === "/";
     data-flip-id="nav-frame"
   >
     <div class="header__bar container">
-      <div
-        class="header__logo"
-        data-tooltip={siteConfig.name}
-        data-nav-flip
-        data-flip-id="nav-logo"
-      >
-        <Logo href={resolveRoute(effectiveLocale, "/")} />
-      </div>
+      {
+        showBrand && (
+          <div
+            class="header__logo"
+            data-tooltip={siteConfig.name}
+            data-nav-flip
+            data-flip-id="nav-logo"
+          >
+            <Logo
+              href={resolveRoute(effectiveLocale, "/")}
+              deferLoading={deferBrandLoading}
+            />
+          </div>
+        )
+      }
 
       <nav
         class="header__desktop-nav"
@@ -94,7 +109,7 @@ const revealNavigationOnScroll = contentPath === "/";
                     <div class="header__dropdown-panel">
                       {item.children.map((child) => (
                         <a href={resolveRoute(effectiveLocale, child.href)}>
-                          {t(effectiveLocale, child.labelKey)}
+                          <span>{t(effectiveLocale, child.labelKey)}</span>
                         </a>
                       ))}
                     </div>
@@ -364,20 +379,17 @@ const revealNavigationOnScroll = contentPath === "/";
     position: relative;
     width: 100%;
     height: 100%;
-    border-bottom: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-bg-primary) 86%, transparent);
-    backdrop-filter: blur(0.75rem) saturate(1.15);
+    background: transparent;
+    backdrop-filter: none;
     pointer-events: auto;
     transition:
       background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-      border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       backdrop-filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Scroll Down States */
   .header.is-scrolling-down .header__frame {
     background-color: transparent !important;
-    border-bottom-color: transparent !important;
     backdrop-filter: none !important;
   }
 
@@ -464,6 +476,15 @@ const revealNavigationOnScroll = contentPath === "/";
     position: relative;
   }
 
+  .header__dropdown::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: var(--space-xs);
+  }
+
   .header__item > a,
   .header__dropdown > a {
     position: relative;
@@ -473,6 +494,7 @@ const revealNavigationOnScroll = contentPath === "/";
     min-height: var(--nav-control-size);
     padding: 0.4rem 0.65rem;
     color: var(--color-text-secondary);
+    font-family: var(--font-cjk-serif);
     text-decoration: none;
     font-size: 1rem;
     letter-spacing: 0.02em;
@@ -507,7 +529,7 @@ const revealNavigationOnScroll = contentPath === "/";
     left: 0;
     width: 100%;
     height: 2px;
-    background-color: var(--color-brand-secondary);
+    background-color: var(--brand-logo-blue);
     transform: translateZ(0) scaleX(0);
     transform-origin: right center;
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -521,11 +543,21 @@ const revealNavigationOnScroll = contentPath === "/";
     left: 0;
     width: 100%;
     height: 2px;
-    background-color: var(--color-brand-primary);
+    background-color: var(--brand-logo-pink);
     transform: translateZ(0) scaleX(0);
     transform-origin: left center;
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     backface-visibility: hidden;
+  }
+
+  .header[data-monochrome] .header__item-label::before,
+  .header[data-monochrome] .header__item-label::after,
+  .header[data-monochrome] .header__dropdown-panel a::before {
+    background: var(--foreground);
+  }
+
+  .header[data-monochrome] .header__dropdown-panel a::after {
+    background: color-mix(in srgb, var(--foreground) 8%, transparent);
   }
 
   .header__item > a:hover .header__item-label::before,
@@ -575,39 +607,194 @@ const revealNavigationOnScroll = contentPath === "/";
     flex-direction: column;
     gap: var(--space-xs);
     padding: var(--space-sm);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    background: var(--color-bg-primary);
-    box-shadow: var(--shadow-md);
+    border: 0;
+    border-inline-end: 1px solid
+      color-mix(in oklab, var(--color-border) 72%, transparent);
+    border-block-end: 1px solid
+      color-mix(in oklab, var(--color-border) 72%, transparent);
+    border-radius: var(--radius-md);
+    background: color-mix(in oklab, var(--color-bg-primary) 92%, transparent);
+    box-shadow: var(--shadow-sm);
     opacity: 0;
-    transform: translateY(4px) scale(0.96);
-    transform-origin: top;
+    clip-path: inset(0 16% 24% 0 round var(--radius-md));
+    transform: translate3d(0, calc(var(--spacing-1) * -1), 0) scale(0.975);
+    transform-origin: top left;
     transition:
-      opacity 200ms ease-out,
-      transform 200ms ease-out,
-      display 200ms ease-out allow-discrete;
+      opacity 150ms cubic-bezier(0.4, 0, 1, 1),
+      clip-path 150ms cubic-bezier(0.4, 0, 1, 1),
+      transform 150ms cubic-bezier(0.4, 0, 1, 1),
+      display 150ms allow-discrete;
   }
 
   .header__dropdown:hover .header__dropdown-panel,
   .header__dropdown:focus-within .header__dropdown-panel {
     display: flex;
     opacity: 1;
-    transform: translateY(0) scale(1);
+    clip-path: inset(0 round var(--radius-md));
+    transform: translate3d(0, 0, 0) scale(1);
+    transition-duration: 210ms;
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
 
     @starting-style {
       opacity: 0;
-      transform: translateY(4px) scale(0.96);
+      clip-path: inset(0 16% 24% 0 round var(--radius-md));
+      transform: translate3d(0, calc(var(--spacing-1) * -1), 0) scale(0.975);
     }
   }
 
   .header__dropdown-panel a {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    min-height: var(--nav-control-size);
+    padding: var(--spacing-1) var(--space-sm) var(--spacing-1) var(--space-lg);
+    overflow: hidden;
+    border-radius: var(--radius-md);
     color: var(--color-text-secondary);
+    font-family: var(--font-cjk-serif);
     text-decoration: none;
     font-size: var(--text-sm);
+    opacity: 0;
+    transform: translate3d(0, calc(var(--spacing-1) * -1), 0);
+    transition:
+      color 150ms ease,
+      opacity 150ms cubic-bezier(0.4, 0, 1, 1),
+      transform 150ms cubic-bezier(0.4, 0, 1, 1);
   }
 
-  .header__dropdown-panel a:hover {
+  .header__dropdown-panel a::before,
+  .header__dropdown-panel a::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .header__dropdown-panel a::before {
+    z-index: 0;
+    top: 50%;
+    left: var(--spacing-1);
+    width: var(--space-sm);
+    height: calc(var(--spacing-1) / 2);
+    border-radius: var(--radius-full);
+    background: linear-gradient(
+      90deg,
+      var(--brand-logo-blue),
+      var(--brand-logo-pink)
+    );
+    opacity: 0;
+    transform: translate3d(calc(var(--spacing-1) * -1), -50%, 0) scaleX(0.45);
+    transform-origin: left center;
+    transition:
+      opacity 150ms ease,
+      transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .header__dropdown-panel a::after {
+    z-index: 0;
+    inset: calc(var(--spacing-1) / 2) 0;
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--brand-logo-blue) 10%, transparent);
+    clip-path: polygon(0 18%, 92% 0, 100% 42%, 94% 86%, 6% 100%, 0 72%);
+    opacity: 0;
+    transform: scaleX(0.1);
+    transform-origin: left center;
+    transition:
+      opacity 150ms ease,
+      transform 180ms cubic-bezier(0.23, 1, 0.32, 1),
+      background-color 100ms ease;
+  }
+
+  .header__dropdown-panel a > span {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    transform: translate3d(0, 0, 0);
+    transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .header__dropdown:hover .header__dropdown-panel a,
+  .header__dropdown:focus-within .header__dropdown-panel a {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition-duration: 180ms;
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .header__dropdown:hover .header__dropdown-panel a:nth-child(2) {
+    transition-delay: 25ms;
+  }
+
+  .header__dropdown:hover .header__dropdown-panel a:nth-child(3) {
+    transition-delay: 50ms;
+  }
+
+  .header__dropdown:hover .header__dropdown-panel a:nth-child(4) {
+    transition-delay: 75ms;
+  }
+
+  .header__dropdown:not(:hover):not(:focus-within) .header__dropdown-panel a,
+  .header__dropdown-panel a:active {
+    transition-delay: 0ms;
+  }
+
+  .header__dropdown:focus-within .header__dropdown-panel,
+  .header__dropdown:focus-within .header__dropdown-panel a {
+    transition-duration: 0ms;
+    transition-delay: 0ms;
+  }
+
+  .header__dropdown-panel a:focus-visible {
     color: var(--color-text-primary);
+  }
+
+  .header__dropdown-panel a:focus-visible::before,
+  .header__dropdown-panel a:focus-visible::after {
+    opacity: 1;
+    transform: translate3d(0, -50%, 0) scaleX(1);
+  }
+
+  .header__dropdown-panel a:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  .header__dropdown-panel a:focus-visible > span {
+    transform: translate3d(calc(var(--spacing-1) / 2), 0, 0);
+  }
+
+  .header__dropdown-panel a:focus-visible::before,
+  .header__dropdown-panel a:focus-visible::after,
+  .header__dropdown-panel a:focus-visible > span {
+    transition-duration: 0ms;
+  }
+
+  .header__dropdown:hover .header__dropdown-panel a:active,
+  .header__dropdown:focus-within .header__dropdown-panel a:active {
+    transform: scale(0.985);
+  }
+
+  .header__dropdown-panel a:active::after {
+    background: color-mix(in oklab, var(--brand-logo-blue) 16%, transparent);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .header__dropdown-panel a:hover {
+      color: var(--color-text-primary);
+    }
+
+    .header__dropdown-panel a:hover::before {
+      opacity: 1;
+      transform: translate3d(0, -50%, 0) scaleX(1);
+    }
+
+    .header__dropdown-panel a:hover::after {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+
+    .header__dropdown-panel a:hover > span {
+      transform: translate3d(calc(var(--spacing-1) / 2), 0, 0);
+    }
   }
 
   .header__actions {
@@ -618,6 +805,10 @@ const revealNavigationOnScroll = contentPath === "/";
     transition:
       opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .header[data-brandless] .header__actions {
+    margin-left: auto;
   }
 
   .header__utility {
@@ -657,6 +848,17 @@ const revealNavigationOnScroll = contentPath === "/";
   .header__icon-button:active {
     background: var(--color-bg-tertiary);
     transform: scale(0.97);
+  }
+
+  .header__github:hover,
+  .header__search:hover {
+    background: transparent;
+    transform: scale(1.05);
+  }
+
+  .header__github:active,
+  .header__search:active {
+    background: transparent;
   }
 
   .header__search {
@@ -731,6 +933,7 @@ const revealNavigationOnScroll = contentPath === "/";
     padding: 0.6rem 0.5rem;
     border-radius: var(--radius-md);
     color: var(--color-text-primary);
+    font-family: var(--font-cjk-serif);
     text-decoration: none;
     font-weight: var(--font-weight-medium);
     transition:
@@ -784,6 +987,13 @@ const revealNavigationOnScroll = contentPath === "/";
     .header :global(.logo__mark),
     .header__item > a,
     .header__dropdown > a,
+    .header__dropdown-panel,
+    .header__dropdown:hover .header__dropdown-panel,
+    .header__dropdown:focus-within .header__dropdown-panel,
+    .header__dropdown-panel a,
+    .header__dropdown-panel a::before,
+    .header__dropdown-panel a::after,
+    .header__dropdown-panel a > span,
     .header__item-icon,
     .header__icon-button,
     .header__mobile-list a,
@@ -794,6 +1004,40 @@ const revealNavigationOnScroll = contentPath === "/";
     :global(#main-content .container),
     :global(.footer__inner) {
       transition: none;
+    }
+
+    .header__dropdown-panel,
+    .header__dropdown:hover .header__dropdown-panel,
+    .header__dropdown:focus-within .header__dropdown-panel,
+    .header__dropdown-panel a,
+    .header__dropdown:hover .header__dropdown-panel a,
+    .header__dropdown:focus-within .header__dropdown-panel a {
+      transform: none;
+      transition-delay: 0ms;
+    }
+
+    .header__dropdown:hover .header__dropdown-panel a:active,
+    .header__dropdown:focus-within .header__dropdown-panel a:active {
+      transform: none;
+    }
+
+    .header__dropdown-panel,
+    .header__dropdown:hover .header__dropdown-panel,
+    .header__dropdown:focus-within .header__dropdown-panel {
+      clip-path: inset(0 round var(--radius-md));
+    }
+
+    .header__dropdown-panel a::before {
+      transform: translate3d(0, -50%, 0) scaleX(1);
+    }
+
+    .header__dropdown-panel a::after,
+    .header__dropdown-panel a > span,
+    .header__dropdown-panel a:hover::after,
+    .header__dropdown-panel a:hover > span,
+    .header__dropdown-panel a:focus-visible::after,
+    .header__dropdown-panel a:focus-visible > span {
+      transform: none;
     }
   }
 </style>

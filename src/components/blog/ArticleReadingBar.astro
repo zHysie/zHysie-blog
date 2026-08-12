@@ -1,0 +1,437 @@
+---
+import { Icon } from "../ui/index";
+import type { Locale } from "../../lib/site-config";
+import { t } from "../../i18n/ui";
+
+export interface Props {
+  title: string;
+  backHref: string;
+  homeHref: string;
+  locale: Locale;
+  showThreshold?: number;
+}
+
+const {
+  title,
+  backHref,
+  homeHref,
+  locale,
+  showThreshold = 300,
+} = Astro.props as Props;
+
+const backLabel = t(locale, "blog.readingBarBack");
+const homeLabel = t(locale, "blog.readingBarHome");
+const progressLabel = t(locale, "blog.readingProgress");
+const backToTopLabel = t(locale, "blog.readingBarBackToTop");
+---
+
+<article-reading-bar
+  class="article-reading-bar"
+  data-show-threshold={showThreshold}
+  aria-hidden="true"
+  inert
+>
+  <div class="article-reading-bar__inner container">
+    <nav class="article-reading-bar__nav" aria-label={backLabel}>
+      <a
+        class="article-reading-bar__action"
+        href={backHref}
+        aria-label={backLabel}
+        data-back-action
+      >
+        <Icon name="lucide:arrow-left" size="1.125rem" decorative />
+      </a>
+      <span class="article-reading-bar__divider" aria-hidden="true"></span>
+      <a
+        class="article-reading-bar__action"
+        href={homeHref}
+        aria-label={homeLabel}
+      >
+        <Icon name="lucide:home" size="1.0625rem" decorative />
+      </a>
+    </nav>
+
+    <button
+      class="article-reading-bar__title"
+      type="button"
+      data-scroll-to-top
+      aria-label={`${backToTopLabel}：${title}`}
+    >
+      <span>{title}</span>
+      <Icon name="lucide:arrow-up" size="0.75rem" decorative />
+    </button>
+
+    <output
+      class="article-reading-bar__percentage"
+      data-progress-output
+      aria-label={progressLabel}
+      aria-live="off">0%</output
+    >
+  </div>
+
+  <span class="article-reading-bar__track" aria-hidden="true">
+    <span class="article-reading-bar__indicator"></span>
+  </span>
+</article-reading-bar>
+
+<script>
+  class ArticleReadingBarElement extends HTMLElement {
+    private frameId: number | null = null;
+    private springFrameId: number | null = null;
+    private resizeObserver: ResizeObserver | null = null;
+    private indicator: HTMLElement | null = null;
+    private showThreshold = 300;
+    private lastPercentage = -1;
+    private targetProgress = 0;
+    private renderedProgress = 0;
+    private springVelocity = 0;
+    private lastSpringTime = 0;
+    private hasRenderedProgress = false;
+    private reduceMotion = false;
+
+    private renderProgress = (progress: number) => {
+      if (!this.indicator) return;
+      const clampedProgress = Math.min(1, Math.max(0, progress));
+      this.indicator.style.transform = `scaleX(${clampedProgress})`;
+    };
+
+    private animateSpring = (time: number) => {
+      const elapsed = Math.min((time - this.lastSpringTime) / 1000, 1 / 30);
+      this.lastSpringTime = time;
+
+      const displacement = this.targetProgress - this.renderedProgress;
+      const springForce = displacement * 100;
+      const dampingForce = this.springVelocity * 30;
+      const acceleration = springForce - dampingForce;
+
+      this.springVelocity += acceleration * elapsed;
+      this.renderedProgress += this.springVelocity * elapsed;
+
+      const remaining = this.targetProgress - this.renderedProgress;
+      const hasSettled =
+        Math.abs(remaining) < 0.001 && Math.abs(this.springVelocity) < 0.01;
+
+      if (hasSettled) {
+        this.renderedProgress = this.targetProgress;
+        this.springVelocity = 0;
+        this.renderProgress(this.renderedProgress);
+        this.springFrameId = null;
+        return;
+      }
+
+      this.renderProgress(this.renderedProgress);
+      this.springFrameId = window.requestAnimationFrame(this.animateSpring);
+    };
+
+    private updateSpringTarget = (progress: number) => {
+      this.targetProgress = progress;
+
+      if (this.reduceMotion || !this.hasRenderedProgress) {
+        this.hasRenderedProgress = true;
+        this.renderedProgress = progress;
+        this.springVelocity = 0;
+        this.renderProgress(progress);
+        return;
+      }
+
+      if (this.springFrameId !== null) return;
+
+      this.lastSpringTime = performance.now();
+      this.springFrameId = window.requestAnimationFrame(this.animateSpring);
+    };
+
+    private update = () => {
+      this.frameId = null;
+
+      const scrollDistance = Math.max(
+        document.documentElement.scrollHeight - window.innerHeight,
+        1,
+      );
+      const progress = Math.min(
+        1,
+        Math.max(0, window.scrollY / scrollDistance),
+      );
+      const percentage = Math.round(progress * 100);
+      const isVisible = window.scrollY > this.showThreshold;
+
+      this.toggleAttribute("data-visible", isVisible);
+      this.setAttribute("aria-hidden", String(!isVisible));
+      this.inert = !isVisible;
+      this.updateSpringTarget(progress);
+
+      if (percentage === this.lastPercentage) return;
+
+      this.lastPercentage = percentage;
+
+      const output = this.querySelector<HTMLOutputElement>(
+        "[data-progress-output]",
+      );
+      if (output) output.value = `${percentage}%`;
+    };
+
+    private scheduleUpdate = () => {
+      if (this.frameId !== null) return;
+      this.frameId = window.requestAnimationFrame(this.update);
+    };
+
+    private measure = () => {
+      this.scheduleUpdate();
+    };
+
+    private scrollToTop = () => {
+      window.scrollTo({
+        top: 0,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
+      });
+    };
+
+    private goBack = (event: Event) => {
+      if (window.history.length <= 1) return;
+      event.preventDefault();
+      window.history.back();
+    };
+
+    connectedCallback() {
+      this.showThreshold = Number(this.dataset.showThreshold) || 300;
+      this.indicator = this.querySelector<HTMLElement>(
+        ".article-reading-bar__indicator",
+      );
+      this.reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      this.querySelector("[data-scroll-to-top]")?.addEventListener(
+        "click",
+        this.scrollToTop,
+      );
+      this.querySelector("[data-back-action]")?.addEventListener(
+        "click",
+        this.goBack,
+      );
+      window.addEventListener("scroll", this.scheduleUpdate, { passive: true });
+      window.addEventListener("resize", this.measure, { passive: true });
+
+      if ("ResizeObserver" in window) {
+        this.resizeObserver = new ResizeObserver(this.measure);
+        this.resizeObserver.observe(document.documentElement);
+      }
+
+      document.fonts?.ready.then(this.measure);
+      this.measure();
+    }
+
+    disconnectedCallback() {
+      this.querySelector("[data-scroll-to-top]")?.removeEventListener(
+        "click",
+        this.scrollToTop,
+      );
+      this.querySelector("[data-back-action]")?.removeEventListener(
+        "click",
+        this.goBack,
+      );
+      window.removeEventListener("scroll", this.scheduleUpdate);
+      window.removeEventListener("resize", this.measure);
+      this.resizeObserver?.disconnect();
+
+      if (this.frameId !== null) window.cancelAnimationFrame(this.frameId);
+      if (this.springFrameId !== null) {
+        window.cancelAnimationFrame(this.springFrameId);
+      }
+    }
+  }
+
+  if (!customElements.get("article-reading-bar")) {
+    customElements.define("article-reading-bar", ArticleReadingBarElement);
+  }
+</script>
+
+<style>
+  .article-reading-bar {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: var(--z-index-banner);
+    display: block;
+    height: var(--header-height-mobile);
+    border-bottom: 1px solid
+      color-mix(in oklch, var(--color-border) 68%, transparent);
+    background: color-mix(in oklch, var(--color-bg-primary) 84%, transparent);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(1.25rem);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-100%);
+    transition:
+      opacity 240ms ease-out,
+      transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .article-reading-bar[data-visible] {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .article-reading-bar__inner {
+    display: grid;
+    grid-template-columns: minmax(5rem, 1fr) minmax(0, 2fr) minmax(5rem, 1fr);
+    align-items: center;
+    height: 100%;
+  }
+
+  .article-reading-bar__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    justify-self: start;
+  }
+
+  .article-reading-bar__action,
+  .article-reading-bar__title {
+    border: 0;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+  }
+
+  .article-reading-bar__action {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition:
+      color 160ms ease-out,
+      background-color 160ms ease-out,
+      transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .article-reading-bar__action:hover {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+  }
+
+  .article-reading-bar__action:active {
+    transform: scale(0.96);
+  }
+
+  .article-reading-bar__action:focus-visible,
+  .article-reading-bar__title:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .article-reading-bar__divider {
+    width: 1px;
+    height: 1rem;
+    background: var(--color-border);
+  }
+
+  .article-reading-bar__title {
+    display: inline-flex;
+    min-width: 0;
+    max-width: 100%;
+    align-items: center;
+    justify-self: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-md);
+    font-family: var(--font-cjk-serif);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--leading-tight);
+    transition: color 160ms ease-out;
+  }
+
+  .article-reading-bar__title:hover {
+    color: var(--color-text-primary);
+  }
+
+  .article-reading-bar__title span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .article-reading-bar__title :global(svg) {
+    flex: none;
+    opacity: 0;
+    transform: translateY(0.2rem);
+    transition:
+      opacity 160ms ease-out,
+      transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .article-reading-bar__title:hover :global(svg),
+  .article-reading-bar__title:focus-visible :global(svg) {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .article-reading-bar__percentage {
+    justify-self: end;
+    min-width: 3ch;
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .article-reading-bar__track {
+    position: absolute;
+    inset: auto 0 0;
+    display: block;
+    height: 2px;
+    overflow: hidden;
+    background: color-mix(in oklch, var(--color-border) 68%, transparent);
+    pointer-events: none;
+  }
+
+  .article-reading-bar__indicator {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--brand-logo-blue);
+    transform: scaleX(0);
+    transform-origin: left center;
+    will-change: transform;
+  }
+
+  @media (max-width: 40rem) {
+    .article-reading-bar__inner {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: var(--space-xs);
+    }
+
+    .article-reading-bar__nav {
+      gap: 0;
+    }
+
+    .article-reading-bar__divider,
+    .article-reading-bar__nav .article-reading-bar__action:last-child {
+      display: none;
+    }
+
+    .article-reading-bar__title {
+      font-size: var(--text-xs);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .article-reading-bar,
+    .article-reading-bar__action,
+    .article-reading-bar__title,
+    .article-reading-bar__title :global(svg) {
+      transition: none;
+    }
+  }
+
+  @media print {
+    .article-reading-bar {
+      display: none;
+    }
+  }
+</style>

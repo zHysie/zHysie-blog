@@ -1,6 +1,6 @@
 ---
 name: Tailwind CSS
-description: A utility-first CSS framework for rapidly building custom designs
+description: 与语义设计变量配合使用的实用类样式工具
 version: 4.x
 url: https://tailwindcss.com
 icon: "simple-icons:tailwindcss"
@@ -8,4 +8,4 @@ colorOklch: 0.63 0.19 190
 order: 2
 ---
 
-Tailwind CSS provides low-level utility classes that let you build completely custom designs without ever leaving your HTML.
+Tailwind CSS 用于组合布局与状态样式，颜色、字体和间距仍由站点的语义设计变量统一约束。

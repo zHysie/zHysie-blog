@@ -1,64 +1,41 @@
-# Setup & Deployment
+# 本地开发与发布
 
-## Prerequisites
+## 环境
 
-- Node.js 24+
-- pnpm 8.15+ (`corepack enable && corepack prepare pnpm@8.15.0 --activate`)
-- A Cloudflare account (free tier works) — only needed to deploy
+- Node.js 24
+- pnpm 8.15
+- 发布时需要 Cloudflare 账户
 
-## Local development
+## 本地开发
 
 ```bash
 pnpm install
-cp .env.example .env   # optional; set SITE_URL for correct prod URLs
 pnpm dev
 ```
 
-Visit http://localhost:4321. Default locale is at `/` and `/id/`, English at `/en/`.
+访问 `http://localhost:4321`。公开站点默认语言为 `zh-CN`，英文仅保留在 `/docs`。
 
-## Build
-
-```bash
-pnpm build     # outputs static site to dist/
-pnpm preview   # serve the production build locally
-```
-
-## Deploy to Cloudflare Pages
-
-### Option A — Git integration (recommended)
-
-1. Push the repo to GitHub.
-2. Cloudflare Dashboard → **Workers & Pages** → **Create** → **Pages** → connect the repo.
-3. Build settings:
-   - Build command: `pnpm build`
-   - Output directory: `dist`
-4. Add environment variables (Settings → Environment variables):
-   - `SITE_URL` = your production URL
-   - Optional analytics: `PUBLIC_GA_MEASUREMENT_ID`, `PUBLIC_GTM_ID`
-5. Every push to `main` deploys to production; pull requests get preview URLs.
-
-### Option B — Wrangler CLI
+## 构建与预览
 
 ```bash
 pnpm build
-npx wrangler pages deploy dist --project-name=astro-cloudflare --branch=main
+pnpm preview
 ```
 
-## R2 media (optional)
+## Cloudflare Pages
 
-`wrangler.jsonc` defines an `R2_MEDIA` binding for storing larger media in
-Cloudflare R2. Reference assets via their public R2 URL.
+连接 `zHysie/zHysie-blog` 后使用以下设置：
 
-The `functions/api/cleanup.ts` worker can prune orphaned R2 objects. It is
-guarded by a bearer token — set `CLEANUP_SECRET` as a Cloudflare Pages secret and
-send `Authorization: Bearer <secret>` when invoking it.
+- 生产分支：`master`
+- 构建命令：`pnpm build`
+- 输出目录：`dist`
+- 生产域名：`https://zhysie.com`
 
-If you don't need R2, remove the `r2_buckets` binding from `wrangler.jsonc`,
-delete `functions/api/cleanup.ts`, and drop the media-manifest postbuild step from
-`package.json`.
+如需从命令行发布：
 
-## CI
+```bash
+pnpm build
+npx wrangler pages deploy dist --project-name=zhysie-blog --branch=master
+```
 
-`.github/workflows/ci.yml` runs lint, type-check, i18n validation, secret
-scanning, dependency review, and a build on every PR. `release.yml` deploys on
-version tags.
+发布前应通过仓库定义的全部测试、样式、类型、国际化、秘密扫描和生产构建检查。

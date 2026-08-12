@@ -2,6 +2,7 @@
 import type { CollectionEntry } from "astro:content";
 import { resolveRoute } from "../../i18n/routes";
 import type { Locale } from "../../lib/site-config";
+import { formatNumericDate } from "../../lib/utils";
 import { Icon } from "astro-icon/components";
 
 export interface Props {
@@ -9,7 +10,7 @@ export interface Props {
   locale?: Locale;
 }
 
-const { posts, locale = "en" } = Astro.props;
+const { posts, locale = "zh-CN" } = Astro.props;
 ---
 
 <div class="grt-section">
@@ -33,14 +34,7 @@ const { posts, locale = "en" } = Astro.props;
     {
       posts.map((post) => {
         const dateObj = new Date(post.data.publishDate);
-        const formattedDate = dateObj.toLocaleDateString(
-          locale === "en" ? "en-US" : "zh-CN",
-          {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          },
-        );
+        const formattedDate = formatNumericDate(dateObj);
 
         return (
           <a href={resolveRoute(locale, `/posts/${post.id}`)} class="grt-card">
@@ -86,7 +80,7 @@ const { posts, locale = "en" } = Astro.props;
 
 <style>
   .grt-section {
-    --color-primary: var(--color-brand-secondary);
+    --color-primary: var(--brand-logo-blue);
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -115,7 +109,7 @@ const { posts, locale = "en" } = Astro.props;
     gap: 0.25rem;
     font-size: var(--text-xs);
     font-family: var(--font-sans);
-    color: var(--color-text-tertiary);
+    color: var(--muted-foreground);
     text-decoration: none;
     transition: color 0.2s ease;
   }
@@ -218,7 +212,7 @@ const { posts, locale = "en" } = Astro.props;
     gap: 0.5rem;
     font-size: var(--text-xs);
     font-family: var(--font-mono);
-    color: var(--color-text-tertiary);
+    color: var(--muted-foreground);
   }
 
   .grt-card__arrow {

@@ -5,32 +5,33 @@ import { join, basename } from "node:path";
 
 const SRC_DIR = join(process.cwd(), "src");
 const I18N_DIR = join(SRC_DIR, "i18n");
-const EN_FILE = join(I18N_DIR, "en.json");
+const DEFAULT_LOCALE = "zh-CN";
+const DEFAULT_FILE = join(I18N_DIR, `${DEFAULT_LOCALE}.json`);
 
 const errors = [];
 
-if (!existsSync(EN_FILE)) {
-  errors.push("Missing src/i18n/en.json — default translation file not found");
+if (!existsSync(DEFAULT_FILE)) {
+  errors.push(`Missing src/i18n/${DEFAULT_LOCALE}.json — default translation file not found`);
 }
 
-// Discover every locale dictionary (en.json, id.json, ...) and validate that
-// each one is in key parity with the English (default) source. This keeps the
+// Discover every locale dictionary and validate that each one is in key parity
+// with the default source. This keeps the
 // validator working no matter how many locales the project adds.
-let en = {};
+let source = {};
 const localeFiles = existsSync(I18N_DIR)
   ? readdirSync(I18N_DIR).filter((f) => f.endsWith(".json"))
   : [];
 
 try {
-  en = JSON.parse(readFileSync(EN_FILE, "utf8"));
+  source = JSON.parse(readFileSync(DEFAULT_FILE, "utf8"));
 } catch (error) {
-  errors.push(`Failed to load en.json: ${error.message}`);
+  errors.push(`Failed to load ${DEFAULT_LOCALE}.json: ${error.message}`);
 }
 
-const enKeys = Object.keys(en);
+const sourceKeys = Object.keys(source);
 
 for (const file of localeFiles) {
-  if (file === "en.json") continue;
+  if (file === `${DEFAULT_LOCALE}.json`) continue;
   const locale = basename(file, ".json");
   let dict = {};
   try {
@@ -39,14 +40,14 @@ for (const file of localeFiles) {
     errors.push(`Failed to load ${file}: ${error.message}`);
     continue;
   }
-  for (const key of enKeys) {
+  for (const key of sourceKeys) {
     if (!(key in dict)) {
       errors.push(`Missing ${locale} translation key: ${key}`);
     }
   }
   for (const key of Object.keys(dict)) {
-    if (!(key in en)) {
-      errors.push(`Extra ${locale} key missing from English source: ${key}`);
+    if (!(key in source)) {
+      errors.push(`Extra ${locale} key missing from default source: ${key}`);
     }
   }
 }

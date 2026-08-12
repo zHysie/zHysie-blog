@@ -1,6 +1,8 @@
 ---
 import { type Locale } from "../../lib/site-config";
 import { resolveRoute } from "../../i18n/routes";
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import { Button, Icon } from "../ui/index";
 import { heroVariantClasses, type HeroVariant } from "./hero.variants";
 
@@ -30,13 +32,15 @@ export interface Props {
   animatedHeadlineText?: string;
   typewriterLoop?: boolean;
   scrollZoom?: boolean;
+  asciiBackground?: ImageMetadata;
+  asciiEntrance?: "ripple";
 }
 
 const props = Astro.props as Props;
 const variant = props.variant ?? "centered";
 const headline = props.headline ?? props.title ?? "";
 const subheadline = props.subheadline ?? props.content;
-const locale = props.locale ?? "en";
+const locale = props.locale ?? "zh-CN";
 const primaryCta =
   props.primaryCta ??
   (props.ctaText && props.ctaHref
@@ -59,13 +63,52 @@ const headlinePrefix = hasAnimatedHeadline
     { "hero-wrap--behind-header": props.extendBehindHeader },
     { "hero-wrap--full": props.fullViewport },
     { "hero-wrap--scroll-zoom": props.scrollZoom },
+    { "hero-wrap--ascii": props.asciiBackground },
   ]}
   data-hero-scroll-zoom={props.scrollZoom ? "" : undefined}
+  data-ascii-entrance={props.asciiEntrance}
+  data-ascii-entrance-state={props.asciiEntrance ? "idle" : undefined}
 >
-  <div class="hero__backdrop" aria-hidden="true">
-    <span class="bg-grid"></span>
+  <div
+    class:list={[
+      "hero__backdrop",
+      { "hero__backdrop--ascii": props.asciiBackground },
+    ]}
+    aria-hidden="true"
+  >
+    {
+      props.asciiBackground ? (
+        <span
+          class="hero__ascii"
+          data-hero-ascii
+          data-ascii-src={props.asciiBackground.src}
+        >
+          <Image
+            class="hero__ascii-image"
+            src={props.asciiBackground}
+            alt=""
+            widths={[640, 960, 1280, 1600, 1920]}
+            sizes="100vw"
+            quality={78}
+            loading="eager"
+            decoding="async"
+            data-ascii-source
+          />
+          <span class="hero__ascii-tint" />
+          <canvas class="hero__ascii-canvas" data-ascii-canvas />
+          <span class="hero__ascii-veil" />
+        </span>
+      ) : (
+        <span class="bg-grid" />
+      )
+    }
     <span class="bg-glow"></span>
   </div>
+  {
+    props.fullViewport && props.asciiBackground && (
+      <span class="hero__transition" aria-hidden="true" />
+    )
+  }
   <section class={`${heroVariantClasses[variant]} container`}>
     <div class="hero__content">
       {
@@ -180,8 +223,113 @@ const headlinePrefix = hasAnimatedHeadline
   }
 
   .hero__backdrop :global(.bg-grid),
-  .hero__backdrop :global(.bg-glow) {
+  .hero__backdrop :global(.bg-glow),
+  .hero__ascii {
     z-index: 0;
+  }
+
+  .hero__backdrop--ascii :global(.bg-glow) {
+    opacity: 65%;
+    animation: none;
+  }
+
+  .hero__transition {
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    z-index: 0;
+    height: var(--hero-transition-depth);
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      color-mix(in srgb, var(--background) 10%, transparent) 28%,
+      color-mix(in srgb, var(--background) 42%, transparent) 56%,
+      color-mix(in srgb, var(--background) 78%, transparent) 78%,
+      var(--background) 100%
+    );
+    backdrop-filter: blur(var(--hero-transition-blur, 0.75rem));
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      var(--foreground) 62%,
+      var(--foreground) 100%
+    );
+    pointer-events: none;
+    transform: translateZ(0);
+  }
+
+  .hero__ascii,
+  .hero__ascii-image,
+  .hero__ascii-tint,
+  .hero__ascii-canvas,
+  .hero__ascii-veil {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .hero__ascii {
+    overflow: hidden;
+    opacity: 42%;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .hero__ascii-image {
+    object-fit: cover;
+    object-position: center;
+    filter: contrast(1.15) grayscale(0.28) saturate(1);
+    opacity: calc(0.92 * var(--hero-ascii-scene-opacity, 1));
+  }
+
+  .hero__ascii-tint {
+    background: var(--hero-ascii-tint);
+    mix-blend-mode: soft-light;
+    opacity: calc(0.38 * var(--hero-ascii-scene-opacity, 1));
+  }
+
+  .hero__ascii-canvas {
+    z-index: 1;
+    display: block;
+    mix-blend-mode: multiply;
+    opacity: 74%;
+    filter: drop-shadow(
+      0 0 0.45rem color-mix(in srgb, var(--hero-ascii-tint) 45%, transparent)
+    );
+  }
+
+  .hero__ascii-veil {
+    z-index: 2;
+    background: radial-gradient(
+      ellipse 78% 74% at 50% 52%,
+      transparent 42%,
+      color-mix(in srgb, var(--background) 55%, transparent) 100%
+    );
+    opacity: var(--hero-ascii-scene-opacity, 1);
+  }
+
+  .hero-wrap[data-ascii-entrance-state="playing"] .hero__content,
+  .hero-wrap[data-ascii-entrance-state="playing"] .hero__footer {
+    opacity: 0;
+  }
+
+  .hero-wrap[data-ascii-entrance-state="playing"] .hero__ascii {
+    opacity: 78%;
+  }
+
+  :global(html.dark) .hero__ascii {
+    opacity: 32%;
+  }
+
+  :global(html.dark) .hero__ascii-image {
+    filter: contrast(1.15) grayscale(0.28) saturate(1) brightness(0.58);
+  }
+
+  :global(html.dark) .hero__ascii-canvas {
+    mix-blend-mode: screen;
+    opacity: 68%;
   }
 
   .hero-wrap--scroll-zoom {
@@ -210,6 +358,15 @@ const headlinePrefix = hasAnimatedHeadline
     min-height: 100svh;
   }
 
+  .hero-wrap--full.hero-wrap--ascii {
+    --hero-spill-depth: var(--space-3xl);
+    --hero-transition-depth: calc(
+      var(--space-3xl) + var(--space-3xl) + var(--space-2xl)
+    );
+
+    min-height: calc(100svh + var(--hero-spill-depth));
+  }
+
   .hero-wrap--full .hero {
     align-content: center;
   }
@@ -235,6 +392,18 @@ const headlinePrefix = hasAnimatedHeadline
     line-height: 1.1;
     letter-spacing: var(--tracking-normal);
     text-transform: none;
+  }
+
+  .hero-wrap--full.hero-wrap--ascii .hero__content {
+    position: absolute;
+    z-index: 1;
+    bottom: calc(
+      var(--hero-spill-depth) + var(--space-lg) + var(--header-height-mobile) +
+        var(--space-lg) + var(--space-md)
+    );
+    left: 50%;
+    width: min(calc(100% - var(--space-xl)), 52rem);
+    translate: -50% 0;
   }
 
   .hero {
@@ -382,6 +551,7 @@ const headlinePrefix = hasAnimatedHeadline
     position: absolute;
     bottom: var(--space-lg);
     left: 50%;
+    z-index: 1;
     display: grid;
     justify-items: center;
     gap: var(--space-sm);
@@ -390,9 +560,14 @@ const headlinePrefix = hasAnimatedHeadline
     transform: translateX(-50%);
   }
 
+  .hero-wrap--full.hero-wrap--ascii .hero__footer {
+    bottom: calc(var(--hero-spill-depth) + var(--space-lg));
+  }
+
   .hero__footer p {
     margin: 0;
     color: var(--muted-foreground);
+    font-family: var(--font-cjk-serif);
     font-size: var(--text-sm);
   }
 
@@ -451,6 +626,11 @@ const headlinePrefix = hasAnimatedHeadline
   }
 
   @media (max-width: 48rem) {
+    .hero-wrap--full.hero-wrap--ascii {
+      --hero-spill-depth: var(--space-2xl);
+      --hero-transition-depth: calc(var(--space-3xl) + var(--space-2xl));
+    }
+
     .hero--split {
       grid-template-columns: 1fr;
     }
@@ -462,6 +642,18 @@ const headlinePrefix = hasAnimatedHeadline
 
     .hero__headline-typed {
       white-space: normal;
+    }
+
+    .hero__ascii {
+      opacity: 34%;
+    }
+
+    .hero__ascii-veil {
+      background: radial-gradient(
+        ellipse 88% 78% at 50% 52%,
+        transparent 38%,
+        color-mix(in srgb, var(--background) 58%, transparent) 100%
+      );
     }
   }
 
@@ -476,6 +668,16 @@ const headlinePrefix = hasAnimatedHeadline
     .hero__headline-caret {
       opacity: 1;
     }
+
+    .hero-wrap[data-ascii-entrance-state] .hero__content,
+    .hero-wrap[data-ascii-entrance-state] .hero__footer {
+      opacity: 1;
+      transition: none;
+    }
+
+    .hero-wrap[data-ascii-entrance-state] .hero__ascii {
+      transition: none;
+    }
   }
 </style>
 
@@ -483,6 +685,38 @@ const headlinePrefix = hasAnimatedHeadline
   const reduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
+
+  const ASCII_ENTRANCE_SESSION_KEY = "hero-ascii-ripple:v3";
+
+  const settleAsciiEntrance = (root: HTMLElement, reason: string) => {
+    root.dataset.asciiEntranceState = "complete";
+    root.dataset.asciiEntranceReason = reason;
+    delete root.dataset.asciiImpact;
+    root.style.removeProperty("--hero-ascii-scene-opacity");
+    root.dispatchEvent(new CustomEvent("hero-ascii-ready"));
+  };
+
+  document
+    .querySelectorAll('[data-ascii-entrance="ripple"]')
+    .forEach((root) => {
+      if (!(root instanceof HTMLElement)) return;
+
+      if (reduceMotion) {
+        settleAsciiEntrance(root, "reduced-motion");
+        return;
+      }
+
+      try {
+        root.dataset.asciiEntranceState = window.sessionStorage.getItem(
+          ASCII_ENTRANCE_SESSION_KEY,
+        )
+          ? "complete"
+          : "armed";
+        root.dataset.asciiEntranceReason = root.dataset.asciiEntranceState;
+      } catch {
+        settleAsciiEntrance(root, "storage-unavailable");
+      }
+    });
 
   document.querySelectorAll("[data-hero-typewriter]").forEach((element) => {
     if (!(element instanceof HTMLElement)) return;
@@ -525,7 +759,34 @@ const headlinePrefix = hasAnimatedHeadline
       window.setTimeout(typeNextCharacter, 450);
     };
 
-    startTypingCycle();
+    let typingStarted = false;
+    const beginTyping = () => {
+      if (typingStarted) return;
+      typingStarted = true;
+      startTypingCycle();
+    };
+
+    const homeResourceState =
+      document.documentElement.dataset.homeResourceState;
+    if (homeResourceState === "waiting" || homeResourceState === "loading") {
+      window.addEventListener("home-resources-ready", beginTyping, {
+        once: true,
+      });
+      return;
+    }
+
+    const entranceRoot = element.closest('[data-ascii-entrance="ripple"]');
+    if (
+      entranceRoot instanceof HTMLElement &&
+      entranceRoot.dataset.asciiEntranceState !== "complete"
+    ) {
+      entranceRoot.addEventListener("hero-ascii-ready", beginTyping, {
+        once: true,
+      });
+      return;
+    }
+
+    beginTyping();
   });
 
   document.querySelectorAll("[data-hero-scroll-zoom]").forEach((element) => {
@@ -552,6 +813,10 @@ const headlinePrefix = hasAnimatedHeadline
         "--hero-media-scale",
         String(1 + progress * 0.18),
       );
+      element.style.setProperty(
+        "--hero-transition-blur",
+        `${12 + progress * 10}px`,
+      );
     };
 
     const requestScaleUpdate = () => {
@@ -561,5 +826,544 @@ const headlinePrefix = hasAnimatedHeadline
 
     updateScale();
     window.addEventListener("scroll", requestScaleUpdate, { passive: true });
+  });
+
+  const ASCII_CHARACTERS = " .,:;irsXA253hMHGS#9B&@";
+  const ASCII_CELL_SIZE = 13;
+  const ASCII_CONTRAST = 1.15;
+  const ASCII_GRAYSCALE = 0.28;
+  const ASCII_TINT_OPACITY = 0.38;
+  const ASCII_FOREGROUND_MIX = 0.72;
+  const ASCII_ENTRANCE_FRAME_INTERVAL = 1000 / 30;
+  const ASCII_ENTRANCE_RING_END = 1100;
+  const ASCII_ENTRANCE_MORPH_START = 900;
+  const ASCII_ENTRANCE_LANDSCAPE_START = 1150;
+  const ASCII_ENTRANCE_END = 2400;
+
+  const seededNoise = (column: number, row: number, salt: number) => {
+    const value = Math.sin(
+      (column + 1) * 12.9898 + (row + 1) * 78.233 + salt * 37.719,
+    );
+    return value * 43758.5453 - Math.floor(value * 43758.5453);
+  };
+
+  const clampChannel = (value: number) =>
+    Math.min(255, Math.max(0, Math.round(value)));
+
+  const mixChannel = (source: number, target: number, amount: number) =>
+    clampChannel(source * (1 - amount) + target * amount);
+
+  const clampUnit = (value: number) => Math.min(1, Math.max(0, value));
+  const interpolate = (start: number, end: number, progress: number) =>
+    start + (end - start) * progress;
+  const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3);
+  const smoothStep = (value: number) => value * value * (3 - 2 * value);
+
+  const softLightChannel = (baseValue: number, tintValue: number) => {
+    const base = baseValue / 255;
+    const tint = tintValue / 255;
+    const curve =
+      base <= 0.25 ? ((16 * base - 12) * base + 4) * base : Math.sqrt(base);
+    const blended =
+      tint <= 0.5
+        ? base - (1 - 2 * tint) * base * (1 - base)
+        : base + (2 * tint - 1) * (curve - base);
+    return clampChannel(
+      baseValue * (1 - ASCII_TINT_OPACITY) + blended * 255 * ASCII_TINT_OPACITY,
+    );
+  };
+
+  document.querySelectorAll("[data-hero-ascii]").forEach((element) => {
+    if (!(element instanceof HTMLElement)) return;
+    if (element.dataset.asciiReady === "true") return;
+
+    const root = element.closest(".hero-wrap");
+    const canvas = element.querySelector("[data-ascii-canvas]");
+    const sourceImage = element.querySelector("[data-ascii-source]");
+    if (!(root instanceof HTMLElement)) return;
+    if (!(canvas instanceof HTMLCanvasElement)) {
+      settleAsciiEntrance(root, "canvas-unavailable");
+      return;
+    }
+    if (!(sourceImage instanceof HTMLImageElement)) {
+      settleAsciiEntrance(root, "image-unavailable");
+      return;
+    }
+
+    const context = canvas.getContext("2d", { alpha: true });
+    const sampleCanvas = document.createElement("canvas");
+    const sampleContext = sampleCanvas.getContext("2d", {
+      alpha: false,
+      willReadFrequently: true,
+    });
+    const colorCanvas = document.createElement("canvas");
+    const colorContext = colorCanvas.getContext("2d", {
+      alpha: false,
+      willReadFrequently: true,
+    });
+    const finalSceneCanvas = document.createElement("canvas");
+    const finalSceneContext = finalSceneCanvas.getContext("2d", {
+      alpha: true,
+    });
+    if (!context || !sampleContext || !colorContext || !finalSceneContext) {
+      settleAsciiEntrance(root, "canvas-context-unavailable");
+      return;
+    }
+
+    element.dataset.asciiReady = "true";
+    colorCanvas.width = 1;
+    colorCanvas.height = 1;
+
+    interface AsciiCell {
+      x: number;
+      y: number;
+      red: number;
+      green: number;
+      blue: number;
+      alpha: number;
+      glyphIndex: number;
+      glyphDrift: number;
+    }
+
+    interface EntranceCell {
+      cell: AsciiCell;
+      ringX: number;
+      ringY: number;
+      rotation: number;
+      delay: number;
+    }
+
+    let cells: AsciiCell[] = [];
+    let entranceCells: EntranceCell[] = [];
+    let displayWidth = 0;
+    let displayHeight = 0;
+    let pixelRatio = 1;
+    let entranceCenterX = 0;
+    let entranceCenterY = 0;
+    let resizeTimer = 0;
+    let lastFrameTime = 0;
+    let imageDecoded = false;
+    let entranceStartTime = 0;
+    let entranceStarted = false;
+    let entranceFallbackTimer = 0;
+
+    const readCanvasColor = (color: string) => {
+      colorContext.clearRect(0, 0, 1, 1);
+      colorContext.fillStyle = color;
+      colorContext.fillRect(0, 0, 1, 1);
+      return colorContext.getImageData(0, 0, 1, 1).data;
+    };
+
+    const buildEntranceCells = () => {
+      entranceCells = [];
+      if (!cells.length) return;
+
+      const bounds = element.getBoundingClientRect();
+      entranceCenterX = Math.min(
+        displayWidth,
+        Math.max(0, window.innerWidth / 2 - bounds.left),
+      );
+      entranceCenterY = Math.min(
+        displayHeight,
+        Math.max(0, window.innerHeight / 2 - bounds.top),
+      );
+
+      const isMobile = window.matchMedia("(max-width: 48rem)").matches;
+      const cellLimit = isMobile ? 560 : 960;
+      const targetCount = Math.min(cellLimit, cells.length);
+      const innerRadius = isMobile ? 34 : 44;
+      const ringCount = isMobile ? 9 : 13;
+      const farthestX = Math.max(
+        entranceCenterX,
+        displayWidth - entranceCenterX,
+      );
+      const farthestY = Math.max(
+        entranceCenterY,
+        displayHeight - entranceCenterY,
+      );
+      const maxRadius = Math.hypot(farthestX, farthestY) * 1.04;
+      const ringPoints: Array<{
+        x: number;
+        y: number;
+        rotation: number;
+        delay: number;
+      }> = [];
+
+      const radii = Array.from({ length: ringCount }, (_, index) =>
+        interpolate(innerRadius, maxRadius, index / (ringCount - 1)),
+      );
+      const radiusTotal = radii.reduce((total, radius) => total + radius, 0);
+
+      for (let ring = 0; ring < radii.length; ring += 1) {
+        const radius = radii[ring];
+        const remainingRings = radii.length - ring - 1;
+        const availablePoints = targetCount - ringPoints.length;
+        const pointCount = Math.max(
+          8,
+          Math.min(
+            availablePoints - remainingRings * 8,
+            Math.round((targetCount * radius) / radiusTotal),
+          ),
+        );
+        const ringOffset = seededNoise(radius, pointCount, 11) * Math.PI * 2;
+        const normalizedRadius = clampUnit(radius / maxRadius);
+
+        for (let point = 0; point < pointCount; point += 1) {
+          const angle = ringOffset + (point / pointCount) * Math.PI * 2;
+          ringPoints.push({
+            x: entranceCenterX + Math.cos(angle) * radius,
+            y: entranceCenterY + Math.sin(angle) * radius,
+            rotation: angle - Math.PI / 2,
+            delay: normalizedRadius * 0.3,
+          });
+        }
+      }
+
+      const actualCount = Math.min(targetCount, ringPoints.length);
+      for (let index = 0; index < actualCount; index += 1) {
+        const cellIndex = Math.min(
+          cells.length - 1,
+          Math.floor((index * cells.length) / actualCount),
+        );
+        const cell = cells[cellIndex];
+        const point = ringPoints[index];
+        entranceCells.push({
+          cell,
+          ringX: point.x,
+          ringY: point.y,
+          rotation: point.rotation,
+          delay: point.delay,
+        });
+      }
+
+      element.dataset.asciiEntranceGlyphCount = String(entranceCells.length);
+      element.dataset.asciiEntranceCenter = `${Math.round(entranceCenterX)},${Math.round(entranceCenterY)}`;
+    };
+
+    const beginEntrance = () => {
+      if (
+        entranceStarted ||
+        root.dataset.asciiEntranceState !== "armed" ||
+        !entranceCells.length
+      ) {
+        return false;
+      }
+
+      try {
+        window.sessionStorage.setItem(ASCII_ENTRANCE_SESSION_KEY, "played");
+      } catch {
+        settleAsciiEntrance(root, "storage-unavailable");
+        return false;
+      }
+
+      window.clearTimeout(entranceFallbackTimer);
+      entranceStarted = true;
+      entranceStartTime = performance.now();
+      root.dataset.asciiEntranceState = "playing";
+      root.dataset.asciiEntranceReason = "first-visit";
+      root.style.setProperty("--hero-ascii-scene-opacity", "0");
+      return true;
+    };
+
+    const renderFinalScene = (fontFamily: string) => {
+      finalSceneCanvas.width = canvas.width;
+      finalSceneCanvas.height = canvas.height;
+      finalSceneContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      finalSceneContext.clearRect(0, 0, displayWidth, displayHeight);
+      finalSceneContext.font = `${ASCII_CELL_SIZE * 0.88}px ${fontFamily}`;
+      finalSceneContext.textAlign = "center";
+      finalSceneContext.textBaseline = "middle";
+
+      for (const cell of cells) {
+        finalSceneContext.fillStyle = `rgb(${cell.red} ${cell.green} ${cell.blue} / ${cell.alpha})`;
+        finalSceneContext.fillText(
+          ASCII_CHARACTERS[cell.glyphIndex],
+          cell.x,
+          cell.y,
+        );
+      }
+    };
+
+    const buildCells = () => {
+      if (!imageDecoded || sourceImage.naturalWidth <= 0) return;
+
+      const bounds = element.getBoundingClientRect();
+      displayWidth = Math.max(1, Math.round(bounds.width));
+      displayHeight = Math.max(1, Math.round(bounds.height));
+
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(displayWidth * pixelRatio);
+      canvas.height = Math.round(displayHeight * pixelRatio);
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+
+      const columns = Math.max(1, Math.ceil(displayWidth / ASCII_CELL_SIZE));
+      const rows = Math.max(1, Math.ceil(displayHeight / ASCII_CELL_SIZE));
+      sampleCanvas.width = columns;
+      sampleCanvas.height = rows;
+
+      const sourceWidth = sourceImage.naturalWidth;
+      const sourceHeight = sourceImage.naturalHeight;
+      const scale = Math.max(columns / sourceWidth, rows / sourceHeight);
+      const drawWidth = sourceWidth * scale;
+      const drawHeight = sourceHeight * scale;
+      const drawX = (columns - drawWidth) / 2;
+      const drawY = (rows - drawHeight) / 2;
+
+      sampleContext.clearRect(0, 0, columns, rows);
+      sampleContext.drawImage(sourceImage, drawX, drawY, drawWidth, drawHeight);
+
+      const pixels = sampleContext.getImageData(0, 0, columns, rows).data;
+      const computed = getComputedStyle(element);
+      const tint = readCanvasColor(
+        computed.getPropertyValue("--hero-ascii-tint").trim(),
+      );
+      const foreground = readCanvasColor(computed.color);
+      const nextCells: AsciiCell[] = [];
+
+      for (let row = 0; row < rows; row += 1) {
+        for (let column = 0; column < columns; column += 1) {
+          const pixelIndex = (row * columns + column) * 4;
+          let red = pixels[pixelIndex];
+          let green = pixels[pixelIndex + 1];
+          let blue = pixels[pixelIndex + 2];
+
+          red = (red - 127.5) * ASCII_CONTRAST + 127.5;
+          green = (green - 127.5) * ASCII_CONTRAST + 127.5;
+          blue = (blue - 127.5) * ASCII_CONTRAST + 127.5;
+
+          const luminance = red * 0.2126 + green * 0.7152 + blue * 0.0722;
+          red = red * (1 - ASCII_GRAYSCALE) + luminance * ASCII_GRAYSCALE;
+          green = green * (1 - ASCII_GRAYSCALE) + luminance * ASCII_GRAYSCALE;
+          blue = blue * (1 - ASCII_GRAYSCALE) + luminance * ASCII_GRAYSCALE;
+
+          red = softLightChannel(red, tint[0]);
+          green = softLightChannel(green, tint[1]);
+          blue = softLightChannel(blue, tint[2]);
+
+          const adjustedLuminance =
+            red * 0.2126 + green * 0.7152 + blue * 0.0722;
+          const darkness = Math.min(
+            1,
+            Math.max(0, (255 - adjustedLuminance) / 218),
+          );
+          if (darkness < 0.035) continue;
+
+          red = mixChannel(red, foreground[0], ASCII_FOREGROUND_MIX);
+          green = mixChannel(green, foreground[1], ASCII_FOREGROUND_MIX);
+          blue = mixChannel(blue, foreground[2], ASCII_FOREGROUND_MIX);
+
+          const glyphNoise = seededNoise(column, row, 5);
+
+          nextCells.push({
+            x: (column + 0.5) * ASCII_CELL_SIZE,
+            y: (row + 0.5) * ASCII_CELL_SIZE,
+            red: clampChannel(red),
+            green: clampChannel(green),
+            blue: clampChannel(blue),
+            alpha: Math.min(0.92, 0.18 + darkness * 0.78),
+            glyphIndex: Math.min(
+              ASCII_CHARACTERS.length - 1,
+              Math.floor(darkness * ASCII_CHARACTERS.length),
+            ),
+            glyphDrift: Math.floor(glyphNoise * 5) - 2,
+          });
+        }
+      }
+
+      cells = nextCells;
+      element.dataset.asciiCellCount = String(cells.length);
+      renderFinalScene(
+        getComputedStyle(element).getPropertyValue("--font-mono").trim(),
+      );
+      buildEntranceCells();
+      beginEntrance();
+      renderFrame(performance.now(), true);
+    };
+
+    const drawRotatedGlyph = (
+      glyph: string,
+      x: number,
+      y: number,
+      rotation: number,
+    ) => {
+      context.save();
+      context.translate(x, y);
+      context.rotate(rotation);
+      context.fillText(glyph, 0, 0);
+      context.restore();
+    };
+
+    const drawEntranceFrame = (time: number, fontFamily: string) => {
+      const elapsed = Math.max(0, time - entranceStartTime);
+      context.font = `${ASCII_CELL_SIZE * 0.9}px ${fontFamily}`;
+
+      const ringProgress = clampUnit(elapsed / ASCII_ENTRANCE_RING_END);
+      const morphProgress = smoothStep(
+        clampUnit(
+          (elapsed - ASCII_ENTRANCE_MORPH_START) /
+            (ASCII_ENTRANCE_END - ASCII_ENTRANCE_MORPH_START),
+        ),
+      );
+      const sceneOpacity = easeOutCubic(
+        clampUnit((elapsed - 1250) / (ASCII_ENTRANCE_END - 1250)),
+      );
+      root.style.setProperty(
+        "--hero-ascii-scene-opacity",
+        String(sceneOpacity),
+      );
+      const landscapeProgress = smoothStep(
+        clampUnit(
+          (elapsed - ASCII_ENTRANCE_LANDSCAPE_START) /
+            (ASCII_ENTRANCE_END - ASCII_ENTRANCE_LANDSCAPE_START),
+        ),
+      );
+      if (landscapeProgress > 0.001) {
+        context.save();
+        context.globalAlpha = landscapeProgress;
+        context.drawImage(finalSceneCanvas, 0, 0, displayWidth, displayHeight);
+        context.restore();
+      }
+
+      let renderedGlyphs = 0;
+      for (const entranceCell of entranceCells) {
+        const localRingProgress = easeOutCubic(
+          clampUnit(
+            (ringProgress - entranceCell.delay) /
+              Math.max(0.01, 1 - entranceCell.delay),
+          ),
+        );
+        if (localRingProgress <= 0.001) continue;
+        const ringX = interpolate(
+          entranceCenterX,
+          entranceCell.ringX,
+          localRingProgress,
+        );
+        const ringY = interpolate(
+          entranceCenterY,
+          entranceCell.ringY,
+          localRingProgress,
+        );
+        const x = interpolate(ringX, entranceCell.cell.x, morphProgress);
+        const y = interpolate(ringY, entranceCell.cell.y, morphProgress);
+        const rotation = entranceCell.rotation * (1 - morphProgress);
+        const alpha =
+          interpolate(
+            Math.min(0.94, 0.18 + localRingProgress * 0.76),
+            entranceCell.cell.alpha,
+            morphProgress,
+          ) *
+          (1 - landscapeProgress);
+        if (alpha <= 0.001) continue;
+        const glyphIndex = Math.min(
+          ASCII_CHARACTERS.length - 1,
+          Math.max(
+            1,
+            entranceCell.cell.glyphIndex +
+              Math.round((1 - morphProgress) * entranceCell.cell.glyphDrift),
+          ),
+        );
+        context.fillStyle = `rgb(${entranceCell.cell.red} ${entranceCell.cell.green} ${entranceCell.cell.blue} / ${alpha})`;
+        drawRotatedGlyph(ASCII_CHARACTERS[glyphIndex], x, y, rotation);
+        renderedGlyphs += 1;
+      }
+
+      if (elapsed >= ASCII_ENTRANCE_END) {
+        entranceStarted = false;
+        entranceCells = [];
+        settleAsciiEntrance(root, "played");
+      }
+
+      return renderedGlyphs;
+    };
+
+    const renderFrame = (time: number, force = false) => {
+      if (
+        entranceStarted &&
+        !force &&
+        time - lastFrameTime < ASCII_ENTRANCE_FRAME_INTERVAL
+      ) {
+        window.requestAnimationFrame(renderFrame);
+        return;
+      }
+      lastFrameTime = time;
+      context.clearRect(0, 0, displayWidth, displayHeight);
+
+      const fontFamily = getComputedStyle(element)
+        .getPropertyValue("--font-mono")
+        .trim();
+      context.font = `${ASCII_CELL_SIZE * 0.88}px ${fontFamily}`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      if (entranceStarted) {
+        const renderedGlyphs = drawEntranceFrame(time, fontFamily);
+        element.dataset.asciiGlyphCount = String(renderedGlyphs);
+        if (entranceStarted) {
+          window.requestAnimationFrame(renderFrame);
+        } else {
+          window.requestAnimationFrame((nextTime) =>
+            renderFrame(nextTime, true),
+          );
+        }
+        return;
+      }
+
+      context.drawImage(finalSceneCanvas, 0, 0, displayWidth, displayHeight);
+      element.dataset.asciiGlyphCount = String(cells.length);
+    };
+
+    const scheduleBuild = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(buildCells, 120);
+    };
+
+    const start = () => {
+      buildCells();
+    };
+
+    const resizeObserver = new ResizeObserver(scheduleBuild);
+    resizeObserver.observe(element);
+
+    const themeObserver = new MutationObserver(() => {
+      buildCells();
+    });
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    const decodeAndStart = async () => {
+      try {
+        await sourceImage.decode();
+      } catch {
+        if (!sourceImage.complete || sourceImage.naturalWidth <= 0) {
+          settleAsciiEntrance(root, "image-decode-failed");
+          return;
+        }
+      }
+
+      imageDecoded = true;
+      start();
+    };
+
+    if (root.dataset.asciiEntranceState === "armed") {
+      entranceFallbackTimer = window.setTimeout(() => {
+        if (root.dataset.asciiEntranceState === "armed") {
+          settleAsciiEntrance(root, "initialization-timeout");
+        }
+      }, 5500);
+    }
+
+    if (sourceImage.complete && sourceImage.naturalWidth > 0) {
+      void decodeAndStart();
+    } else {
+      sourceImage.addEventListener("load", () => void decodeAndStart(), {
+        once: true,
+      });
+      sourceImage.addEventListener(
+        "error",
+        () => settleAsciiEntrance(root, "image-load-failed"),
+        { once: true },
+      );
+    }
   });
 </script>

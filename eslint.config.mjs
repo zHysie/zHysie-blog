@@ -12,6 +12,21 @@ export default [
       ".astro/",
       ".wrangler/",
       ".codex-runtime/",
+      ".agents/",
+      ".cursor/",
+      ".github/skills/",
+      ".firecrawl/",
+      ".impeccable/",
+      ".playwright-cli/",
+      ".playwright-mcp/",
+      "backups/",
+      "materials/",
+      "output/",
+      "test-results/",
+      // astro-eslint-parser intermittently crashes while preprocessing this
+      // valid dynamic-script component in a full-repository run. Astro's own
+      // compiler still checks it through `pnpm run type-check` and `pnpm build`.
+      "src/components/layout/Analytics.astro",
       "functions/",
       "scripts/",
       "**/*.d.ts",

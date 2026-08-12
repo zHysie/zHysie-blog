@@ -14,8 +14,8 @@ sidebar:
 ## Clone & Install
 
 ```bash
-git clone https://github.com/milzamsz/astro-cloudflare-starter.git
-cd astro-cloudflare
+git clone https://github.com/zHysie/zHysie-blog.git
+cd zHysie-blog
 pnpm install
 ```
 

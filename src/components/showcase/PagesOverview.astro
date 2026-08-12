@@ -25,7 +25,7 @@ const pages: { label: string; href: string; desc: string }[] = [
     <p class="section-head__eyebrow">Pages</p>
     <h1 class="section-head__title">Pages Overview</h1>
     <p class="section-head__lead">
-      Every page in the starter, ready to customize.
+      当前站点的页面索引，可用于设计系统内部检查。
     </p>
   </header>
 
@@ -33,7 +33,10 @@ const pages: { label: string; href: string; desc: string }[] = [
     {
       pages.map((page) => (
         <li>
-          <a class="pages-overview__card" href={resolveRoute(locale, page.href)}>
+          <a
+            class="pages-overview__card"
+            href={resolveRoute(locale, page.href)}
+          >
             <span class="pages-overview__name">{page.label}</span>
             <span class="pages-overview__desc">{page.desc}</span>
           </a>

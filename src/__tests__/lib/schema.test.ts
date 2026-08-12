@@ -50,22 +50,22 @@ describe("buildBlogPostingSchema", () => {
     const post = {
       id: "welcome",
       data: {
-        title: "Welcome",
-        description: "Hello world",
+        title: "欢迎",
+        description: "你好，世界",
         publishDate: new Date("2025-01-01"),
-        author: "Admin",
+        author: "zHysie",
         tags: ["astro"],
-        locale: "en",
+        locale: "zh-CN",
       },
     };
     const schema = buildBlogPostingSchema(post, siteConfig);
     expect(schema["@type"]).toBe("BlogPosting");
-    expect(schema.headline).toBe("Welcome");
-    expect(schema.author).toEqual({ "@type": "Person", name: "Admin" });
+    expect(schema.headline).toBe("欢迎");
+    expect(schema.author).toEqual({ "@type": "Person", name: "zHysie" });
     expect(schema.datePublished).toBe("2025-01-01T00:00:00.000Z");
-    expect(schema.mainEntityOfPage).toBe(`${siteConfig.url}/blog/welcome`);
+    expect(schema.mainEntityOfPage).toBe(`${siteConfig.url}/posts/welcome`);
     expect(schema.keywords).toBe("astro");
-    expect(schema.inLanguage).toBe("en");
+    expect(schema.inLanguage).toBe("zh-CN");
   });
 
   it("falls back to publishDate when updatedAt is missing", () => {
@@ -73,12 +73,15 @@ describe("buildBlogPostingSchema", () => {
       id: "welcome",
       data: {
         title: "Welcome",
-        description: "Hi",
         publishDate: new Date("2025-01-01"),
       },
+      body: "# Welcome\n\nDescription generated from the article body.",
     };
     const schema = buildBlogPostingSchema(post, siteConfig);
     expect(schema.dateModified).toBe("2025-01-01T00:00:00.000Z");
+    expect(schema.description).toBe(
+      "Description generated from the article body.",
+    );
   });
 });
 
@@ -97,8 +100,8 @@ describe("buildFAQSchema", () => {
 describe("buildBreadcrumbSchema", () => {
   it("builds a BreadcrumbList with positions", () => {
     const schema = buildBreadcrumbSchema([
-      { label: "Home", href: "/" },
-      { label: "Blog", href: "/blog" },
+      { label: "首页", href: "/" },
+      { label: "文章", href: "/posts" },
     ]);
     expect(schema["@type"]).toBe("BreadcrumbList");
     expect(schema.itemListElement).toHaveLength(2);

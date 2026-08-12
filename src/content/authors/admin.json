@@ -1,9 +1,9 @@
 {
-  "name": "Admin",
-  "bio": "Site administrator and content editor for the Astro Cloudflare starter.",
+  "name": "zHysie",
+  "bio": "记录学习、开发、写作与日常。",
   "avatar": "/images/author.jpg",
   "social": {
-    "github": "milzamsz",
-    "linkedin": "milzamsz"
+    "github": "zHysie",
+    "email": "milzamsz@gmail.com"
   }
 }

@@ -4,6 +4,7 @@ import { Card } from "../ui/index";
 import { resolveRoute } from "../../i18n/routes";
 import { type Locale } from "../../lib/site-config";
 import { t } from "../../i18n/ui";
+import { getMarkdownExcerpt } from "../../lib/blog";
 import TagList from "./TagList.astro";
 import BlogImageSVG from "./BlogImageSVG.astro";
 
@@ -27,12 +28,9 @@ const readingTime = Math.max(
   1,
   Math.ceil((post.body ?? "").trim().split(/\s+/).filter(Boolean).length / 200),
 );
-const excerpt =
-  post.data.description.length > 180
-    ? `${post.data.description.slice(0, 177)}...`
-    : post.data.description;
-const href = resolveRoute(locale, `/blog/${post.id}`);
-const dateLabel = publishDate.toLocaleDateString("en-US", {
+const excerpt = getMarkdownExcerpt(post.body ?? "", 180);
+const href = resolveRoute(locale, `/posts/${post.id}`);
+const dateLabel = publishDate.toLocaleDateString("zh-CN", {
   year: "numeric",
   month: "short",
   day: "numeric",
@@ -40,17 +38,29 @@ const dateLabel = publishDate.toLocaleDateString("en-US", {
 ---
 
 <Card hover={true} class={`blog-card blog-card--${variant}`}>
-  <a slot="header" class="blog-card__media" href={href} aria-hidden="true" tabindex="-1">
+  <a
+    slot="header"
+    class="blog-card__media"
+    href={href}
+    aria-hidden="true"
+    tabindex="-1"
+  >
     <BlogImageSVG slug={post.data.svgSlug ?? post.id} title={post.data.title} />
   </a>
   <div class="blog-card__body">
-    {variant === "list" && <span class="blog-card__kicker">Featured</span>}
+    {variant === "list" && <span class="blog-card__kicker">精选</span>}
     <p class="blog-card__meta">
       <time datetime={publishDate.toISOString()}>{dateLabel}</time>
       <span class="blog-card__dot" aria-hidden="true">&middot;</span>
-      <span>{t(locale, "blog.minutesRead").replace("{n}", String(readingTime))}</span>
+      <span
+        >{
+          t(locale, "blog.minutesRead").replace("{n}", String(readingTime))
+        }</span
+      >
     </p>
-    <Heading class="blog-card__title"><a href={href}>{post.data.title}</a></Heading>
+    <Heading class="blog-card__title"
+      ><a href={href}>{post.data.title}</a></Heading
+    >
     <p class="blog-card__excerpt">{excerpt}</p>
     <TagList tags={post.data.tags ?? []} locale={locale} />
   </div>

@@ -8,7 +8,7 @@ test.describe("navigation chrome", () => {
     // Positive proof we're on this site, not a colliding dev server on 4321
     await expect(page.locator(".logo").first()).toHaveAttribute(
       "aria-label",
-      "Astro Cloudflare",
+      "zHysie",
       { timeout: 30_000 },
     );
     await expect(page.locator(".header__list a").first()).toBeVisible({
@@ -16,30 +16,32 @@ test.describe("navigation chrome", () => {
     });
   });
 
-  test("language switcher is present and links to the other locale", async ({
-    page,
-  }) => {
+  test("public site declares the single Chinese locale", async ({ page }) => {
     test.setTimeout(60_000);
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    const switcher = page.locator(".language-switcher").first();
-    await expect(switcher).toBeVisible({ timeout: 30_000 });
-    const href = await switcher.getAttribute("href");
-    expect(href).toBeTruthy();
+    await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
+    await expect(page.locator(".language-switcher")).toHaveCount(0);
   });
 
   test("dark mode toggle flips the html dark class", async ({ page }) => {
     test.setTimeout(60_000);
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/about", { waitUntil: "domcontentloaded" });
     const toggle = page.locator("[data-theme-toggle]").first();
     await expect(toggle).toBeVisible({ timeout: 30_000 });
+    await expect(toggle).toHaveAttribute("data-theme-ready", "true", {
+      timeout: 30_000,
+    });
     const before = await page.evaluate(() =>
       document.documentElement.classList.contains("dark"),
     );
     await toggle.click();
-    const after = await page.evaluate(() =>
-      document.documentElement.classList.contains("dark"),
-    );
-    expect(after).toBe(!before);
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          document.documentElement.classList.contains("dark"),
+        ),
+      )
+      .toBe(!before);
   });
 
   test("Ctrl+K opens the search modal", async ({ page }) => {

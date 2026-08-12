@@ -1,24 +1,24 @@
-// To add a language: extend this union (e.g. "en" | "id"), add the code to
+// To add a language: extend this union, add the code to
 // SITE_CONFIG.locales, add label/prefix entries below, create a matching
-// translations file in src/i18n, and add localized content + [locale] routes.
-export type Locale = "en";
+// translations file in src/i18n, and add localized content and route handling.
+export type Locale = "zh-CN";
 
 export const SITE_CONFIG = {
-  url: "https://astro-cloudflare-starter.pages.dev",
+  url: "https://zhysie.com",
   /** Default locale for fallback. */
-  defaultLocale: "en" as const,
+  defaultLocale: "zh-CN" as const,
   /** Supported locales. */
-  locales: ["en"] as const,
+  locales: ["zh-CN"] as const,
   /** Human-readable locale labels. */
   localeLabels: {
-    en: "English",
+    "zh-CN": "简体中文",
   } as const,
   /** Short locale codes for URL prefixes. */
   localePrefixes: {
-    en: "en",
+    "zh-CN": "zh-cn",
   } as const,
   /** Site name for metadata and JSON-LD. */
-  name: "Astro Cloudflare",
+  name: "zHysie",
   /** Short description for metadata. */
-  description: "Marketing, blog, and docs starter — multilanguage-ready.",
+  description: "zHysie 的个人网站：记录学习、开发、写作与日常。",
 } as const;

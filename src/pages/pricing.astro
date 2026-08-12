@@ -7,7 +7,7 @@ import Hero from "../components/Hero.astro";
 import CTA from "../components/CTA.astro";
 import { Button, Icon } from "../components/ui/index";
 
-const locale = (Astro.currentLocale || "en") as "en";
+const locale = "zh-CN" as const;
 
 const allPages: CollectionEntry<"pages">[] = await getCollection("pages");
 const page = allPages.find(
@@ -35,43 +35,26 @@ interface Plan {
 
 const plans: Plan[] = [
   {
-    name: "Starter",
-    price: "$0",
-    period: "/ forever",
-    description: "Everything you need to launch a personal site.",
-    features: [
-      "Static site generation",
-      "Blog & docs collections",
-      "SEO, sitemap & RSS",
-      "Community support",
-    ],
-    cta: { label: "Get started", href: "/contact" },
+    name: "阅读",
+    price: "开放",
+    description: "文章、日常、时光轴与实验页面都可以直接访问。",
+    features: ["无需账户或订阅", "支持 RSS 与站内搜索", "欢迎保留来源后分享"],
+    cta: { label: "浏览文章", href: "/posts" },
   },
   {
-    name: "Professional",
-    price: "$29",
-    period: "/ month",
-    description: "For teams that need performance and reliability.",
-    features: [
-      "Everything in Starter",
-      "Cloudflare edge deployment",
-      "R2 media integration",
-      "Priority email support",
-    ],
-    cta: { label: "Start free trial", href: "/contact" },
+    name: "交流",
+    price: "免费",
+    description: "围绕文章、学习方法和具体技术问题展开交流。",
+    features: ["请附上必要上下文", "适合范围明确的问题", "不承诺固定回复时限"],
+    cta: { label: "联系我", href: "/contact" },
     popular: true,
   },
   {
-    name: "Enterprise",
-    price: "Custom",
-    description: "Dedicated infrastructure, SLAs, and onboarding.",
-    features: [
-      "Everything in Professional",
-      "Dedicated infrastructure",
-      "99.9% uptime SLA",
-      "Solutions engineering",
-    ],
-    cta: { label: "Contact sales", href: "/contact" },
+    name: "协作",
+    price: "单独沟通",
+    description: "根据真实目标、现有代码、范围与交付方式判断。",
+    features: ["不设置虚构套餐", "先确认边界与预期", "按实际情况决定是否开展"],
+    cta: { label: "说明你的问题", href: "/contact" },
   },
 ];
 ---
@@ -87,7 +70,7 @@ const plans: Plan[] = [
       <Hero
         variant="centered"
         size="md"
-        eyebrow="Pricing"
+        eyebrow="交流与协作"
         headline={heroSection.title || page?.data.title || ""}
         subheadline={heroSection.content}
         locale={locale}
@@ -100,11 +83,12 @@ const plans: Plan[] = [
       {
         plans.map((plan) => (
           <article
-            class:list={["pricing__card", plan.popular && "pricing__card--popular"]}
+            class:list={[
+              "pricing__card",
+              plan.popular && "pricing__card--popular",
+            ]}
           >
-            {plan.popular && (
-              <span class="pricing__badge">Most popular</span>
-            )}
+            {plan.popular && <span class="pricing__badge">推荐入口</span>}
             <h2 class="pricing__name">{plan.name}</h2>
             <p class="pricing__price">
               <span class="pricing__amount">{plan.price}</span>
@@ -135,9 +119,9 @@ const plans: Plan[] = [
   </section>
 
   <CTA
-    title="Questions about pricing?"
-    content="Talk to our team and we'll help you choose the right plan."
-    ctaText="Contact us"
+    title="没有适合你的固定选项？"
+    content="直接说明你正在处理什么，以及希望得到怎样的帮助。"
+    ctaText="联系我"
     ctaHref="/contact"
     locale={locale}
   />

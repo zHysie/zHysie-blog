@@ -12,6 +12,21 @@ interface ActivityPulseProps {
   subtitle?: string;
 }
 
+const ASCII_SEGMENT_PATTERN = /([A-Za-z0-9()]+)/g;
+const ASCII_SEGMENT_ONLY_PATTERN = /^[A-Za-z0-9()]+$/;
+
+function renderMixedTypography(text: string) {
+  return text.split(ASCII_SEGMENT_PATTERN).map((segment, index) =>
+    ASCII_SEGMENT_ONLY_PATTERN.test(segment) ? (
+      <span key={`${segment}-${index}`} className="font-mono">
+        {segment}
+      </span>
+    ) : (
+      segment
+    ),
+  );
+}
+
 export function ActivityPulse({
   data,
   title = "创作律动",
@@ -58,8 +73,14 @@ export function ActivityPulse({
     return out;
   }, [data]);
 
-  const totalPosts = useMemo(() => data.reduce((acc, curr) => acc + curr.posts, 0), [data]);
-  const totalDaily = useMemo(() => data.reduce((acc, curr) => acc + curr.daily, 0), [data]);
+  const totalPosts = useMemo(
+    () => data.reduce((acc, curr) => acc + curr.posts, 0),
+    [data],
+  );
+  const totalDaily = useMemo(
+    () => data.reduce((acc, curr) => acc + curr.daily, 0),
+    [data],
+  );
 
   const maxPostsInView = Math.max(...displayData.map((d) => d.posts), 0);
   const maxDailyInView = Math.max(...displayData.map((d) => d.daily), 0);
@@ -70,43 +91,56 @@ export function ActivityPulse({
     return `${Math.max(4, scaled)}px`;
   }
 
-  // User's requested base colors
-  // Pink (posts/up): #e3acb7
-  // Blue (daily/down): #6ea8da
-  // They requested it to be transparent/grayish, so we'll use opacity /60
-
   return (
-    <section className="mt-20 md:mt-32 pb-12">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+    <section className="mt-20 pb-12 md:mt-32">
+      <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <div className="flex items-center gap-3 mb-4 border-b border-gray-200 dark:border-gray-800 pb-4 w-fit">
-            <span className="h-px w-8 bg-[#6ea8da]/60"></span>
-            <h2 className="text-xl font-serif font-medium text-black dark:text-white">{title}</h2>
+          <div className="border-border mb-4 flex w-fit items-center gap-3 border-b pb-4">
+            <span className="h-px w-8 bg-[var(--brand-logo-blue)] opacity-60"></span>
+            <h2 className="text-foreground font-serif text-xl font-medium">
+              {title}
+            </h2>
           </div>
-          <p className="text-sm font-mono text-gray-500 dark:text-gray-400">{subtitle}</p>
+          <p className="text-muted-foreground font-sans text-sm">
+            {renderMixedTypography(subtitle)}
+          </p>
         </div>
 
-        <div className="flex gap-8 font-mono">
+        <div className="flex gap-8 font-sans">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-gray-500 dark:text-gray-400">文章 (Posts)</span>
-            <span className="text-2xl" style={{ color: "#6ea8da" }}>{totalPosts}</span>
+            <span className="text-muted-foreground text-[10px] uppercase">
+              {renderMixedTypography("文章 (Posts)")}
+            </span>
+            <span
+              className="font-mono text-2xl"
+              style={{ color: "var(--brand-logo-blue)" }}
+            >
+              {totalPosts}
+            </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-gray-500 dark:text-gray-400">日常 (Daily)</span>
-            <span className="text-2xl" style={{ color: "#e3acb7" }}>{totalDaily}</span>
+            <span className="text-muted-foreground text-[10px] uppercase">
+              {renderMixedTypography("日常 (Daily)")}
+            </span>
+            <span
+              className="font-mono text-2xl"
+              style={{ color: "var(--brand-logo-pink)" }}
+            >
+              {totalDaily}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="relative h-64 w-full flex items-center justify-between group/container my-8">
+      <div className="group/container relative my-8 flex h-64 w-full items-center justify-between">
         {/* Background Center Line */}
-        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-black/10 dark:bg-white/10 z-0"></div>
+        <div className="bg-border absolute top-1/2 right-0 left-0 z-0 h-px -translate-y-1/2"></div>
 
-        <div className="flex items-center justify-between w-full h-full gap-1 md:gap-2 z-10">
+        <div className="z-10 flex h-full w-full items-center justify-between gap-1 md:gap-2">
           {displayData.map((dataPoint, i) => (
             <div
               key={dataPoint.id}
-              className="relative flex-1 flex flex-col items-center justify-center h-full cursor-crosshair"
+              className="relative flex h-full flex-1 cursor-crosshair flex-col items-center justify-center"
               onMouseEnter={() => setHoveredIndex(i)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
@@ -115,8 +149,9 @@ export function ActivityPulse({
                 className="absolute bottom-[calc(50%+2px)] w-full max-w-[6px] rounded-full transition-all duration-500"
                 style={{
                   height: calcBarHeight(dataPoint.posts, maxPostsInView),
-                  backgroundColor: "#6ea8da",
-                  opacity: hoveredIndex === null || hoveredIndex === i ? 0.8 : 0.2,
+                  backgroundColor: "var(--brand-logo-blue)",
+                  opacity:
+                    hoveredIndex === null || hoveredIndex === i ? 0.8 : 0.2,
                 }}
               ></div>
 
@@ -125,19 +160,26 @@ export function ActivityPulse({
                 className="absolute top-[calc(50%+2px)] w-full max-w-[6px] rounded-full transition-all duration-500"
                 style={{
                   height: calcBarHeight(dataPoint.daily, maxDailyInView),
-                  backgroundColor: "#e3acb7",
-                  opacity: hoveredIndex === null || hoveredIndex === i ? 0.7 : 0.15,
+                  backgroundColor: "var(--brand-logo-pink)",
+                  opacity:
+                    hoveredIndex === null || hoveredIndex === i ? 0.7 : 0.15,
                 }}
               ></div>
 
               {/* Hover Tooltip */}
               {hoveredIndex === i && (
-                <div className="absolute top-0 -translate-y-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 px-3 py-2 rounded-xl shadow-lg z-20 whitespace-nowrap">
-                  <div className="text-[10px] font-mono text-gray-500 dark:text-gray-400 mb-1">{dataPoint.date}</div>
-                  <div className="text-xs font-medium flex items-center gap-2">
-                    <span style={{ color: "#6ea8da" }}>{dataPoint.posts} 篇</span>
-                    <span className="opacity-30">/</span>
-                    <span style={{ color: "#e3acb7" }}>{dataPoint.daily} 条</span>
+                <div className="border-border bg-background absolute top-0 z-20 -translate-y-6 rounded-xl border px-3 py-2 whitespace-nowrap shadow-lg">
+                  <div className="text-muted-foreground mb-1 font-mono text-[10px]">
+                    {dataPoint.date}
+                  </div>
+                  <div className="flex items-center gap-2 font-sans text-xs font-medium">
+                    <span style={{ color: "var(--brand-logo-blue)" }}>
+                      <span className="font-mono">{dataPoint.posts}</span> 篇
+                    </span>
+                    <span className="font-mono opacity-30">/</span>
+                    <span style={{ color: "var(--brand-logo-pink)" }}>
+                      <span className="font-mono">{dataPoint.daily}</span> 条
+                    </span>
                   </div>
                 </div>
               )}
@@ -147,28 +189,40 @@ export function ActivityPulse({
 
         {/* Subtle Glow Decor */}
         <div
-          className="absolute left-1/4 top-1/2 -translate-y-1/2 w-32 h-32 blur-[100px] pointer-events-none"
-          style={{ backgroundColor: "rgba(110, 168, 218, 0.15)" }}
+          className="pointer-events-none absolute top-1/2 left-1/4 h-32 w-32 -translate-y-1/2 blur-[100px]"
+          style={{ backgroundColor: "var(--brand-logo-blue)", opacity: 0.15 }}
         ></div>
         <div
-          className="absolute right-1/4 top-1/2 -translate-y-1/2 w-32 h-32 blur-[80px] pointer-events-none"
-          style={{ backgroundColor: "rgba(227, 172, 183, 0.15)" }}
+          className="pointer-events-none absolute top-1/2 right-1/4 h-32 w-32 -translate-y-1/2 blur-[80px]"
+          style={{ backgroundColor: "var(--brand-logo-pink)", opacity: 0.15 }}
         ></div>
       </div>
-      
-      <div className="flex justify-between items-center text-[10px] font-mono text-gray-500 dark:text-gray-400 tracking-widest uppercase px-2">
-        <span>365 Days Ago</span>
+
+      <div className="text-muted-foreground flex items-center justify-between px-2 font-sans text-[10px] tracking-widest uppercase">
+        <span>{renderMixedTypography("365 Days Ago")}</span>
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: "#6ea8da", opacity: 0.8 }}></span>
-            <span>Posts (文章)</span>
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{
+                backgroundColor: "var(--brand-logo-blue)",
+                opacity: 0.8,
+              }}
+            ></span>
+            <span>{renderMixedTypography("Posts (文章)")}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: "#e3acb7", opacity: 0.7 }}></span>
-            <span>Daily (日常)</span>
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{
+                backgroundColor: "var(--brand-logo-pink)",
+                opacity: 0.7,
+              }}
+            ></span>
+            <span>{renderMixedTypography("Daily (日常)")}</span>
           </div>
         </div>
-        <span>Today</span>
+        <span>{renderMixedTypography("Today")}</span>
       </div>
     </section>
   );

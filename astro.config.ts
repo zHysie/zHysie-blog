@@ -1,4 +1,5 @@
 import { defineConfig, envField } from "astro/config";
+import type { AstroIntegration } from "astro";
 import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
@@ -7,9 +8,13 @@ import mdx from "@astrojs/mdx";
 import icon from "astro-icon";
 import { readdir, readFile } from "node:fs/promises";
 import { join, extname, basename } from "node:path";
+import { fileURLToPath } from "node:url";
 import { siteConfig } from "./src/config/site.config";
 
-async function collectFiles(dir: string, extensions: string[]): Promise<string[]> {
+async function collectFiles(
+  dir: string,
+  extensions: string[],
+): Promise<string[]> {
   const results: string[] = [];
   const entries = await readdir(dir, { withFileTypes: true });
 
@@ -40,13 +45,18 @@ function parseFrontmatter(source: string) {
   }, {});
 }
 
-function validateDuplicates(entries: Array<{ id: string; data?: { uid?: string; locale?: string } }>, supportedLocales: string[]) {
+function validateDuplicates(
+  entries: Array<{ id: string; data?: { uid?: string; locale?: string } }>,
+  supportedLocales: string[],
+) {
   const seenIds = new Set<string>();
   const seenUids = new Map<string, string>();
 
   for (const entry of entries) {
     if (seenIds.has(entry.id)) {
-      console.warn(`[content-validation] Duplicate slug detected: "${entry.id}"`);
+      console.warn(
+        `[content-validation] Duplicate slug detected: "${entry.id}"`,
+      );
     } else {
       seenIds.add(entry.id);
     }
@@ -55,7 +65,9 @@ function validateDuplicates(entries: Array<{ id: string; data?: { uid?: string; 
     if (uid) {
       const previous = seenUids.get(uid);
       if (previous) {
-        console.warn(`[content-validation] Duplicate uid detected: "${uid}" (${previous} and ${entry.id})`);
+        console.warn(
+          `[content-validation] Duplicate uid detected: "${uid}" (${previous} and ${entry.id})`,
+        );
       } else {
         seenUids.set(uid, entry.id);
       }
@@ -63,7 +75,9 @@ function validateDuplicates(entries: Array<{ id: string; data?: { uid?: string; 
 
     const locale = entry.data?.locale;
     if (locale && !supportedLocales.includes(locale)) {
-      console.warn(`[content-validation] Unsupported locale "${locale}" on entry "${entry.id}"`);
+      console.warn(
+        `[content-validation] Unsupported locale "${locale}" on entry "${entry.id}"`,
+      );
     }
   }
 }
@@ -93,7 +107,7 @@ function contentValidationIntegration() {
           ),
         );
 
-        const supportedLocales = ["en"];
+        const supportedLocales = ["zh-CN"];
         for (const collection of entries) {
           validateDuplicates(collection, supportedLocales);
         }
@@ -102,26 +116,43 @@ function contentValidationIntegration() {
   };
 }
 
+function heroReadyDirectiveIntegration(): AstroIntegration {
+  return {
+    name: "hero-ready-client-directive",
+    hooks: {
+      "astro:config:setup": ({ addClientDirective }) => {
+        addClientDirective({
+          name: "hero-ready",
+          entrypoint: fileURLToPath(
+            new URL("./src/client-directives/hero-ready.ts", import.meta.url),
+          ),
+        });
+      },
+    },
+  };
+}
+
 export default defineConfig({
   site: siteConfig.url,
-  i18n: {
-    defaultLocale: "en",
-    locales: ["en"],
-    prefixDefaultLocale: false,
-  },
   prefetch: {
     prefetchAll: true,
     defaultStrategy: "hover",
   },
   integrations: [
     starlight({
-      title: siteConfig.name,
+      disable404Route: true,
+      title: { en: siteConfig.name },
+      defaultLocale: "root",
+      locales: {
+        root: { label: "English", lang: "en" },
+      },
       customCss: ["./src/styles/starlight.css"],
       components: {
         SiteTitle: "./src/components/docs/SiteTitle.astro",
       },
       editLink: {
-        baseUrl: "https://github.com/milzamsz/astro-cloudflare-starter/edit/main",
+        baseUrl:
+          "https://github.com/zHysie/zHysie-blog/edit/master/src/content/docs/",
       },
       social: [
         { icon: "github", label: "GitHub", href: "https://github.com/zHysie" },
@@ -132,34 +163,53 @@ export default defineConfig({
           items: [
             { label: "Overview", slug: "docs/getting-started/overview" },
             { label: "Quick Start", slug: "docs/getting-started/quick-start" },
-            { label: "Project Structure", slug: "docs/getting-started/project-structure" },
+            {
+              label: "Project Structure",
+              slug: "docs/getting-started/project-structure",
+            },
           ],
         },
         {
           label: "Guides",
           items: [
-            { label: "Content Management", slug: "docs/guides/content-management" },
-            { label: "Internationalization", slug: "docs/guides/internationalization" },
+            {
+              label: "Content Management",
+              slug: "docs/guides/content-management",
+            },
+            {
+              label: "Internationalization",
+              slug: "docs/guides/internationalization",
+            },
             { label: "Customization", slug: "docs/guides/customization" },
-            { label: "AI-assisted development", slug: "docs/guides/ai-assisted-development" },
+            {
+              label: "AI-assisted development",
+              slug: "docs/guides/ai-assisted-development",
+            },
           ],
         },
         {
           label: "Deployment",
           items: [
-            { label: "Cloudflare Pages", slug: "docs/deployment/cloudflare-pages" },
-            { label: "Environment Variables", slug: "docs/deployment/environment-variables" },
+            {
+              label: "Cloudflare Pages",
+              slug: "docs/deployment/cloudflare-pages",
+            },
+            {
+              label: "Environment Variables",
+              slug: "docs/deployment/environment-variables",
+            },
           ],
         },
       ],
     }),
     mdx(),
     contentValidationIntegration(),
+    heroReadyDirectiveIntegration(),
     sitemap({
       i18n: {
-        defaultLocale: "en",
+        defaultLocale: "zh-CN",
         locales: {
-          en: "en-US",
+          "zh-CN": "zh-CN",
         },
       },
     }),
@@ -168,13 +218,42 @@ export default defineConfig({
   ],
   env: {
     schema: {
-      SITE_URL: envField.string({ context: "server", access: "public", default: "http://localhost:4321" }),
-      GOOGLE_SITE_VERIFICATION: envField.string({ context: "server", access: "public", optional: true }),
-      BING_SITE_VERIFICATION: envField.string({ context: "server", access: "public", optional: true }),
-      PUBLIC_GA_MEASUREMENT_ID: envField.string({ context: "client", access: "public", optional: true }),
-      PUBLIC_GTM_ID: envField.string({ context: "client", access: "public", optional: true }),
-      PUBLIC_CONSENT_ENABLED: envField.boolean({ context: "client", access: "public", optional: true, default: false }),
-      PUBLIC_PRIVACY_POLICY_URL: envField.string({ context: "client", access: "public", optional: true }),
+      SITE_URL: envField.string({
+        context: "server",
+        access: "public",
+        default: "http://localhost:4321",
+      }),
+      GOOGLE_SITE_VERIFICATION: envField.string({
+        context: "server",
+        access: "public",
+        optional: true,
+      }),
+      BING_SITE_VERIFICATION: envField.string({
+        context: "server",
+        access: "public",
+        optional: true,
+      }),
+      PUBLIC_GA_MEASUREMENT_ID: envField.string({
+        context: "client",
+        access: "public",
+        optional: true,
+      }),
+      PUBLIC_GTM_ID: envField.string({
+        context: "client",
+        access: "public",
+        optional: true,
+      }),
+      PUBLIC_CONSENT_ENABLED: envField.boolean({
+        context: "client",
+        access: "public",
+        optional: true,
+        default: false,
+      }),
+      PUBLIC_PRIVACY_POLICY_URL: envField.string({
+        context: "client",
+        access: "public",
+        optional: true,
+      }),
     },
   },
   vite: {

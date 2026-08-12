@@ -26,6 +26,9 @@ dependencies:
   '@fontsource-variable/outfit':
     specifier: ^5.2.8
     version: 5.2.8
+  '@fontsource/noto-sans-sc':
+    specifier: ^5.2.8
+    version: 5.3.0
   '@fontsource/noto-serif-sc':
     specifier: ^5.2.8
     version: 5.2.8
@@ -1249,6 +1252,10 @@ packages:
 
   /@fontsource-variable/outfit@5.2.8:
     resolution: {integrity: sha512-4oUDCZx/Tcz6HZP423w/niqEH31Gks5IsqHV2ZZz1qKHaVIZdj2f0/S1IK2n8jl6Xo0o3N+3RjNHlV9R73ozQA==}
+    dev: false
+
+  /@fontsource/noto-sans-sc@5.3.0:
+    resolution: {integrity: sha512-HeqIlGm0+ohOKxZLuHj1qW6r6avHH0OWdKERAcSDI0RQ+MXrteuLKA+M+5eOA8rYy0MFvOR5AT0fQo2rUkye0Q==}
     dev: false
 
   /@fontsource/noto-serif-sc@5.2.8:

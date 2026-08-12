@@ -97,7 +97,11 @@ const plans = [
     price: "$29",
     period: "mo",
     description: "For teams.",
-    features: ["Everything in Starter", "Priority support", "Premium components"],
+    features: [
+      "Everything in Starter",
+      "Priority support",
+      "Premium components",
+    ],
     cta: { label: "Try Pro", href: "#" },
     featured: true,
   },
@@ -129,8 +133,8 @@ const logos = [
 const testimonials = [
   {
     quote: "The best foundation for AI-assisted sites.",
-    author: "Jane Doe",
-    role: "CTO, Acme",
+    author: "zHysie",
+    role: "独立学习与写作者",
   },
   {
     quote: "The design system keeps AI on-system.",
@@ -192,10 +196,10 @@ const blocks = [
               locale={locale}
             />
           )}
-          {block.node === 1 && <FeatureTabs client:visible tabs={featureTabs} />}
-          {block.node === 2 && (
-            <LogoCloud title="Trusted by" logos={logos} />
+          {block.node === 1 && (
+            <FeatureTabs client:visible tabs={featureTabs} />
           )}
+          {block.node === 2 && <LogoCloud title="Trusted by" logos={logos} />}
           {block.node === 3 && <Credibility stats={stats} />}
           {block.node === 4 && <StackMarquee items={stack} />}
           {block.node === 5 && (
@@ -212,23 +216,16 @@ const blocks = [
               rows={comparisonRows}
             />
           )}
-          {block.node === 7 && (
-            <Team title="Team" members={team} />
-          )}
+          {block.node === 7 && <Team title="Team" members={team} />}
           {block.node === 8 && (
-            <SocialProof
-              title="What people say"
-              items={testimonials}
-            />
+            <SocialProof title="What people say" items={testimonials} />
           )}
           {block.node === 9 && (
             <FeatureGrid title="Features" features={features} />
           )}
           {block.node === 10 && <LighthouseScores />}
           {block.node === 11 && <Newsletter />}
-          {block.node === 12 && (
-            <FAQ title="FAQ" items={faqs} />
-          )}
+          {block.node === 12 && <FAQ title="FAQ" items={faqs} />}
           {block.node === 13 && (
             <CTA
               title="Ready to build?"

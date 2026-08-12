@@ -10,46 +10,42 @@ const umamiId = settings?.data.umamiId;
 
 {
   gaId && (
-    <>
-      <script
-        is:inline
-        async
-        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-      />
-      <script
-        is:inline
-        set:html={`
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { window.dataLayer.push(arguments); }
-      gtag("js", new Date());
-      gtag("config", "${gaId}");
-    `}
-      />
-    </>
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
+  )
+}
+{
+  gaId && (
+    <script
+      is:inline
+      set:html={`
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { window.dataLayer.push(arguments); }
+        gtag("js", new Date());
+        gtag("config", "${gaId}");
+      `}
+    />
   )
 }
 
 {
   gtmId && (
-    <>
-      <script
-        is:inline
-        async
-        src={`https://www.googletagmanager.com/gtm.js?id=${gtmId}`}
-      />
-      <script
-        is:inline
-        set:html={`
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-    `}
-      />
-    </>
+    <script async src={`https://www.googletagmanager.com/gtm.js?id=${gtmId}`} />
+  )
+}
+{
+  gtmId && (
+    <script
+      is:inline
+      set:html={`
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+      `}
+    />
   )
 }
 
 {
   umamiUrl && umamiId && (
-    <script is:inline async defer src={umamiUrl} data-website-id={umamiId} />
+    <script async defer src={umamiUrl} data-website-id={umamiId} />
   )
 }

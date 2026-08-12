@@ -6,7 +6,7 @@ import type { CollectionEntry } from "astro:content";
 export async function getStaticPaths() {
   const allPosts: CollectionEntry<"blog">[] = await getCollection("blog");
   return allPosts
-    .filter((p) => p.data.locale === "en" && !p.data.draft)
+    .filter((p) => p.data.locale === "zh-CN" && !p.data.draft)
     .map((post) => ({
       params: { slug: post.id },
     }));
@@ -16,7 +16,7 @@ const { slug } = Astro.params as { slug: string };
 const post = await getEntry("blog", slug);
 if (!post) return new Response(null, { status: 404 });
 
-const locale = "en";
+const locale = "zh-CN";
 const { Content, headings } = await render(post);
 ---
 

@@ -1,11 +1,11 @@
 import type { Locale } from "../lib/site-config";
-import en from "./en.json";
+import zhCN from "./zh-CN.json";
 
 export type TranslationDict = Record<string, string>;
 
-// Add new locales here, e.g. `{ en, id }`, alongside their JSON file.
+// Add new locales here alongside their JSON file.
 export const translations: Partial<Record<Locale, TranslationDict>> = {
-  en,
+  "zh-CN": zhCN,
 };
 
 /**

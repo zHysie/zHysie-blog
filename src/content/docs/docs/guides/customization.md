@@ -1,6 +1,6 @@
 ---
 title: Customization
-description: Tailoring the starter to your needs.
+description: Tailoring the blog while staying inside its design system.
 sidebar:
   order: 3
 ---
@@ -22,6 +22,7 @@ slug: my-page
 locale: id
 description: A new page.
 ---
+
 ## Content here
 ```
 

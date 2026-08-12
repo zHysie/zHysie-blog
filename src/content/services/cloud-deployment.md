@@ -1,28 +1,24 @@
 ---
-locale: en
+locale: zh-CN
 slug: cloud-deployment
-title: Cloud Deployment
-description: Deploy websites to Cloudflare Pages, Workers, and the global edge network.
+title: 静态站点发布
+description: 把可复现的构建结果发布到 Cloudflare Pages，并保留验证与回滚依据。
 features:
-  - "Cloudflare Pages deployment"
-  - "Workers & Functions"
-  - "Edge caching & performance"
-  - "Automatic SSL/TLS"
-priceRange: $250 - $1,500
+  - "Cloudflare Pages 发布"
+  - "构建与分支检查"
+  - "缓存与性能验证"
+  - "域名与 HTTPS"
+priceRange: 按范围沟通
 order: 2
 translationKey: cloud-deployment
 ---
 
-We deploy your site to Cloudflare's global edge network so it loads quickly
-everywhere, scales automatically, and stays online without server maintenance.
+这个博客本身就是一项持续进行的发布实验：源码、内容与配置由 Git 管理，生产构建通过后再推送到远程仓库。
 
-## What's included
+## 关注什么
 
-Production deployment to Cloudflare Pages with Workers and Functions for dynamic
-needs, edge caching, and automatic SSL/TLS on every domain.
+我更关心一条链路能否被复现和验证，包括构建命令、部署分支、静态资源、搜索索引、RSS、站点地图以及最终远程提交是否一致。
 
-## Why the edge
+## 当前边界
 
-Static assets are served from data centers close to your visitors, while
-serverless functions handle the dynamic parts — giving you speed and
-reliability without managing infrastructure.
+这不是一份固定报价单。若有具体项目，可以先说明目标、已有代码与期望交付，再确认是否适合一起处理。

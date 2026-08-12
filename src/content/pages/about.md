@@ -1,39 +1,15 @@
 ---
 translationKey: about
-locale: en
+locale: zh-CN
 slug: about
-title: About Us
-description: Meet the team and vision behind the modern marketing website boilerplate.
+title: 关于我
+description: 关于 zHysie 的学习、开发、写作与这个网站。
 sections:
   - type: hero
-    title: A foundation built for modern marketing sites
-    content: This starter gives you a fast, accessible, and SEO-ready base — English-first and wired for more languages from day one.
-  - type: features
-    title: What we care about
-    items:
-      - title: Developer Experience
-        description: Modern tooling, end-to-end type safety, and a layout you can actually navigate.
-        icon: code
-      - title: Performance First
-        description: Static-first and edge-ready, with strong Core Web Vitals out of the box.
-        icon: rocket
-      - title: Multilanguage Ready
-        description: An i18n engine and localized content, structured for global reach.
-        icon: globe
-      - title: Git-Based Content
-        description: Markdown collections that are versioned, reviewable, and easy to own.
-        icon: git-branch
-  - type: cta
-    title: Ready to build?
-    content: Explore the services or browse the docs to get started.
-    ctaText: View services
-    ctaHref: /services
+    title: 在学习与实践之间，留下可以返回的路径
+    content: 我用文字整理知识，也用小型开发项目检验理解。
 isLegal: false
 order: 1
 ---
 
-Marketing sites shouldn't be complicated. With Astro and Cloudflare, you get a foundation that is:
-
-- **Fast** — static generation paired with edge delivery
-- **Scalable** — an architecture ready for growing teams
-- **Modern** — TypeScript, i18n, and design tokens built in
+页面内容由公开且可验证的站内项目组成，并会随着真实经历持续更新。

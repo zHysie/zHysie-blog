@@ -1,15 +1,15 @@
 # Site Settings
 # Edit this file in Git.
-name: "Astro Cloudflare"
-description: "Marketing, blog, and docs starter — multilanguage-ready."
-url: "https://astro-cloudflare-starter.pages.dev"
-defaultLocale: en
+name: "zHysie"
+description: "zHysie 的个人网站：记录学习、开发、写作与日常。"
+url: "https://zhysie.com"
+defaultLocale: zh-CN
 analyticsProvider: none
 gtmId: ""
 umamiUrl: ""
 umamiId: ""
-mapLatitude: "-7.4941954"
-mapLongitude: "110.8065028"
+mapLatitude: ""
+mapLongitude: ""
 orgName: ""
-orgEmail: ""
+orgEmail: "milzamsz@gmail.com"
 socialLinks: []

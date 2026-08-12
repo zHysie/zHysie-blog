@@ -1,14 +1,12 @@
 import type { CollectionEntry } from "astro:content";
 import { getCollection } from "astro:content";
 import { siteConfig } from "../../config/site.config";
+import { t } from "../../i18n/ui";
+import { getMarkdownExcerpt } from "../../lib/blog";
+import type { Locale } from "../../lib/site-config";
 
 type OgKind =
-  | "home"
-  | "page"
-  | "blog"
-  | "service"
-  | "blog-list"
-  | "services-list";
+  "home" | "page" | "blog" | "service" | "blog-list" | "services-list";
 
 function escapeXml(value: string) {
   return value
@@ -49,13 +47,13 @@ function svgTemplate({
     </linearGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)" />
-  <circle cx="980" cy="120" r="180" fill="rgba(255,255,255,0.08)" />
-  <circle cx="1120" cy="540" r="220" fill="rgba(255,255,255,0.06)" />
-  <circle cx="140" cy="530" r="190" fill="rgba(255,255,255,0.06)" />
-  <text x="80" y="92" fill="rgba(255,255,255,0.82)" font-size="28" font-family="Inter, Arial, sans-serif" font-weight="700">${escapeXml(siteConfig.name)}</text>
-  <text x="80" y="270" fill="${siteConfig.branding.colors.background}" font-size="64" font-family="Inter, Arial, sans-serif" font-weight="800">${escapeXml(title)}</text>
-  <text x="80" y="350" fill="rgba(255,255,255,0.9)" font-size="30" font-family="Inter, Arial, sans-serif" font-weight="500">${escapeXml(truncate(description, 120))}</text>
-  <text x="80" y="560" fill="rgba(255,255,255,0.72)" font-size="22" font-family="Inter, Arial, sans-serif">${escapeXml(siteConfig.url.replace(/^https?:\/\//, ""))}</text>
+  <circle cx="980" cy="120" r="180" fill="${siteConfig.branding.colors.background}" fill-opacity="0.08" />
+  <circle cx="1120" cy="540" r="220" fill="${siteConfig.branding.colors.background}" fill-opacity="0.06" />
+  <circle cx="140" cy="530" r="190" fill="${siteConfig.branding.colors.background}" fill-opacity="0.06" />
+  <text x="80" y="92" fill="${siteConfig.branding.colors.background}" fill-opacity="0.82" font-size="28" font-family="Noto Sans SC, Arial, sans-serif" font-weight="700">${escapeXml(siteConfig.name)}</text>
+  <text x="80" y="270" fill="${siteConfig.branding.colors.background}" font-size="64" font-family="Noto Serif SC, serif" font-weight="700">${escapeXml(title)}</text>
+  <text x="80" y="350" fill="${siteConfig.branding.colors.background}" fill-opacity="0.9" font-size="30" font-family="Noto Sans SC, Arial, sans-serif" font-weight="500">${escapeXml(truncate(description, 120))}</text>
+  <text x="80" y="560" fill="${siteConfig.branding.colors.background}" fill-opacity="0.72" font-size="22" font-family="JetBrains Mono, monospace">${escapeXml(siteConfig.url.replace(/^https?:\/\//, ""))}</text>
 </svg>`;
 }
 
@@ -70,17 +68,16 @@ function resolveMeta(kind: OgKind, locale: string, slug: string[]) {
 
   if (kind === "blog-list") {
     return {
-      title: "Blog",
-      description:
-        "Articles about web development and the modern stack.",
+      title: "文章",
+      description: "记录学习、开发、写作与日常观察。",
       accent: siteConfig.branding.colors.primary,
     };
   }
 
   if (kind === "services-list") {
     return {
-      title: "Services",
-      description: "Modern website development services.",
+      title: "实践方向",
+      description: "围绕内容型网站开发与静态发布整理的实践。",
       accent: siteConfig.branding.colors.secondary,
     };
   }
@@ -104,6 +101,22 @@ function resolveMeta(kind: OgKind, locale: string, slug: string[]) {
   }
 
   if (kind === "page") {
+    if (slug[1] === "timeline") {
+      return {
+        title: t(locale as Locale, "timeline.title"),
+        description: t(locale as Locale, "timeline.lead"),
+        accent: siteConfig.branding.colors.primary,
+      };
+    }
+
+    if (slug[1] === "daily") {
+      return {
+        title: t(locale as Locale, "daily.title"),
+        description: t(locale as Locale, "daily.lead"),
+        accent: siteConfig.branding.colors.accent,
+      };
+    }
+
     const page = PAGE_BY_LOCALE_AND_SLUG[`${slug[0] ?? ""}/${slug[1] ?? ""}`];
     return {
       title: page?.title ?? siteConfig.name,
@@ -134,7 +147,13 @@ const BLOG_BY_ID: Record<string, { title: string; description: string }> =
     BLOG.filter((entry: CollectionEntry<"blog">) => !entry.data.draft).map(
       (entry: CollectionEntry<"blog">) => [
         entry.id,
-        { title: entry.data.title, description: entry.data.description },
+        {
+          title: entry.data.title,
+          description:
+            entry.data.description?.trim() ||
+            getMarkdownExcerpt(entry.body ?? "", 160) ||
+            siteConfig.description,
+        },
       ],
     ),
   );
@@ -171,6 +190,15 @@ export async function getStaticPaths() {
         props: { kind, locale, slug: [] },
       });
     }
+
+    paths.push({
+      params: { slug: `page/${locale}/daily` },
+      props: { kind: "page", locale, slug: [locale, "daily"] },
+    });
+    paths.push({
+      params: { slug: `page/${locale}/timeline` },
+      props: { kind: "page", locale, slug: [locale, "timeline"] },
+    });
   }
 
   for (const entry of BLOG.filter(

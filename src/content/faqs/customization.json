@@ -1,7 +1,7 @@
 {
-  "question": "How do I customize the site theme?",
-  "answer": "The site uses a blue palette defined in `src/styles/tokens/colors.css`. You can modify the CSS variables there for both light and dark modes. The Tailwind `@theme` block in `global.css` maps these tokens to utility classes.",
-  "category": "customization",
+  "question": "这个网站怎样调整主题？",
+  "answer": "浅色与深色主题都由 `src/styles/tokens/` 中的语义变量控制。页面和组件只使用这些变量，因此品牌色、文字色和背景色可以集中调整。",
+  "category": "定制",
   "order": 1,
-  "locale": "en"
+  "locale": "zh-CN"
 }

@@ -26,3 +26,7 @@ export { default as Pricing } from "./Pricing.astro";
 export { default as Team } from "./Team.astro";
 export { default as Comparison } from "./Comparison.astro";
 export { default as LogoCloud } from "./LogoCloud.astro";
+export { default as DailyArchive } from "./DailyArchive.astro";
+export { default as NotFoundSection } from "./NotFoundSection.astro";
+export { default as TimelineArchive } from "./TimelineArchive.astro";
+export { default as PersonalPage } from "./PersonalPage.astro";

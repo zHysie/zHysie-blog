@@ -1,5 +1,5 @@
 {
-  "name": "astro-cloudflare",
+  "name": "zhysie-blog",
   "description": "Machine-readable catalog of the three-tier architecture: Components -> Sections -> Pages.",
   "tiers": ["component", "section", "page"],
   "importAliases": {
@@ -180,10 +180,31 @@
       "i18nAware": false
     },
     {
+      "name": "DotMatrixWordmark",
+      "tier": "component",
+      "path": "src/components/ui/marketing/DotMatrixWordmark/DotMatrixWordmark.astro",
+      "props": ["text", "class"],
+      "i18nAware": false
+    },
+    {
+      "name": "Ascii404",
+      "tier": "component",
+      "path": "src/components/ui/visual/Ascii404/Ascii404.astro",
+      "props": ["class"],
+      "i18nAware": false
+    },
+    {
       "name": "BlogCard",
       "tier": "component",
       "path": "src/components/blog/BlogCard.astro",
       "props": ["post", "variant", "locale", "headingLevel"],
+      "i18nAware": true
+    },
+    {
+      "name": "PostArchiveItem",
+      "tier": "component",
+      "path": "src/components/blog/PostArchiveItem.astro",
+      "props": ["post", "locale"],
       "i18nAware": true
     },
     {
@@ -192,6 +213,20 @@
       "path": "src/components/blog/ArticleHero.astro",
       "props": ["post", "locale"],
       "i18nAware": true
+    },
+    {
+      "name": "ArticleReadingBar",
+      "tier": "component",
+      "path": "src/components/blog/ArticleReadingBar.astro",
+      "props": ["title", "backHref", "homeHref", "locale", "showThreshold"],
+      "i18nAware": true
+    },
+    {
+      "name": "DailyEntry",
+      "tier": "component",
+      "path": "src/components/daily/DailyEntry.astro",
+      "props": ["entry"],
+      "i18nAware": false
     },
     {
       "name": "RelatedPosts",
@@ -241,6 +276,13 @@
       "path": "src/components/services/ServiceCard.astro",
       "props": ["service", "locale", "headingLevel"],
       "i18nAware": true
+    },
+    {
+      "name": "AbstractSpecimen",
+      "tier": "component",
+      "path": "src/components/ui/visual/AbstractSpecimen/AbstractSpecimen.astro",
+      "props": ["variant", "class"],
+      "i18nAware": false
     }
   ],
   "sections": [
@@ -263,7 +305,9 @@
         "footerText",
         "animatedHeadlineText",
         "typewriterLoop",
-        "scrollZoom"
+        "scrollZoom",
+        "asciiBackground",
+        "asciiEntrance"
       ],
       "i18nAware": true
     },
@@ -374,28 +418,67 @@
       "path": "src/components/sections/LogoCloud.astro",
       "props": ["title", "logos"],
       "i18nAware": true
+    },
+    {
+      "name": "DailyArchive",
+      "tier": "section",
+      "path": "src/components/sections/DailyArchive.astro",
+      "props": ["entries", "locale"],
+      "i18nAware": true
+    },
+    {
+      "name": "TimelineArchive",
+      "tier": "section",
+      "path": "src/components/sections/TimelineArchive.astro",
+      "props": ["items", "locale"],
+      "i18nAware": true
+    },
+    {
+      "name": "NotFoundSection",
+      "tier": "section",
+      "path": "src/components/sections/NotFoundSection.astro",
+      "props": ["locale"],
+      "i18nAware": true
+    },
+    {
+      "name": "PersonalPage",
+      "tier": "section",
+      "path": "src/components/sections/PersonalPage.astro",
+      "props": ["data"],
+      "i18nAware": true
     }
   ],
   "pages": [
-    { "name": "Home", "path": "src/pages/index.astro", "locales": ["en"] },
-    { "name": "About", "path": "src/pages/about.astro", "locales": ["en"] },
+    { "name": "Home", "path": "src/pages/index.astro", "locales": ["zh-CN"] },
+    {
+      "name": "Not Found",
+      "path": "src/pages/404.astro",
+      "locales": ["zh-CN"]
+    },
+    { "name": "About", "path": "src/pages/about.astro", "locales": ["zh-CN"] },
+    { "name": "Lab", "path": "src/pages/lab.astro", "locales": ["zh-CN"] },
+    { "name": "Uses", "path": "src/pages/uses.astro", "locales": ["zh-CN"] },
     {
       "name": "Services",
       "path": "src/pages/services.astro",
-      "locales": ["en"]
-    },
-    { "name": "Pricing", "path": "src/pages/pricing.astro", "locales": ["en"] },
-    { "name": "Contact", "path": "src/pages/contact.astro", "locales": ["en"] },
-    { "name": "Blog", "path": "src/pages/blog.astro", "locales": ["en"] },
-    {
-      "name": "Sections showcase",
-      "path": "src/pages/sections.astro",
-      "locales": ["en"]
+      "locales": ["zh-CN"]
     },
     {
-      "name": "Pages overview",
-      "path": "src/pages/pages.astro",
-      "locales": ["en"]
+      "name": "Pricing",
+      "path": "src/pages/pricing.astro",
+      "locales": ["zh-CN"]
+    },
+    {
+      "name": "Contact",
+      "path": "src/pages/contact.astro",
+      "locales": ["zh-CN"]
+    },
+    { "name": "Posts", "path": "src/pages/posts.astro", "locales": ["zh-CN"] },
+    { "name": "Daily", "path": "src/pages/daily.astro", "locales": ["zh-CN"] },
+    {
+      "name": "Timeline",
+      "path": "src/pages/timeline.astro",
+      "locales": ["zh-CN"]
     }
   ]
 }

@@ -1,34 +1,31 @@
 ---
-locale: en
+locale: zh-CN
 slug: privacy
-title: Privacy Policy
-description: Privacy policy for this boilerplate website.
+title: 隐私说明
+description: 这个个人网站如何处理访问与联系信息。
 sections:
   - type: hero
-    title: Privacy Policy
-    content: How we manage and protect your data.
+    title: 隐私说明
+    content: 尽量少收集信息，并清楚说明必要的边界。
 isLegal: true
 order: 5
 translationKey: privacy
 ---
 
-Last updated: June 24, 2026.
+最后更新：2026 年 8 月 13 日。
 
-This policy explains how this site handles your data. This is placeholder copy
-provided with the template — replace it with a policy reviewed by your own legal
-counsel before launch.
+## 网站访问
 
-## Information We Collect
+本站主要输出静态页面，不提供注册、账户、评论或站内支付。当前不主动保存访客提交的个人资料；如果未来启用独立统计服务，会在本页更新所使用的服务与数据范围。
 
-We collect information you voluntarily provide through contact forms and newsletter signups.
+## 主动联系
 
-## Use of Information
+当你通过电子邮件或 GitHub 联系我时，相应平台会按照其自身规则处理信息。我只会把这些信息用于回复当前交流，不会出售或用于无关营销。
 
-The information we collect is used to:
-- Provide services you request
-- Send updates and related information
-- Improve user experience
+## 外部链接
 
-## Data Protection
+文章可能链接到第三方网站。离开本站后的数据处理由对应网站负责，建议在提交信息前阅读其隐私说明。
 
-We implement reasonable security measures to protect your data.
+## 联系
+
+如需询问或删除与交流有关的信息，请发送邮件至 `milzamsz@gmail.com`。

@@ -2,10 +2,9 @@ import { defineCollection, z } from "astro:content";
 import { docsLoader } from "@astrojs/starlight/loaders";
 import { docsSchema } from "@astrojs/starlight/schema";
 import { glob } from "astro/loaders";
-import { i18nConfig } from "./config/i18n.config";
 
-// Add locale codes here (e.g. ["en", "id"]) when introducing new languages.
-const localeSchema = z.enum(["en"]);
+// The public site is Chinese-first. English is retained only inside Starlight docs.
+const localeSchema = z.enum(["zh-CN"]);
 
 const blog = defineCollection({
   loader: glob({
@@ -13,28 +12,32 @@ const blog = defineCollection({
     base: "./src/content/blog",
     generateId: ({ entry }) => entry.replace(/\.[^/.]+$/, ""),
   }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    locale: localeSchema,
-    publishDate: z.date(),
-    updatedAt: z.coerce.date().optional(),
-    draft: z.boolean().default(false),
-    featured: z.boolean().default(false),
-    tags: z.array(z.string()).default([]),
-    author: z.string().default("Admin"),
-    authorId: z.string().optional(),
-    uid: z
-      .string()
-      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-      .optional(),
-    faqs: z
-      .array(z.object({ question: z.string(), answer: z.string() }))
-      .optional(),
-    toc: z.boolean().optional(),
-    svgSlug: z.string().optional(),
-    translationKey: z.string().optional(),
-  }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      description: z.string().optional(),
+      locale: localeSchema,
+      publishDate: z.date(),
+      updatedAt: z.coerce.date().optional(),
+      draft: z.boolean().default(false),
+      featured: z.boolean().default(false),
+      category: z.string().default("未分类"),
+      tags: z.array(z.string()).default([]),
+      author: z.string().default("zHysie"),
+      authorId: z.string().optional(),
+      uid: z
+        .string()
+        .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+        .optional(),
+      faqs: z
+        .array(z.object({ question: z.string(), answer: z.string() }))
+        .optional(),
+      toc: z.boolean().optional(),
+      image: image().optional(),
+      imageAlt: z.string().optional(),
+      svgSlug: z.string().optional(),
+      translationKey: z.string().optional(),
+    }),
 });
 
 const docs = defineCollection({
@@ -161,7 +164,7 @@ const settings = defineCollection({
     name: z.string(),
     description: z.string().optional(),
     url: z.string().optional(),
-    defaultLocale: localeSchema.default("en"),
+    defaultLocale: localeSchema.default("zh-CN"),
     analyticsProvider: z.enum(["none", "gtm", "umami"]).default("none"),
     gtmId: z.string().optional(),
     umamiUrl: z.string().optional(),

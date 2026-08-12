@@ -9,7 +9,7 @@ export interface Props {
   locale?: Locale;
 }
 
-const { url, title, locale = "en" } = Astro.props as Props;
+const { url, title, locale = "zh-CN" } = Astro.props as Props;
 const shareText = encodeURIComponent(title);
 const encodedUrl = encodeURIComponent(url);
 ---
@@ -34,7 +34,7 @@ const encodedUrl = encodeURIComponent(url);
     href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${shareText}`}
     target="_blank"
     rel="noreferrer"
-    aria-label="Share on X"
+    aria-label="分享到 X"
   >
     <Icon name="lucide:twitter" />
     X
@@ -45,7 +45,7 @@ const encodedUrl = encodeURIComponent(url);
     href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
     target="_blank"
     rel="noreferrer"
-    aria-label="Share on LinkedIn"
+    aria-label="分享到 LinkedIn"
   >
     <Icon name="lucide:linkedin" />
     LinkedIn
@@ -65,7 +65,7 @@ const encodedUrl = encodeURIComponent(url);
 </div>
 
 <script>
-  const copiedText = "Copied!";
+  const copiedText = "已复制";
 
   document.querySelectorAll<HTMLButtonElement>("[data-share-native]").forEach(
     (btn) => {

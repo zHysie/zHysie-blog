@@ -4,7 +4,7 @@ import { getCollection, render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import { t } from "../i18n/ui";
 
-const locale = (Astro.currentLocale || "en") as "en";
+const locale = "zh-CN" as const;
 
 const allPages: CollectionEntry<"pages">[] = await getCollection("pages");
 const page = allPages.find(
@@ -22,7 +22,7 @@ const Content = rendered?.Content;
 >
   <article class="legal-page container">
     <header class="legal-page__head">
-      <p class="legal-page__eyebrow">Legal</p>
+      <p class="legal-page__eyebrow">站点说明</p>
       <h1>{page?.data.title}</h1>
     </header>
     <div class="legal-page__content">

@@ -7,7 +7,7 @@ import { siteConfig } from "../config/site.config";
 import Hero from "../components/Hero.astro";
 import { Button, Icon } from "../components/ui/index";
 
-const locale = (Astro.currentLocale || "en") as "en";
+const locale = "zh-CN" as const;
 
 const allPages: CollectionEntry<"pages">[] = await getCollection("pages");
 const page = allPages.find(
@@ -24,14 +24,14 @@ const settings = allSettings[0]?.data as
     }
   | undefined;
 
-const lat = settings?.mapLatitude || "-6.2088";
-const lng = settings?.mapLongitude || "106.8456";
+const lat = settings?.mapLatitude || "";
+const lng = settings?.mapLongitude || "";
 const hasMap = Boolean(lat && lng);
 const contactEmail = settings?.orgEmail || siteConfig.email;
 
 // The interactive Google Maps embed is loaded on click (facade pattern) so its
 // third-party JS never weighs on initial load (no TBT).
-const mapEmbed = `https://maps.google.com/maps?q=${lat}%2C${lng}&z=15&hl=en&output=embed`;
+const mapEmbed = `https://maps.google.com/maps?q=${lat}%2C${lng}&z=15&hl=zh-CN&output=embed`;
 const mapLink = `https://www.google.com/maps/search/?api=1&query=${lat}%2C${lng}`;
 
 interface PageSection {
@@ -46,10 +46,8 @@ const heroSection = sections.find((s) => s.type === "hero");
 const featuresSection = sections.find((s) => s.type === "features");
 
 const iconByTitle: Record<string, string> = {
-  Email: "lucide:mail",
-  Office: "lucide:map-pin",
-  Social: "lucide:at-sign",
-  Phone: "lucide:phone",
+  邮箱: "lucide:mail",
+  GitHub: "lucide:github",
 };
 
 const methods = (featuresSection?.items || []).map((item) => ({
@@ -70,7 +68,7 @@ const methods = (featuresSection?.items || []).map((item) => ({
       <Hero
         variant="centered"
         size="md"
-        eyebrow="Contact"
+        eyebrow="联系"
         headline={heroSection.title || page?.data.title || ""}
         subheadline={heroSection.content}
         locale={locale}
@@ -81,13 +79,12 @@ const methods = (featuresSection?.items || []).map((item) => ({
   <section class="contact container">
     <div class="contact__grid">
       <div class="contact__intro">
-        <h2>Send us a message</h2>
+        <h2>从一封具体的邮件开始</h2>
         <p>
-          Have a question or want to work together? Email us directly and we'll
-          get back to you within one business day.
+          如果你想讨论一篇文章、一个开发问题或一项范围明确的协作，请直接写明上下文和目标。
         </p>
         <Button href={`mailto:${contactEmail}`} variant="primary">
-          Email {contactEmail}
+          发送邮件至 {contactEmail}
         </Button>
 
         <ul class="contact__methods">
@@ -117,12 +114,12 @@ const methods = (featuresSection?.items || []).map((item) => ({
                 type="button"
                 class="contact__map-facade"
                 data-map-embed={mapEmbed}
-                aria-label="Load interactive map"
+                aria-label="加载交互地图"
               >
                 <span class="contact__map-facade-grid" aria-hidden="true" />
                 <span class="contact__map-facade-cta">
                   <Icon name="lucide:map-pin" />
-                  <span>View map</span>
+                  <span>查看地图</span>
                 </span>
               </button>
               <a
@@ -131,13 +128,13 @@ const methods = (featuresSection?.items || []).map((item) => ({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                View on Google Maps
+                在 Google 地图中查看
               </a>
             </div>
           ) : (
             <div class="contact__placeholder">
               <Icon name="lucide:map-pin" />
-              <p>Add map coordinates in settings to show a location map here.</p>
+              <p>暂不公开具体工作地点，联系请使用电子邮件或 GitHub。</p>
             </div>
           )
         }
@@ -160,7 +157,7 @@ const methods = (featuresSection?.items || []).map((item) => ({
         iframe.width = "100%";
         iframe.height = "320";
         iframe.loading = "lazy";
-        iframe.title = "Location map";
+        iframe.title = "位置地图";
         iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
         iframe.setAttribute("allowfullscreen", "");
         iframe.className = "contact__map-frame";

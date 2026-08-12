@@ -4,6 +4,8 @@ import TagList from "./TagList.astro";
 import BlogImageSVG from "./BlogImageSVG.astro";
 import { type Locale } from "../../lib/site-config";
 import { t } from "../../i18n/ui";
+import { resolveRoute } from "../../i18n/routes";
+import { Icon } from "../ui/index";
 
 export interface Props {
   post: CollectionEntry<"blog">;
@@ -12,29 +14,50 @@ export interface Props {
 
 const { post, locale = post.data.locale } = Astro.props as Props;
 const publishDate = new Date(post.data.publishDate);
+const source = post.body ?? "";
+const cjkCharacters = source.match(/[\u3400-\u9fff]/g)?.length ?? 0;
+const latinWords = source.match(/[A-Za-z0-9]+/g)?.length ?? 0;
 const readingTime = Math.max(
   1,
-  Math.ceil((post.body ?? "").trim().split(/\s+/).filter(Boolean).length / 200),
+  Math.ceil(cjkCharacters / 500 + latinWords / 220),
 );
-const dateLabel = publishDate.toLocaleDateString("en-US", {
+const dateLabel = new Intl.DateTimeFormat("zh-CN", {
   year: "numeric",
-  month: "long",
-  day: "numeric",
-});
+  month: "2-digit",
+  day: "2-digit",
+}).format(publishDate);
+const backLabel = t(locale, "blog.articleBack");
+const backHref = resolveRoute(locale, "/posts");
 ---
 
 <header class="article-hero">
   <div class="article-hero__content">
+    <div class="article-hero__back-row">
+      <a class="article-hero__back" href={backHref} data-article-back>
+        <Icon name="lucide:arrow-left" size="0.875rem" decorative />
+        <span>{backLabel}</span>
+      </a>
+      <span class="article-hero__back-divider" aria-hidden="true"></span>
+    </div>
+
     <h1>{post.data.title}</h1>
-    <p class="article-hero__description">{post.data.description}</p>
 
     <div class="article-hero__meta">
-      <span class="article-hero__author">{post.data.author}</span>
+      <span class="article-hero__meta-group article-hero__author">
+        <Icon name="lucide:user" size="0.875rem" decorative />
+        <span>{post.data.author}</span>
+      </span>
       <span class="article-hero__dot" aria-hidden="true">&middot;</span>
-      <time datetime={publishDate.toISOString()}>{dateLabel}</time>
+      <span class="article-hero__meta-group">
+        <Icon name="lucide:calendar" size="0.875rem" decorative />
+        <time datetime={publishDate.toISOString()}>{dateLabel}</time>
+      </span>
       <span class="article-hero__dot" aria-hidden="true">&middot;</span>
-      <span>
-        {t(locale, "blog.minutesRead").replace("{n}", String(readingTime))}
+      <span class="article-hero__meta-group article-hero__reading-time">
+        <Icon name="lucide:clock" size="0.875rem" decorative />
+        <span>
+          {t(locale, "blog.minutesRead").replace("{n}", String(readingTime))}
+        </span>
       </span>
     </div>
 
@@ -45,6 +68,18 @@ const dateLabel = publishDate.toLocaleDateString("en-US", {
     <BlogImageSVG slug={post.data.svgSlug ?? post.id} title={post.data.title} />
   </figure>
 </header>
+
+<script>
+  const handleArticleBack = (event: Event) => {
+    if (window.history.length <= 1) return;
+    event.preventDefault();
+    window.history.back();
+  };
+
+  document.querySelectorAll("[data-article-back]").forEach((link) => {
+    link.addEventListener("click", handleArticleBack);
+  });
+</script>
 
 <style>
   .article-hero {
@@ -59,6 +94,51 @@ const dateLabel = publishDate.toLocaleDateString("en-US", {
     max-width: 52rem;
   }
 
+  .article-hero__back-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xs);
+  }
+
+  .article-hero__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-text-secondary);
+    font-family: var(--font-cjk-sans);
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: var(--tracking-wide);
+    text-decoration: none;
+    transition: color 160ms ease-out;
+  }
+
+  .article-hero__back :global(svg) {
+    flex: none;
+    transition: transform 160ms ease-out;
+  }
+
+  .article-hero__back:hover {
+    color: var(--color-text-primary);
+  }
+
+  .article-hero__back:hover :global(svg) {
+    transform: translateX(calc(var(--spacing-1) * -1));
+  }
+
+  .article-hero__back:focus-visible {
+    border-radius: var(--radius-xs);
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .article-hero__back-divider {
+    width: var(--space-lg);
+    height: 1px;
+    background: var(--color-border);
+  }
+
   .article-hero h1 {
     margin: 0;
     font-size: clamp(2.25rem, 5vw, 3.75rem);
@@ -67,31 +147,47 @@ const dateLabel = publishDate.toLocaleDateString("en-US", {
     text-wrap: balance;
   }
 
-  .article-hero__description {
-    margin: 0;
-    color: var(--color-text-secondary);
-    font-size: clamp(1.0625rem, 2vw, 1.25rem);
-    line-height: 1.6;
-    max-width: 42rem;
-    text-wrap: pretty;
-  }
-
   .article-hero__meta {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: var(--space-xs);
     color: var(--color-text-secondary);
-    font-size: 0.9375rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .article-hero__meta-group {
+    display: inline-flex;
+    gap: var(--spacing-1);
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .article-hero__meta-group > :global(svg) {
+    flex: none;
+    stroke-width: 1.5;
   }
 
   .article-hero__author {
     color: var(--color-text-primary);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .article-hero__reading-time {
+    font-style: italic;
   }
 
   .article-hero__dot {
     opacity: 0.5;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .article-hero__back,
+    .article-hero__back :global(svg) {
+      transition: none;
+    }
   }
 
   .article-hero__media {

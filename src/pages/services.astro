@@ -6,7 +6,7 @@ import { t } from "../i18n/ui";
 import Hero from "../components/Hero.astro";
 import { ServiceCard } from "../components/services/index";
 
-const locale = (Astro.currentLocale || "en") as "en";
+const locale = "zh-CN" as const;
 
 const allServices: CollectionEntry<"services">[] =
   await getCollection("services");
@@ -17,23 +17,23 @@ const services = allServices
 
 <BaseLayout
   title={t(locale, "nav.services")}
-  description="Modern website development services"
+  description="围绕内容型网站开发与静态发布整理的实践方向。"
   locale={locale}
   path={"/services"}
 >
   <Hero
     variant="centered"
     size="md"
-    eyebrow="Services"
-    title="Services that get you live"
-    content="From build to deploy — complete solutions for your marketing website, ready to ship on the edge."
+    eyebrow="实践方向"
+    title="从真实问题开始"
+    content="这里展示正在积累的内容型网站与静态发布实践，不虚构团队、套餐或交付履历。"
     locale={locale}
   />
 
   <section class="services-list container">
     {
       services.length === 0 && (
-        <p class="services-list__empty">No services available yet.</p>
+        <p class="services-list__empty">内容仍在整理中。</p>
       )
     }
     <div class="services-list__grid">

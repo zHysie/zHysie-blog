@@ -9,10 +9,17 @@ export interface Props {
   locale: Locale;
   path: string;
   colorPreview?: boolean;
+  deferPageResources?: boolean;
 }
 
-const { title, description, locale, path, colorPreview = false } =
-  Astro.props as Props;
+const {
+  title,
+  description,
+  locale,
+  path,
+  colorPreview = false,
+  deferPageResources = false,
+} = Astro.props as Props;
 ---
 
 <BaseLayout
@@ -22,6 +29,7 @@ const { title, description, locale, path, colorPreview = false } =
   path={path}
   showThemeToggle={true}
   colorPreview={colorPreview}
+  deferPageResources={deferPageResources}
 >
   <SEO
     slot="seo"

@@ -8,7 +8,7 @@ export async function getStaticPaths() {
   const allServices: CollectionEntry<"services">[] =
     await getCollection("services");
   return allServices
-    .filter((service) => service.data.locale === "en")
+    .filter((service) => service.data.locale === "zh-CN")
     .map((service) => ({
       params: { slug: service.data.slug },
       props: { service, locale: service.data.locale },
@@ -17,7 +17,7 @@ export async function getStaticPaths() {
 
 const { service, locale } = Astro.props as {
   service: CollectionEntry<"services">;
-  locale: "en";
+  locale: "zh-CN";
 };
 const { Content, headings } = await render(service);
 ---
@@ -26,9 +26,9 @@ const { Content, headings } = await render(service);
   <Content />
   <CTA
     slot="cta"
-    title="Interested in this service?"
-    content="Tell us about your project and we'll get back to you within one business day."
-    ctaText="Get in touch"
+    title="想讨论一个具体问题？"
+    content="可以先说明目标、现有代码与期望范围，再判断是否适合一起处理。"
+    ctaText="联系我"
     ctaHref="/contact"
     locale={locale}
   />

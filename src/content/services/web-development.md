@@ -1,29 +1,24 @@
 ---
-locale: en
+locale: zh-CN
 slug: web-development
-title: Web Development
-description: Modern website development with high performance, accessibility, and SEO-friendliness.
+title: 内容型网站开发
+description: 围绕真实内容、设计系统、可访问性与长期维护组织网站前端。
 features:
-  - "SSG/SSR with Astro framework"
-  - "Tailwind CSS + design tokens"
-  - "WCAG 2.1 AA accessibility"
-  - "Headless CMS integration"
-priceRange: $500 - $3,000
+  - "Astro 与类型化内容集合"
+  - "语义设计变量"
+  - "响应式与键盘可访问性"
+  - "搜索、SEO 与生产验证"
+priceRange: 按范围沟通
 order: 1
 translationKey: web-development
 ---
 
-We build modern websites that are fast by default and easy to maintain. Every
-project ships static-first, with accessibility and SEO treated as requirements
-rather than afterthoughts.
+我正在通过这个个人网站练习如何把内容结构、视觉语言和工程约束放进同一套系统。页面尽量从共享组件组合，颜色、间距与字体由语义变量统一管理。
 
-## What's included
+## 可以讨论的方向
 
-A complete front-end foundation built on Astro and Tailwind CSS, with type-safe
-content collections, design tokens, and a component library you can extend.
+适合从一个范围明确的问题开始，例如整理内容集合、修复响应式布局、建立设计变量，或补齐从本地构建到发布的验证链路。
 
-## How we work
+## 当前边界
 
-We start from your content and brand, wire up the pages and collections you
-need, and hand over a codebase your team can own — documented, versioned, and
-ready to deploy.
+这里展示的是正在积累的方法与实践，不虚构团队规模、服务等级或交付履历。具体协作会根据真实需求单独确认。

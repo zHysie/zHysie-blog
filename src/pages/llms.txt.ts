@@ -10,19 +10,44 @@ interface LlmLink {
 }
 
 const corePages: LlmLink[] = [
-  { label: "Home", path: "/", description: "Production-ready marketing homepage." },
-  { label: "About", path: "/about", description: "Project background and overview." },
-  { label: "Services", path: "/services", description: "Service offerings." },
-  { label: "Pricing", path: "/pricing", description: "Plans and pricing tiers." },
-  { label: "Contact", path: "/contact", description: "Contact details." },
-  { label: "Blog", path: "/blog", description: "Articles and updates." },
-  { label: "Documentation", path: "/docs", description: "Setup and usage guides." },
+  { label: "首页", path: "/", description: "个人博客首页。" },
+  {
+    label: "关于我",
+    path: "/about",
+    description: "zHysie 的关注方向与联系方式。",
+  },
+  {
+    label: "实验室",
+    path: "/lab",
+    description: "已经上线和持续迭代的站内实验。",
+  },
+  {
+    label: "装备",
+    path: "/uses",
+    description: "工作空间、开发工具与站点技术栈。",
+  },
+  { label: "文章", path: "/posts", description: "文章归档、分类与标签。" },
+  { label: "日常", path: "/daily", description: "短篇日常记录。" },
+  { label: "时光", path: "/timeline", description: "文章与日常的时间轴。" },
+  { label: "开发文档", path: "/docs", description: "英文开发与维护文档。" },
 ];
 
 const stack: LlmLink[] = [
-  { label: "Astro", path: "https://astro.build", description: "Static site generator for fast content sites." },
-  { label: "Starlight", path: "https://starlight.astro.build", description: "Documentation framework for Astro." },
-  { label: "Cloudflare Pages", path: "https://pages.cloudflare.com", description: "Edge deployment with optional R2 storage." },
+  {
+    label: "Astro",
+    path: "https://astro.build",
+    description: "静态站点与内容框架。",
+  },
+  {
+    label: "Starlight",
+    path: "https://starlight.astro.build",
+    description: "Astro 文档框架。",
+  },
+  {
+    label: "Cloudflare Pages",
+    path: "https://pages.cloudflare.com",
+    description: "静态站点托管与边缘分发。",
+  },
 ];
 
 export const GET: APIRoute = () => {
@@ -31,18 +56,20 @@ export const GET: APIRoute = () => {
     path.startsWith("http") ? path : `${base}${path}`;
   const section = (links: LlmLink[]) =>
     links
-      .map((l) => `- [${l.label}](${toUrl(l.path)}): ${l.description}`)
+      .map(
+        (link) => `- [${link.label}](${toUrl(link.path)}): ${link.description}`,
+      )
       .join("\n");
 
   const body = `# ${siteConfig.name}
 
-> ${siteConfig.description}. Ships with light/dark theming, a multilanguage-ready i18n engine (English by default), blog, documentation, and SEO defaults.
+> ${siteConfig.description}。公开站点为中文，并提供浅色与深色主题、博客、站内搜索、RSS、站点地图和英文开发文档。
 
-## Core Pages
+## 主要页面
 
 ${section(corePages)}
 
-## Stack
+## 技术栈
 
 ${section(stack)}
 `;

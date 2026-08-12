@@ -31,7 +31,6 @@ export const mainNav: NavItem[] = [
       { href: "/about", labelKey: "nav.about", icon: "lucide:user-round" },
       { href: "/lab", labelKey: "nav.lab", icon: "lucide:flask-conical" },
       { href: "/uses", labelKey: "nav.uses", icon: "lucide:laptop" },
-      { href: "/tags", labelKey: "nav.tags", icon: "lucide:hash" },
     ],
   },
 ] as const;
@@ -54,10 +53,7 @@ export const footerNav = {
       href: "https://github.com/zHysie",
       labelKey: "footer.github",
     },
-    {
-      href: "https://www.linkedin.com/in/milzamsz/",
-      labelKey: "footer.linkedin",
-    },
+    { href: "mailto:milzamsz@gmail.com", labelKey: "footer.email" },
   ] as const,
 } as const;
 

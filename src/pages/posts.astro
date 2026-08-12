@@ -1,279 +1,912 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection, type CollectionEntry } from "astro:content";
+import { PostArchiveItem } from "../components/blog/index";
+import BaseLayout from "../layouts/BaseLayout.astro";
 import { t } from "../i18n/ui";
 import { resolveRoute } from "../i18n/routes";
-import { siteConfig } from "../config/site.config";
-import { BlogCard } from "../components/blog/index";
-import Pagination from "../components/ui/data-display/Pagination/Pagination.astro";
 
-const locale = (Astro.currentLocale || "en") as "en";
-const searchParams = Astro.url.searchParams;
-const currentTag = searchParams.get("tag") ?? "";
-const currentPage = Math.max(1, Number(searchParams.get("page") || "1"));
-const slugify = (value: string) =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/['"]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
+const locale = "zh-CN" as const;
 const allPosts: CollectionEntry<"blog">[] = await getCollection("blog");
 const posts = allPosts
-  .filter((p) => p.data.locale === locale && !p.data.draft)
+  .filter((post) => post.data.locale === locale && !post.data.draft)
   .sort(
     (a, b) =>
       new Date(b.data.publishDate).getTime() -
       new Date(a.data.publishDate).getTime(),
   );
 
-const filteredPosts = currentTag
-  ? posts.filter((post) =>
-      (post.data.tags ?? []).some((tag: string) => slugify(tag) === currentTag),
-    )
-  : posts;
-const featuredPost =
-  currentPage === 1
-    ? (filteredPosts.find((post) => post.data.featured) ?? filteredPosts[0])
-    : undefined;
-const gridPosts = featuredPost
-  ? filteredPosts.filter((post) => post.id !== featuredPost.id)
-  : filteredPosts;
-const postsPerPage = siteConfig.blog.postsPerPage;
-const totalPages = Math.max(1, Math.ceil(gridPosts.length / postsPerPage));
-const pagePosts = gridPosts.slice(
-  (currentPage - 1) * postsPerPage,
-  currentPage * postsPerPage,
+const categoryCounts = new Map<string, number>();
+const tagCounts = new Map<string, number>();
+
+for (const post of posts) {
+  categoryCounts.set(
+    post.data.category,
+    (categoryCounts.get(post.data.category) ?? 0) + 1,
+  );
+
+  for (const tag of post.data.tags ?? []) {
+    tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+  }
+}
+
+const categories = [...categoryCounts.entries()].sort(([a], [b]) =>
+  a.localeCompare(b, "zh-CN"),
 );
-const allTags = [
-  ...new Set(posts.flatMap((post) => post.data.tags || [])),
-].sort((a, b) => a.localeCompare(b));
+const tags = [...tagCounts.entries()].sort(([a], [b]) =>
+  a.localeCompare(b, "zh-CN"),
+);
 ---
 
 <BaseLayout
-  title={t(locale, "nav.blog")}
-  description={t(locale, "nav.blog")}
+  title={t(locale, "blog.archiveTitle")}
+  description={t(locale, "blog.archiveLead")}
   locale={locale}
   path={resolveRoute(locale, "/posts")}
 >
-  <main class="blog-list container py-12">
-    <header class="blog-list__hero">
-      <h1>{t(locale, "nav.blog")}</h1>
-      <p class="blog-list__lead">
-        Articles about web development and the modern stack.
-      </p>
-      <p class="blog-list__count">
-        {filteredPosts.length}
-        {filteredPosts.length === 1 ? " article" : " articles"}
-        {
-          currentTag && (
-            <>
-              {" "}
-              tagged <strong>#{currentTag}</strong>
-            </>
-          )
-        }
+  <main class="posts-page container" data-posts-explorer>
+    <header class="posts-page__intro">
+      <div class="posts-page__heading">
+        <span class="posts-page__eyebrow" aria-hidden="true">Archive</span>
+        <h1>{t(locale, "blog.archiveTitle")}</h1>
+        <span class="posts-page__ornament" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </div>
+      <p class="posts-page__motto">文字是思考的锚点</p>
+      <div class="posts-page__quote">
+        <span aria-hidden="true">“</span>
+        <p class="posts-page__lead">{t(locale, "blog.archiveLead")}</p>
+        <span aria-hidden="true">”</span>
+      </div>
+      <p class="posts-page__count" aria-live="polite">
+        共 <span data-visible-count>{posts.length}</span> 篇文章
       </p>
     </header>
 
-    {
-      allTags.length > 0 && (
-        <nav class="blog-list__tags" aria-label={t(locale, "blog.filterByTag")}>
-          <a
-            href={resolveRoute(locale, "/posts")}
-            class={`blog-chip${currentTag ? "" : " blog-chip--active"}`}
-          >
-            All
-          </a>
-          {allTags.map((tag) => {
-            const tagSlug = slugify(tag);
-            const active = currentTag === tagSlug;
-            const href = active
-              ? resolveRoute(locale, "/posts")
-              : `${resolveRoute(locale, "/posts")}?tag=${tagSlug}`;
-            return (
-              <a
-                href={href}
-                class={`blog-chip${active ? " blog-chip--active" : ""}`}
-              >
-                {tag}
-              </a>
-            );
-          })}
-        </nav>
-      )
-    }
+    <div class="posts-page__layout">
+      <aside class="posts-taxonomy" aria-label="文章筛选">
+        <details class="posts-taxonomy__disclosure" data-taxonomy-disclosure>
+          <summary class="posts-taxonomy__summary">
+            <span>分类与标签</span>
+            <span data-filter-summary>全部文章</span>
+          </summary>
+          <div class="posts-taxonomy__content">
+            <section
+              class="posts-taxonomy__group"
+              aria-labelledby="categories-title"
+            >
+              <h2 id="categories-title">{t(locale, "blog.categories")}</h2>
+              <ul class="posts-taxonomy__categories">
+                <li>
+                  <button
+                    class="posts-taxonomy__category"
+                    type="button"
+                    data-filter-type="category"
+                    data-filter-value=""
+                    aria-pressed="true"
+                  >
+                    <span>全部文章</span>
+                    <span class="posts-taxonomy__number">{posts.length}</span>
+                  </button>
+                </li>
+                {
+                  categories.map(([category, count]) => (
+                    <li>
+                      <button
+                        class="posts-taxonomy__category"
+                        type="button"
+                        data-filter-type="category"
+                        data-filter-value={category}
+                        aria-pressed="false"
+                      >
+                        <span>{category}</span>
+                        <span class="posts-taxonomy__number">{count}</span>
+                      </button>
+                    </li>
+                  ))
+                }
+              </ul>
+            </section>
 
-    {
-      filteredPosts.length === 0 && (
-        <div class="blog-list__empty">
-          <p class="blog-list__empty-title">{t(locale, "blog.noResults")}</p>
-          <a class="blog-list__empty-cta" href={resolveRoute(locale, "/posts")}>
-            {t(locale, "blog.allPosts")}
-          </a>
+            <section class="posts-taxonomy__group" aria-labelledby="tags-title">
+              <h2 id="tags-title">{t(locale, "blog.archiveTags")}</h2>
+              <div class="posts-taxonomy__tags">
+                {
+                  tags.map(([tag, count]) => (
+                    <button
+                      class="posts-taxonomy__tag"
+                      type="button"
+                      data-filter-type="tag"
+                      data-filter-value={tag}
+                      aria-pressed="false"
+                      aria-label={`${tag}，${count} 篇文章`}
+                    >
+                      <span class="posts-taxonomy__tag-content">
+                        <span class="posts-taxonomy__tag-label">{tag}</span>
+                        <span class="posts-taxonomy__tag-count">{count}</span>
+                      </span>
+                    </button>
+                  ))
+                }
+              </div>
+            </section>
+
+            <button
+              class="posts-taxonomy__reset"
+              type="button"
+              data-clear-filters
+              hidden
+            >
+              {t(locale, "blog.clearFilters")}
+            </button>
+          </div>
+        </details>
+      </aside>
+
+      <section class="posts-archive" aria-label="文章列表">
+        <div class="posts-archive__list">
+          <div class="posts-archive__hover" data-posts-hover aria-hidden="true">
+          </div>
+          {posts.map((post) => <PostArchiveItem post={post} locale={locale} />)}
         </div>
-      )
-    }
-
-    {
-      featuredPost && currentPage === 1 && (
-        <section class="blog-list__featured" aria-label="Featured article">
-          <BlogCard
-            post={featuredPost}
-            variant="list"
-            locale={locale}
-            headingLevel="h2"
-          />
-        </section>
-      )
-    }
-
-    {
-      pagePosts.length > 0 && (
-        <section class="blog-list__grid">
-          {pagePosts.map((post) => (
-            <BlogCard
-              post={post}
-              variant="grid"
-              locale={locale}
-              headingLevel="h2"
-            />
-          ))}
-        </section>
-      )
-    }
-
-    {
-      totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          basePath={resolveRoute(locale, "/posts")}
-          query={currentTag ? { tag: currentTag } : undefined}
-          locale={locale}
-        />
-      )
-    }
+        <div class="posts-archive__empty" data-filter-empty hidden>
+          <p>{t(locale, "blog.emptyFiltered")}</p>
+          <button type="button" data-clear-filters
+            >{t(locale, "blog.clearFilters")}</button
+          >
+        </div>
+      </section>
+    </div>
   </main>
 </BaseLayout>
 
+<script>
+  const explorer = document.querySelector<HTMLElement>("[data-posts-explorer]");
+
+  if (explorer) {
+    const posts = [
+      ...explorer.querySelectorAll<HTMLElement>("[data-post-item]"),
+    ];
+    const postsList = explorer.querySelector<HTMLElement>(
+      ".posts-archive__list",
+    );
+    const postsHover =
+      explorer.querySelector<HTMLElement>("[data-posts-hover]");
+    const categoryButtons = [
+      ...explorer.querySelectorAll<HTMLButtonElement>(
+        '[data-filter-type="category"]',
+      ),
+    ];
+    const tagButtons = [
+      ...explorer.querySelectorAll<HTMLButtonElement>(
+        '[data-filter-type="tag"]',
+      ),
+    ];
+    const resetButtons = [
+      ...explorer.querySelectorAll<HTMLButtonElement>("[data-clear-filters]"),
+    ];
+    const count = explorer.querySelector<HTMLElement>("[data-visible-count]");
+    const empty = explorer.querySelector<HTMLElement>("[data-filter-empty]");
+    const filterSummary = explorer.querySelector<HTMLElement>(
+      "[data-filter-summary]",
+    );
+    const taxonomyDisclosure = explorer.querySelector<HTMLDetailsElement>(
+      "[data-taxonomy-disclosure]",
+    );
+    const desktopLayout = window.matchMedia("(min-width: 64rem)");
+    const validCategories = new Set(
+      categoryButtons.map((button) => button.dataset.filterValue ?? ""),
+    );
+    const validTags = new Set(
+      tagButtons.map((button) => button.dataset.filterValue ?? ""),
+    );
+    let activeCategory = "";
+    let activeTag = "";
+    let activePost: HTMLElement | null = null;
+    let hoverFrame = 0;
+    let lastHoverFrame = 0;
+    let hoverTop = 0;
+    let hoverHeight = 0;
+    let hoverTopVelocity = 0;
+    let hoverHeightVelocity = 0;
+    let targetHoverTop = 0;
+    let targetHoverHeight = 0;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const precisePointer = window.matchMedia(
+      "(hover: hover) and (pointer: fine)",
+    );
+
+    const renderHover = () => {
+      if (!postsHover) return;
+
+      postsHover.style.setProperty("--hover-y", `${hoverTop}px`);
+      postsHover.style.setProperty(
+        "--hover-height",
+        `${Math.max(0, hoverHeight)}px`,
+      );
+    };
+
+    const animateHover = (time: number) => {
+      if (!postsHover) return;
+
+      const delta = lastHoverFrame
+        ? Math.min((time - lastHoverFrame) / 1000, 0.032)
+        : 1 / 60;
+      lastHoverFrame = time;
+
+      const stiffness = 260;
+      const damping = 26;
+      hoverTopVelocity +=
+        ((targetHoverTop - hoverTop) * stiffness - hoverTopVelocity * damping) *
+        delta;
+      hoverHeightVelocity +=
+        ((targetHoverHeight - hoverHeight) * stiffness -
+          hoverHeightVelocity * damping) *
+        delta;
+      hoverTop += hoverTopVelocity * delta;
+      hoverHeight += hoverHeightVelocity * delta;
+      renderHover();
+
+      const isSettled =
+        Math.abs(targetHoverTop - hoverTop) < 0.1 &&
+        Math.abs(targetHoverHeight - hoverHeight) < 0.1 &&
+        Math.abs(hoverTopVelocity) < 0.1 &&
+        Math.abs(hoverHeightVelocity) < 0.1;
+
+      if (isSettled) {
+        hoverTop = targetHoverTop;
+        hoverHeight = targetHoverHeight;
+        hoverTopVelocity = 0;
+        hoverHeightVelocity = 0;
+        hoverFrame = 0;
+        lastHoverFrame = 0;
+        renderHover();
+        return;
+      }
+
+      hoverFrame = window.requestAnimationFrame(animateHover);
+    };
+
+    const moveHoverTo = (post: HTMLElement) => {
+      if (!postsList || !postsHover || post.hidden) return;
+
+      activePost = post;
+      targetHoverTop = post.offsetTop;
+      targetHoverHeight = post.offsetHeight;
+      postsHover.dataset.visible = "true";
+
+      if (reducedMotion.matches) {
+        if (hoverFrame) window.cancelAnimationFrame(hoverFrame);
+        hoverFrame = 0;
+        lastHoverFrame = 0;
+        hoverTop = targetHoverTop;
+        hoverHeight = targetHoverHeight;
+        hoverTopVelocity = 0;
+        hoverHeightVelocity = 0;
+        renderHover();
+        return;
+      }
+
+      if (!hoverFrame) {
+        hoverFrame = window.requestAnimationFrame(animateHover);
+      }
+    };
+
+    const hideHover = () => {
+      activePost = null;
+      postsHover?.removeAttribute("data-visible");
+    };
+
+    if (postsList && postsHover) {
+      for (const post of posts) {
+        if (precisePointer.matches) {
+          post.addEventListener("pointerenter", () => moveHoverTo(post));
+        }
+
+        post.addEventListener("focusin", () => moveHoverTo(post));
+        post.addEventListener("focusout", (event) => {
+          if (!post.contains(event.relatedTarget as Node | null)) hideHover();
+        });
+      }
+
+      postsList.addEventListener("pointerleave", hideHover);
+      window.addEventListener("resize", () => {
+        if (activePost) moveHoverTo(activePost);
+      });
+    }
+
+    const readFiltersFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const category = params.get("category") ?? "";
+      const tag = params.get("tag") ?? "";
+      activeCategory = validCategories.has(category) ? category : "";
+      activeTag = validTags.has(tag) ? tag : "";
+    };
+
+    const applyFilters = (updateUrl = true) => {
+      let visiblePosts = 0;
+
+      for (const post of posts) {
+        const categoryMatches =
+          !activeCategory || post.dataset.category === activeCategory;
+        const postTags = (() => {
+          try {
+            return JSON.parse(post.dataset.tags ?? "[]") as string[];
+          } catch {
+            return [];
+          }
+        })();
+
+        const tagMatches = !activeTag || postTags.includes(activeTag);
+        post.hidden = !(categoryMatches && tagMatches);
+        if (!post.hidden) visiblePosts += 1;
+      }
+
+      if (activePost?.hidden) hideHover();
+
+      for (const button of categoryButtons) {
+        button.setAttribute(
+          "aria-pressed",
+          String((button.dataset.filterValue ?? "") === activeCategory),
+        );
+      }
+
+      for (const button of tagButtons) {
+        button.setAttribute(
+          "aria-pressed",
+          String((button.dataset.filterValue ?? "") === activeTag),
+        );
+      }
+
+      if (count) count.textContent = String(visiblePosts);
+      if (empty) empty.hidden = visiblePosts !== 0;
+      if (filterSummary) {
+        filterSummary.textContent =
+          [activeCategory, activeTag && `#${activeTag}`]
+            .filter(Boolean)
+            .join(" · ") || "全部文章";
+      }
+
+      const hasFilters = Boolean(activeCategory || activeTag);
+      for (const button of resetButtons) {
+        button.hidden =
+          !hasFilters && button.closest(".posts-taxonomy") !== null;
+      }
+
+      if (updateUrl) {
+        const url = new URL(window.location.href);
+        activeCategory
+          ? url.searchParams.set("category", activeCategory)
+          : url.searchParams.delete("category");
+        activeTag
+          ? url.searchParams.set("tag", activeTag)
+          : url.searchParams.delete("tag");
+        window.history.replaceState({}, "", url);
+      }
+    };
+
+    for (const button of categoryButtons) {
+      button.addEventListener("click", () => {
+        const nextCategory = button.dataset.filterValue ?? "";
+        activeCategory =
+          nextCategory && nextCategory === activeCategory ? "" : nextCategory;
+        applyFilters();
+      });
+    }
+
+    for (const button of tagButtons) {
+      button.addEventListener("click", () => {
+        const nextTag = button.dataset.filterValue ?? "";
+        activeTag = nextTag === activeTag ? "" : nextTag;
+        applyFilters();
+      });
+    }
+
+    for (const button of resetButtons) {
+      button.addEventListener("click", () => {
+        activeCategory = "";
+        activeTag = "";
+        applyFilters();
+      });
+    }
+
+    window.addEventListener("popstate", () => {
+      readFiltersFromUrl();
+      applyFilters(false);
+    });
+
+    const syncTaxonomyDisclosure = () => {
+      if (taxonomyDisclosure) taxonomyDisclosure.open = desktopLayout.matches;
+    };
+
+    desktopLayout.addEventListener("change", syncTaxonomyDisclosure);
+    syncTaxonomyDisclosure();
+
+    readFiltersFromUrl();
+    applyFilters(false);
+  }
+</script>
+
 <style>
-  .blog-list {
+  .posts-page {
+    padding-block: calc(var(--header-height-mobile) + var(--space-xl))
+      var(--space-3xl);
+  }
+
+  .posts-page__intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(100%, var(--container-wide));
+    margin-inline: auto;
+    padding-bottom: var(--space-3xl);
+    text-align: center;
+  }
+
+  .posts-page__heading {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .posts-page__intro h1 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-widest);
+    text-wrap: balance;
+  }
+
+  .posts-page__eyebrow {
+    position: absolute;
+    top: calc(var(--space-md) * -1);
+    left: calc(100% + var(--space-md));
+    height: var(--space-2xl);
+    padding-right: var(--spacing-1);
+    border-right: 1px solid
+      color-mix(in srgb, var(--brand-logo-blue) 24%, transparent);
+    color: color-mix(in srgb, var(--brand-logo-blue) 64%, transparent);
+    font-family: var(--font-heading);
+    font-size: calc(var(--text-xs) * 0.75);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--leading-normal);
+    letter-spacing: calc(var(--tracking-widest) * 3);
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+  }
+
+  .posts-page__ornament {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
+
+  .posts-page__ornament span:first-child,
+  .posts-page__ornament span:last-child {
+    width: var(--spacing-1);
+    height: var(--spacing-1);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--brand-logo-blue) 46%, transparent);
+  }
+
+  .posts-page__ornament span:nth-child(2) {
+    width: var(--space-2xl);
+    border-top: 1px solid
+      color-mix(in srgb, var(--brand-logo-blue) 28%, transparent);
+  }
+
+  .posts-page__motto {
+    margin: var(--space-lg) 0 0;
+    color: var(--color-text-primary);
+    font-family: var(--font-heading);
+    font-size: var(--text-sm);
+    font-style: italic;
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .posts-page__quote {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    max-width: var(--container-narrow);
+    margin-top: var(--space-md);
+  }
+
+  .posts-page__quote > span {
+    color: color-mix(in srgb, var(--brand-logo-blue) 46%, transparent);
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    line-height: var(--leading-tight);
+  }
+
+  .posts-page__quote > span:last-child {
+    align-self: flex-end;
+  }
+
+  .posts-page__lead {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-family: var(--font-heading);
+    font-size: var(--text-xs);
+    font-style: italic;
+    line-height: var(--leading-relaxed);
+  }
+
+  .posts-page__count {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .posts-page__layout {
+    display: grid;
+    gap: var(--space-2xl);
+    align-items: start;
+  }
+
+  .posts-taxonomy {
+    min-width: 0;
+  }
+
+  .posts-taxonomy__disclosure,
+  .posts-taxonomy__content {
     display: grid;
     gap: var(--space-xl);
   }
 
-  .blog-list__hero {
-    max-width: 48rem;
+  .posts-taxonomy__summary {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    padding-block: var(--space-md);
+    border-block: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    cursor: pointer;
+  }
+
+  .posts-taxonomy__summary::marker {
+    color: var(--color-text-secondary);
+  }
+
+  .posts-taxonomy__summary [data-filter-summary] {
+    overflow: hidden;
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-normal);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .posts-taxonomy__group {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .posts-taxonomy__group h2 {
+    margin: 0;
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--leading-snug);
+  }
+
+  .posts-taxonomy__categories {
     display: grid;
     gap: var(--space-xs);
+    padding: 0;
+    margin: 0;
+    list-style: none;
   }
 
-  .blog-list__hero h1 {
-    margin: 0;
-    font-size: clamp(2.25rem, 4vw, 3.5rem);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-  }
-
-  .blog-list__lead {
-    margin: 0;
+  .posts-taxonomy__category {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-md);
+    width: 100%;
+    padding: var(--space-xs) 0;
+    border: 0;
+    background: transparent;
     color: var(--color-text-secondary);
-    font-size: 1.0625rem;
-    line-height: 1.7;
+    font: inherit;
+    font-size: var(--text-sm);
+    text-align: left;
+    cursor: pointer;
   }
 
-  .blog-list__count {
-    margin: 0;
+  .posts-taxonomy__category:hover,
+  .posts-taxonomy__category[aria-pressed="true"] {
+    color: var(--color-text-primary);
+  }
+
+  .posts-taxonomy__category[aria-pressed="true"] {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .posts-taxonomy__number {
     color: var(--color-text-secondary);
-    font-size: 0.8125rem;
+    font-size: var(--text-xs);
     font-variant-numeric: tabular-nums;
   }
 
-  .blog-list__count strong {
-    color: var(--color-text-primary);
-    font-weight: 600;
-  }
-
-  /* Filter bar */
-  .blog-list__tags {
+  .posts-taxonomy__tags {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-xs);
-    padding-bottom: var(--space-lg);
-    border-bottom: 1px solid var(--color-border);
+    column-gap: var(--spacing-2);
+    row-gap: var(--spacing-1);
   }
 
-  .blog-chip {
+  .posts-taxonomy__tag {
+    position: relative;
+    isolation: isolate;
     display: inline-flex;
     align-items: center;
-    padding: 0.375rem 0.875rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-full);
+    min-height: var(--space-xl);
+    padding: var(--spacing-1) var(--spacing-2) var(--spacing-1) var(--space-lg);
+    overflow: hidden;
+    border: 0;
+    border-radius: var(--radius-md);
     background: transparent;
     color: var(--color-text-secondary);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    line-height: 1;
-    text-decoration: none;
+    font: inherit;
+    font-size: var(--text-xs);
+    line-height: var(--leading-normal);
+    cursor: pointer;
     transition:
-      color 0.15s ease,
-      border-color 0.15s ease,
-      background 0.15s ease;
+      color 150ms ease-out,
+      transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
   }
 
-  .blog-chip:hover {
+  .posts-taxonomy__tag::before,
+  .posts-taxonomy__tag::after {
+    position: absolute;
+    pointer-events: none;
+    content: "";
+  }
+
+  .posts-taxonomy__tag::before {
+    z-index: 0;
+    top: 50%;
+    left: var(--spacing-1);
+    width: var(--space-sm);
+    height: calc(var(--spacing-1) / 2);
+    border-radius: var(--radius-full);
+    background: linear-gradient(
+      90deg,
+      var(--brand-logo-blue),
+      var(--brand-logo-pink)
+    );
+    opacity: 0;
+    transform: translate3d(calc(var(--spacing-1) * -1), -50%, 0) scaleX(0.45);
+    transform-origin: left center;
+    transition:
+      opacity 150ms ease-out,
+      transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .posts-taxonomy__tag::after {
+    z-index: -1;
+    inset: calc(var(--spacing-1) / 2) 0;
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--brand-logo-blue) 10%, transparent);
+    clip-path: polygon(0 18%, 92% 0, 100% 42%, 94% 86%, 6% 100%, 0 72%);
+    opacity: 0;
+    transform: scaleX(0.1);
+    transform-origin: left center;
+    transition:
+      opacity 150ms ease-out,
+      transform 180ms cubic-bezier(0.23, 1, 0.32, 1),
+      background-color 100ms ease-out;
+  }
+
+  .posts-taxonomy__tag-content {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    gap: var(--spacing-2);
+    align-items: baseline;
+    transform: translate3d(0, 0, 0);
+    transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .posts-taxonomy__tag-count {
+    font-size: calc(var(--text-xs) * 0.8);
+    font-variant-numeric: tabular-nums;
+    opacity: 0.66;
+    transition:
+      color 160ms ease-out,
+      opacity 160ms ease-out;
+  }
+
+  .posts-taxonomy__tag:hover,
+  .posts-taxonomy__tag:focus-visible,
+  .posts-taxonomy__tag[aria-pressed="true"] {
     color: var(--color-text-primary);
-    border-color: var(--color-text-secondary);
   }
 
-  .blog-chip--active {
-    background: var(--color-text-primary);
-    border-color: var(--color-text-primary);
-    color: var(--color-bg-primary);
+  .posts-taxonomy__tag:hover::before,
+  .posts-taxonomy__tag:focus-visible::before,
+  .posts-taxonomy__tag[aria-pressed="true"]::before {
+    opacity: 1;
+    transform: translate3d(0, -50%, 0) scaleX(1);
   }
 
-  .blog-chip--active:hover {
-    color: var(--color-bg-primary);
+  .posts-taxonomy__tag:hover::after,
+  .posts-taxonomy__tag:focus-visible::after,
+  .posts-taxonomy__tag[aria-pressed="true"]::after {
+    opacity: 1;
+    transform: scaleX(1);
   }
 
-  /* Empty state */
-  .blog-list__empty {
+  .posts-taxonomy__tag:hover .posts-taxonomy__tag-content,
+  .posts-taxonomy__tag:focus-visible .posts-taxonomy__tag-content,
+  .posts-taxonomy__tag[aria-pressed="true"] .posts-taxonomy__tag-content {
+    transform: translate3d(calc(var(--spacing-1) / 2), 0, 0);
+  }
+
+  .posts-taxonomy__tag:hover .posts-taxonomy__tag-count,
+  .posts-taxonomy__tag:focus-visible .posts-taxonomy__tag-count,
+  .posts-taxonomy__tag[aria-pressed="true"] .posts-taxonomy__tag-count {
+    color: color-mix(
+      in srgb,
+      var(--brand-logo-blue) 72%,
+      var(--color-text-primary)
+    );
+    opacity: 1;
+  }
+
+  .posts-taxonomy__tag:active {
+    transform: scale(0.985);
+  }
+
+  .posts-taxonomy__tag:active::after {
+    background: color-mix(in oklab, var(--brand-logo-blue) 16%, transparent);
+  }
+
+  .posts-taxonomy__tag:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .posts-taxonomy__tag[aria-pressed="true"] {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .posts-taxonomy__tag[aria-pressed="true"]::after {
+    background: color-mix(in oklab, var(--brand-logo-blue) 14%, transparent);
+  }
+
+  .posts-taxonomy__reset,
+  .posts-archive__empty button {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-text-primary);
+    font: inherit;
+    font-size: var(--text-sm);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: var(--spacing-2);
+    cursor: pointer;
+  }
+
+  .posts-taxonomy__reset[hidden],
+  .posts-archive__empty[hidden],
+  :global([data-post-item][hidden]) {
+    display: none;
+  }
+
+  .posts-archive {
+    min-width: 0;
+  }
+
+  .posts-archive__list {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .posts-archive__hover {
+    position: absolute;
+    z-index: -1;
+    inset-inline: calc(var(--space-md) * -1);
+    top: 0;
+    height: var(--hover-height, 0);
+    border-radius: var(--radius-lg);
+    background: var(--interactive-hover-surface);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate3d(0, var(--hover-y, 0), 0);
+    transition: opacity 150ms ease-out;
+    will-change: height, transform;
+  }
+
+  .posts-archive__hover[data-visible="true"] {
+    opacity: 1;
+  }
+
+  .posts-archive__empty {
     display: grid;
-    justify-items: center;
     gap: var(--space-md);
-    padding: var(--space-3xl) var(--space-lg);
-    text-align: center;
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-2xl);
+    padding-block: var(--space-2xl);
+    border-block: 1px solid var(--color-border);
   }
 
-  .blog-list__empty-title {
+  .posts-archive__empty p {
     margin: 0;
     color: var(--color-text-secondary);
-    font-size: 1.0625rem;
   }
 
-  .blog-list__empty-cta {
-    color: var(--color-brand-primary);
-    font-weight: 600;
-    text-decoration: none;
-  }
+  @media (width >= 64rem) {
+    .posts-page {
+      padding-top: calc(var(--header-height) + var(--space-2xl));
+    }
 
-  .blog-list__empty-cta:hover {
-    text-decoration: underline;
-  }
+    .posts-page__layout {
+      grid-template-columns: minmax(0, 1fr) var(--sidebar-width);
+      gap: var(--space-3xl);
+    }
 
-  .blog-list__grid {
-    display: grid;
-    gap: var(--space-lg);
-    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+    .posts-taxonomy {
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      top: calc(var(--header-height) + var(--space-lg));
+    }
+
+    .posts-taxonomy__summary {
+      display: none;
+    }
+
+    .posts-archive {
+      grid-column: 1;
+      grid-row: 1;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .blog-chip {
+    .posts-taxonomy__tag,
+    .posts-taxonomy__tag::before,
+    .posts-taxonomy__tag::after,
+    .posts-taxonomy__tag-content,
+    .posts-taxonomy__tag-count,
+    .posts-archive__hover {
       transition: none;
+    }
+
+    .posts-taxonomy__tag:active,
+    .posts-taxonomy__tag:hover .posts-taxonomy__tag-content,
+    .posts-taxonomy__tag:focus-visible .posts-taxonomy__tag-content,
+    .posts-taxonomy__tag[aria-pressed="true"] .posts-taxonomy__tag-content {
+      transform: none;
+    }
+
+    .posts-taxonomy__tag:hover::before,
+    .posts-taxonomy__tag:focus-visible::before,
+    .posts-taxonomy__tag[aria-pressed="true"]::before {
+      transform: translate3d(0, -50%, 0) scaleX(1);
+    }
+
+    .posts-taxonomy__tag:hover::after,
+    .posts-taxonomy__tag:focus-visible::after,
+    .posts-taxonomy__tag[aria-pressed="true"]::after {
+      transform: none;
     }
   }
 </style>

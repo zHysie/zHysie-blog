@@ -1,23 +1,27 @@
 /**
  * Color tokens — Semantic design tokens for light and dark modes
  * Warm-neutral OKLCH palette:
- *   rgb(20, 20, 19) foreground on rgb(240, 238, 230) in light mode,
- *   inverted in dark mode. The tiny chroma in these two brand neutrals keeps
- *   the paper-like warmth while functional status colors remain distinct.
+ *   rgb(20, 20, 19) foreground on rgb(247, 246, 242) in light mode.
+ *   Dark mode keeps the original rgb(240, 238, 230) paper tone for text.
+ *   The tiny chroma keeps a quiet paper-like warmth without a yellow cast.
  * These map to Tailwind via @theme block in global.css.
  */
 
 :root {
   /* === Brand anchors === */
+  --brand-canvas: oklch(0.9728 0.0054 95.099deg);
   --brand-paper: oklch(0.9485 0.0109 95.166deg);
   --brand-ink: oklch(0.1908 0.002 106.586deg);
+  --brand-logo-blue: oklch(0.6988 0.1006 243.6deg);
+  --brand-logo-pink: oklch(0.7803 0.071 6.47deg);
+  --hero-ascii-tint: #d8b46a;
 
   /* === Core surfaces === */
-  --background: var(--brand-paper);
+  --background: var(--brand-canvas);
   --foreground: var(--brand-ink);
-  --card: var(--brand-paper);
+  --card: var(--brand-canvas);
   --card-foreground: var(--brand-ink);
-  --popover: var(--brand-paper);
+  --popover: var(--brand-canvas);
   --popover-foreground: var(--brand-ink);
 
   /* === Primary — neutral (near-black) === */
@@ -37,6 +41,9 @@
   --accent-foreground: var(--brand-ink);
   --accent-hover: oklch(0.9124 0.0097 93.576deg);
 
+  /* === Interaction surfaces === */
+  --interactive-hover-surface: var(--brand-paper);
+
   /* === Muted === */
   --muted: oklch(0.97 0 0deg);
 
@@ -46,7 +53,12 @@
   /* === Border & Ring === */
   --border: oklch(0.922 0 0deg);
   --ring: oklch(0.45 0 0deg);
-  --ring-offset: var(--brand-paper);
+  --ring-offset: var(--brand-canvas);
+  --footer-dot-wordmark: color-mix(
+    in oklch,
+    var(--foreground) 18%,
+    var(--background)
+  );
 
   /* === Semantic (functional status — kept chromatic) === */
   --destructive: oklch(0.577 0.245 27.325deg);
@@ -89,6 +101,9 @@
   --accent: oklch(0.269 0 0deg);
   --accent-foreground: var(--brand-paper);
   --accent-hover: oklch(0.32 0 0deg);
+
+  /* === Interaction surfaces === */
+  --interactive-hover-surface: var(--accent);
 
   /* === Muted === */
   --muted: oklch(0.269 0 0deg);

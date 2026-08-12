@@ -1,0 +1,408 @@
+---
+export interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props as Props;
+---
+
+<div class:list={["ascii-404", className]} data-ascii-404>
+  <span class="ascii-404__fallback" aria-hidden="true">404</span>
+  <canvas class="ascii-404__canvas" data-ascii-404-canvas aria-hidden="true"
+  ></canvas>
+</div>
+
+<script>
+  interface Glyph {
+    char: string;
+    x: number;
+    y: number;
+    startX: number;
+    startY: number;
+    seed: number;
+    digitIndex: number;
+  }
+
+  interface AmbientGlyph {
+    char: string;
+    angle: number;
+    radiusX: number;
+    radiusY: number;
+    speed: number;
+    seed: number;
+    accentIndex: number;
+  }
+
+  const glyphs = [".", ":", "+", "*", "#", "8", "0"];
+
+  const hash = (x: number, y: number) => {
+    const value = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+    return value - Math.floor(value);
+  };
+
+  document.querySelectorAll<HTMLElement>("[data-ascii-404]").forEach((root) => {
+    if (root.dataset.ascii404Ready === "true") return;
+
+    const canvas = root.querySelector<HTMLCanvasElement>(
+      "[data-ascii-404-canvas]",
+    );
+    if (!canvas) return;
+
+    const context = canvas.getContext("2d", { alpha: true });
+    const sampleCanvas = document.createElement("canvas");
+    const sampleContext = sampleCanvas.getContext("2d", {
+      willReadFrequently: true,
+    });
+    if (!context || !sampleContext) return;
+
+    root.dataset.ascii404Ready = "true";
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let cells: Glyph[] = [];
+    let ambientGlyphs: AmbientGlyph[] = [];
+    let width = 1;
+    let height = 1;
+    let pixelRatio = 1;
+    let frame = 0;
+    let entranceStartedAt = performance.now();
+    let hasPlayedEntrance = false;
+    let ink = "currentColor";
+    let blueInk = "currentColor";
+    let pinkInk = "currentColor";
+    let pointerX = -1000;
+    let pointerY = -1000;
+    let pointerActive = false;
+    let pointerStrength = 0;
+    let isInView = true;
+    let isDocumentVisible = !document.hidden;
+
+    const entranceDuration = 820;
+
+    const build = (replayEntrance: boolean) => {
+      const rect = root.getBoundingClientRect();
+      width = Math.max(1, Math.round(rect.width));
+      height = Math.max(1, Math.round(rect.height));
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+
+      canvas.width = Math.round(width * pixelRatio);
+      canvas.height = Math.round(height * pixelRatio);
+      sampleCanvas.width = width;
+      sampleCanvas.height = height;
+
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      sampleContext.clearRect(0, 0, width, height);
+
+      const styles = getComputedStyle(root);
+      ink = styles.getPropertyValue("--foreground").trim() || "currentColor";
+      blueInk = styles.getPropertyValue("--brand-logo-blue").trim() || ink;
+      pinkInk = styles.getPropertyValue("--brand-logo-pink").trim() || ink;
+
+      let fontSize = Math.min(height * 0.78, width * 0.54);
+      sampleContext.font = `800 ${fontSize}px ${styles.fontFamily}`;
+      const measured = sampleContext.measureText("404").width;
+      if (measured > width * 0.96) {
+        fontSize *= (width * 0.96) / measured;
+        sampleContext.font = `800 ${fontSize}px ${styles.fontFamily}`;
+      }
+
+      sampleContext.fillStyle = ink;
+      sampleContext.textAlign = "center";
+      sampleContext.textBaseline = "middle";
+      sampleContext.fillText("404", width * 0.52, height * 0.5);
+
+      const textWidth = sampleContext.measureText("404").width;
+      const textLeft = width * 0.52 - textWidth / 2;
+      const digitWidth = textWidth / 3;
+
+      const image = sampleContext.getImageData(0, 0, width, height).data;
+      const stepX = Math.max(7, Math.round(width / 92));
+      const stepY = Math.max(10, Math.round(height / 48));
+      const nextCells: Glyph[] = [];
+
+      for (let y = Math.floor(stepY / 2); y < height; y += stepY) {
+        for (let x = Math.floor(stepX / 2); x < width; x += stepX) {
+          const alpha = image[(y * width + x) * 4 + 3];
+          if (alpha < 48) continue;
+
+          const seed = hash(x, y);
+          const charIndex = Math.min(
+            glyphs.length - 1,
+            Math.floor((alpha / 255) * glyphs.length),
+          );
+          const digitIndex = Math.min(
+            2,
+            Math.max(0, Math.floor((x - textLeft) / digitWidth)),
+          );
+          const scatter = width * (0.12 + seed * 0.13);
+          const verticalScatter = height * (0.12 + seed * 0.12);
+
+          let startX: number;
+          let startY: number;
+
+          if (digitIndex === 0) {
+            startX = x - scatter;
+            startY = y + (hash(y, x) - 0.5) * height * 0.18;
+          } else if (digitIndex === 1) {
+            startX = x + (hash(y, x) - 0.5) * width * 0.18;
+            startY = y - verticalScatter;
+          } else {
+            startX = x + scatter;
+            startY = y + (hash(y, x) - 0.5) * height * 0.18;
+          }
+
+          nextCells.push({
+            char: glyphs[charIndex],
+            x,
+            y,
+            startX,
+            startY,
+            seed,
+            digitIndex,
+          });
+        }
+      }
+
+      cells = nextCells;
+      const ambientCount = Math.max(28, Math.round(width / 12));
+      ambientGlyphs = Array.from({ length: ambientCount }, (_, index) => {
+        const seed = hash(index + width, height - index);
+        const orbitSeed = hash(index * 1.7, width + height);
+
+        return {
+          char: glyphs[Math.floor(seed * glyphs.length)],
+          angle: (index / ambientCount) * Math.PI * 2,
+          radiusX: width * (0.3 + orbitSeed * 0.18),
+          radiusY: height * (0.25 + seed * 0.18),
+          speed: 0.00004 + orbitSeed * 0.00006,
+          seed,
+          accentIndex: index % 2,
+        };
+      });
+      if (replayEntrance && !reducedMotion.matches) {
+        entranceStartedAt = performance.now();
+        hasPlayedEntrance = false;
+      } else {
+        entranceStartedAt = performance.now() - entranceDuration;
+        hasPlayedEntrance = true;
+      }
+
+      root.dataset.rendered = "true";
+    };
+
+    const scheduleFrame = () => {
+      if (frame || !isInView || !isDocumentVisible) return;
+      frame = requestAnimationFrame(draw);
+    };
+
+    const draw = (time: number) => {
+      frame = 0;
+      context.clearRect(0, 0, width, height);
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.font = `${Math.max(9, Math.round(width / 105))}px ${getComputedStyle(root).fontFamily}`;
+
+      const rawProgress = Math.min(
+        1,
+        Math.max(0, (time - entranceStartedAt) / entranceDuration),
+      );
+      const settleTime = Math.max(
+        0,
+        time - entranceStartedAt - entranceDuration,
+      );
+
+      pointerStrength +=
+        ((pointerActive && !reducedMotion.matches ? 1 : 0) - pointerStrength) *
+        0.1;
+
+      for (const ambient of ambientGlyphs) {
+        const orbit = reducedMotion.matches
+          ? ambient.angle
+          : ambient.angle + time * ambient.speed;
+        const ambientX = width * 0.52 + Math.cos(orbit) * ambient.radiusX;
+        const ambientY = height * 0.5 + Math.sin(orbit) * ambient.radiusY;
+        const pulse = reducedMotion.matches
+          ? 0.52
+          : 0.38 + Math.sin(time * 0.0009 + ambient.seed * 14) * 0.14;
+
+        context.fillStyle = ambient.accentIndex === 0 ? blueInk : pinkInk;
+        context.globalAlpha = Math.min(rawProgress, 1) * pulse;
+        context.fillText(ambient.char, ambientX, ambientY);
+      }
+
+      for (const cell of cells) {
+        const localDelay = cell.digitIndex * 0.08 + cell.seed * 0.025;
+        const localRawProgress = Math.min(
+          1,
+          Math.max(0, (rawProgress - localDelay) / (1 - localDelay)),
+        );
+        const localProgress =
+          localRawProgress === 1 ? 1 : 1 - 2 ** (-10 * localRawProgress);
+        const groupWave = reducedMotion.matches
+          ? 0
+          : Math.sin(settleTime * 0.0016 + cell.digitIndex * 2.1);
+        const cellJitter = reducedMotion.matches
+          ? 0
+          : Math.sin(settleTime * 0.0012 + cell.seed * 18) * 0.25;
+        const idleX =
+          groupWave * (cell.digitIndex === 1 ? 0.45 : 1.35) + cellJitter;
+        const idleY =
+          groupWave * (cell.digitIndex === 1 ? 1.2 : 0.4) + cellJitter * 0.35;
+
+        const baseX =
+          cell.startX + (cell.x - cell.startX) * localProgress + idleX;
+        const baseY =
+          cell.startY + (cell.y - cell.startY) * localProgress + idleY;
+        const pointerDx = baseX - pointerX;
+        const pointerDy = baseY - pointerY;
+        const pointerDistance = Math.max(
+          1,
+          Math.sqrt(pointerDx * pointerDx + pointerDy * pointerDy),
+        );
+        const influenceRadius = Math.min(width, height) * 0.25;
+        const influence =
+          pointerDistance < influenceRadius
+            ? (1 - pointerDistance / influenceRadius) * pointerStrength
+            : 0;
+        const displacement = influence * Math.min(26, width * 0.035);
+        const repelX = (pointerDx / pointerDistance) * displacement;
+        const repelY = (pointerDy / pointerDistance) * displacement;
+        const x = baseX + repelX;
+        const y = baseY + repelY;
+
+        if (cell.seed > 0.52) {
+          context.fillStyle = cell.digitIndex % 2 === 0 ? blueInk : pinkInk;
+          context.globalAlpha =
+            Math.min(1, localProgress * 1.35) * (0.1 + influence * 0.34);
+          context.fillText(
+            cell.char,
+            x - idleX * 2.4 - repelX * 0.28,
+            y - idleY * 2.4 - repelY * 0.28,
+          );
+        }
+
+        context.fillStyle =
+          cell.seed > 0.9 ? (cell.digitIndex === 1 ? pinkInk : blueInk) : ink;
+        context.globalAlpha = Math.min(1, localProgress * 1.35);
+        context.fillText(cell.char, x, y);
+      }
+
+      context.globalAlpha = 1;
+
+      if (rawProgress >= 1) hasPlayedEntrance = true;
+      if (!reducedMotion.matches || !hasPlayedEntrance) {
+        scheduleFrame();
+      }
+    };
+
+    const rebuild = (replayEntrance = false) => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      build(replayEntrance);
+      scheduleFrame();
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      const bounds = root.getBoundingClientRect();
+      if (
+        Math.abs(bounds.width - width) < 1 &&
+        Math.abs(bounds.height - height) < 1
+      )
+        return;
+      rebuild(false);
+    });
+    resizeObserver.observe(root);
+
+    const themeObserver = new MutationObserver(() => rebuild(false));
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    const intersectionObserver = new IntersectionObserver(([entry]) => {
+      isInView = entry?.isIntersecting ?? true;
+      if (isInView) scheduleFrame();
+    });
+    intersectionObserver.observe(root);
+
+    root.addEventListener("pointermove", (event) => {
+      const bounds = root.getBoundingClientRect();
+      pointerX = event.clientX - bounds.left;
+      pointerY = event.clientY - bounds.top;
+      pointerActive = true;
+      scheduleFrame();
+    });
+    root.addEventListener("pointerleave", () => {
+      pointerActive = false;
+      scheduleFrame();
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      isDocumentVisible = !document.hidden;
+      if (isDocumentVisible) scheduleFrame();
+    });
+
+    reducedMotion.addEventListener("change", () => rebuild(false));
+    rebuild(true);
+  });
+</script>
+
+<style>
+  .ascii-404 {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    min-height: 22rem;
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    contain: layout paint;
+  }
+
+  .ascii-404__fallback,
+  .ascii-404__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .ascii-404__fallback {
+    display: grid;
+    place-items: center;
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: clamp(8rem, 27vw, 31rem);
+    font-weight: var(--font-weight-extrabold);
+    letter-spacing: var(--tracking-tight);
+    line-height: 0.8;
+    opacity: 0.12;
+    transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .ascii-404__canvas {
+    display: block;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .ascii-404[data-rendered="true"] .ascii-404__fallback {
+    opacity: 0;
+  }
+
+  .ascii-404[data-rendered="true"] .ascii-404__canvas {
+    opacity: 1;
+  }
+
+  @media (min-width: 64rem) {
+    .ascii-404 {
+      min-height: 32rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ascii-404__fallback,
+    .ascii-404__canvas {
+      transition: none;
+    }
+  }
+</style>

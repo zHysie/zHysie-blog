@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   formatDate,
+  formatNumericDate,
   formatDateShort,
   slugify,
   truncate,
@@ -10,18 +11,22 @@ import {
 } from "../../lib/utils";
 
 describe("formatDate", () => {
-  it("formats an English long date", () => {
-    expect(formatDate(new Date("2025-01-15"), "en")).toBe("January 15, 2025");
-  });
-
-  it("formats an Indonesian long date", () => {
-    expect(formatDate(new Date("2025-01-15"), "id-ID")).toBe("15 Januari 2025");
+  it("formats a Chinese long date", () => {
+    expect(formatDate(new Date("2025-01-15"), "zh-CN")).toBe("2025年1月15日");
   });
 });
 
 describe("formatDateShort", () => {
-  it("formats a short English date", () => {
-    expect(formatDateShort(new Date("2025-01-15"), "en")).toBe("Jan 15, 2025");
+  it("formats a short Chinese date", () => {
+    expect(formatDateShort(new Date("2025-01-15"), "zh-CN")).toBe(
+      "2025年1月15日",
+    );
+  });
+});
+
+describe("formatNumericDate", () => {
+  it("formats a locale-independent numeric date", () => {
+    expect(formatNumericDate(new Date("2026-08-08"))).toBe("2026/8/8");
   });
 });
 

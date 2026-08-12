@@ -1,6 +1,7 @@
 import rss from "@astrojs/rss";
 import { getCollection, type CollectionEntry } from "astro:content";
 import { siteConfig } from "../config/site.config";
+import { getMarkdownExcerpt } from "../lib/blog";
 
 export async function GET() {
   const posts: CollectionEntry<"blog">[] = await getCollection("blog");
@@ -21,8 +22,11 @@ export async function GET() {
     site: siteConfig.url,
     items: publishedPosts.map((post: CollectionEntry<"blog">) => ({
       title: post.data.title,
-      description: post.data.description,
-      link: `/blog/${post.id}`,
+      description:
+        post.data.description?.trim() ||
+        getMarkdownExcerpt(post.body ?? "", 220) ||
+        siteConfig.description,
+      link: `/posts/${post.id}`,
       pubDate: post.data.publishDate,
       categories: post.data.tags ?? [],
       author: post.data.author,

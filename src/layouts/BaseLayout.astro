@@ -20,7 +20,11 @@ export interface Props {
   showHeader?: boolean;
   showFooter?: boolean;
   showThemeToggle?: boolean;
+  showHeaderBrand?: boolean;
+  monochromeHeader?: boolean;
+  preloadPrimaryFonts?: boolean;
   colorPreview?: boolean;
+  deferPageResources?: boolean;
 }
 
 // For i18n routing, prefer path from Astro.currentRoute
@@ -37,14 +41,19 @@ const {
   showHeader = true,
   showFooter = true,
   showThemeToggle = true,
+  showHeaderBrand = true,
+  monochromeHeader = false,
+  preloadPrimaryFonts = true,
   colorPreview = false,
+  deferPageResources = false,
 } = restProps;
+const homeEntranceSessionKey = "hero-ascii-ripple:v3";
 
 function defaultOgImage(routePath: string) {
   if (routePath === "/") return `/og/home/${locale}`;
-  if (routePath === "/blog") return `/og/blog-list/${locale}`;
-  if (routePath.startsWith("/blog/"))
-    return `/og/blog/${locale}/${routePath.replace(/^\/blog\//, "")}`;
+  if (routePath === "/posts") return `/og/blog-list/${locale}`;
+  if (routePath.startsWith("/posts/"))
+    return `/og/blog/${locale}/${routePath.replace(/^\/posts\//, "")}`;
   if (routePath === "/services") return `/og/services-list/${locale}`;
   if (routePath.startsWith("/services/"))
     return `/og/service/${locale}/${routePath.replace(/^\/services\//, "")}`;
@@ -59,21 +68,118 @@ function defaultOgImage(routePath: string) {
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <!-- Preload primary fonts (Latin) to prevent layout shift from font swap -->
-    <link
-      rel="preload"
-      href={anthropicSerif}
-      as="font"
-      type="font/otf"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="preload"
-      href={anthropicSans}
-      as="font"
-      type="font/otf"
-      crossorigin="anonymous"
-    />
+    {
+      preloadPrimaryFonts && !deferPageResources && (
+        <>
+          <link
+            rel="preload"
+            href={anthropicSerif}
+            as="font"
+            type="font/otf"
+            crossorigin="anonymous"
+          />
+          <link
+            rel="preload"
+            href={anthropicSans}
+            as="font"
+            type="font/otf"
+            crossorigin="anonymous"
+          />
+        </>
+      )
+    }
+
+    <script
+      is:inline
+      define:vars={{ deferPageResources, homeEntranceSessionKey }}
+    >
+      if (deferPageResources) {
+        const root = document.documentElement;
+        const shouldWait = (() => {
+          try {
+            return (
+              !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+              !window.sessionStorage.getItem(homeEntranceSessionKey)
+            );
+          } catch {
+            return false;
+          }
+        })();
+
+        root.dataset.homeResourceState = shouldWait ? "waiting" : "ready";
+
+        const release = () => {
+          if (
+            root.dataset.homeResourceState === "loading" ||
+            root.dataset.homeResourceState === "revealing" ||
+            root.dataset.homeResourceState === "released"
+          ) {
+            return;
+          }
+          const hero = document.querySelector('[data-ascii-entrance="ripple"]');
+          const shouldReveal =
+            shouldWait &&
+            hero instanceof HTMLElement &&
+            hero.dataset.asciiEntranceState === "complete" &&
+            hero.dataset.asciiEntranceReason === "played";
+          const images = Array.from(
+            document.querySelectorAll("img[data-home-src]"),
+          );
+          const pending = images.map(
+            (image) =>
+              new Promise((resolve) => {
+                const source = image.dataset.homeSrc;
+                if (!source) {
+                  resolve(undefined);
+                  return;
+                }
+                image.addEventListener("load", resolve, { once: true });
+                image.addEventListener("error", resolve, { once: true });
+                image.src = source;
+                delete image.dataset.homeSrc;
+                if (image.complete) resolve(undefined);
+              }),
+          );
+
+          if (shouldWait) root.dataset.homeResourceState = "loading";
+          Promise.race([
+            Promise.all(pending),
+            new Promise((resolve) => window.setTimeout(resolve, 700)),
+          ]).finally(() => {
+            if (!shouldReveal) {
+              root.dataset.homeResourceState = "released";
+              window.dispatchEvent(new CustomEvent("home-resources-ready"));
+              return;
+            }
+
+            const revealTail = document.querySelector(".hero__footer");
+            let revealFallback = 0;
+            const finishReveal = () => {
+              if (root.dataset.homeResourceState !== "revealing") return;
+              window.clearTimeout(revealFallback);
+              revealTail?.removeEventListener("animationend", onRevealEnd);
+              root.dataset.homeResourceState = "released";
+              window.dispatchEvent(new CustomEvent("home-reveal-complete"));
+            };
+            const onRevealEnd = (event) => {
+              if (event.target === revealTail) finishReveal();
+            };
+
+            revealTail?.addEventListener("animationend", onRevealEnd);
+            root.dataset.homeResourceState = "revealing";
+            window.dispatchEvent(new CustomEvent("home-resources-ready"));
+            revealFallback = window.setTimeout(finishReveal, 900);
+          });
+        };
+
+        window.addEventListener("home-resources-release", release);
+        if (!shouldWait) {
+          window.addEventListener("DOMContentLoaded", release, { once: true });
+        } else {
+          window.setTimeout(release, 7000);
+        }
+      }
+    </script>
 
     <!-- Dark mode bootstrap (prevents FOUC) -->
     <script is:inline>
@@ -131,6 +237,9 @@ function defaultOgImage(routePath: string) {
           currentLocale={locale}
           currentPath={path}
           showThemeToggle={showThemeToggle}
+          showBrand={showHeaderBrand}
+          monochrome={monochromeHeader}
+          deferBrandLoading={deferPageResources}
         />
       )
     }
@@ -143,6 +252,10 @@ function defaultOgImage(routePath: string) {
 
     {Astro.slots.has("analytics") ? <slot name="analytics" /> : <Analytics />}
 
-    {showFooter && <Footer currentLocale={locale} />}
+    {
+      showFooter && (
+        <Footer currentLocale={locale} deferBrandLoading={deferPageResources} />
+      )
+    }
   </body>
 </html>

@@ -12,6 +12,7 @@ import {
   siteConfig as defaultSiteConfig,
   type SiteConfig,
 } from "../config/site.config";
+import { getMarkdownExcerpt } from "./blog";
 
 export function buildWebSiteSchema(
   site: Pick<SiteConfig, "name" | "url" | "description"> = defaultSiteConfig,
@@ -76,7 +77,7 @@ export function buildBlogPostingSchema(
   post: {
     data: {
       title: string;
-      description: string;
+      description?: string;
       publishDate: Date;
       updatedAt?: Date | null;
       author?: string;
@@ -84,6 +85,7 @@ export function buildBlogPostingSchema(
       image?: string;
       locale?: string;
     };
+    body?: string;
     id: string;
   },
   site: SiteConfig = defaultSiteConfig,
@@ -92,13 +94,16 @@ export function buildBlogPostingSchema(
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.data.title,
-    description: post.data.description,
+    description:
+      post.data.description?.trim() ||
+      getMarkdownExcerpt(post.body ?? "", 160) ||
+      site.description,
     datePublished: post.data.publishDate.toISOString(),
     dateModified: (post.data.updatedAt ?? post.data.publishDate).toISOString(),
     author: post.data.author
       ? { "@type": "Person", name: post.data.author }
       : undefined,
-    mainEntityOfPage: `${site.url}/blog/${post.id}`,
+    mainEntityOfPage: `${site.url}/posts/${post.id}`,
     image: post.data.image ? [post.data.image] : undefined,
     keywords: post.data.tags?.join(", "),
     inLanguage: post.data.locale,

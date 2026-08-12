@@ -5,3 +5,4 @@ export * from "./layout/index";
 export * from "./content/index";
 export * from "./primitives/index";
 export * from "./marketing/index";
+export * from "./visual/index";

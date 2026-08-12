@@ -7,7 +7,7 @@ export interface Props {
   locale?: Locale;
 }
 
-const { locale = "en" } = Astro.props as Props;
+const { locale = "zh-CN" } = Astro.props as Props;
 const labelDark = t(locale, "nav.darkMode");
 const labelLight = t(locale, "nav.lightMode");
 ---
@@ -138,6 +138,10 @@ const labelLight = t(locale, "nav.lightMode");
       })
       .catch(() => {});
   });
+
+  // Expose interactivity readiness for keyboard users and browser-level checks.
+  // The attribute is set only after the click listener has been attached.
+  button?.setAttribute("data-theme-ready", "true");
 </script>
 
 <style>

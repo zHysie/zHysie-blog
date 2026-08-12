@@ -2,16 +2,18 @@
 import { siteConfig } from "../../config/site.config";
 export interface Props {
   href?: string;
+  deferLoading?: boolean;
 }
 
-const { href = "/" } = Astro.props as Props;
+const { href = "/", deferLoading = false } = Astro.props as Props;
 ---
 
 <a href={href} class="logo" aria-label={siteConfig.name}>
   <span class="logo__mark" aria-hidden="true">
     <img
       class="logo__mark-image"
-      src={siteConfig.branding.favicon}
+      src={deferLoading ? undefined : siteConfig.branding.favicon}
+      data-home-src={deferLoading ? siteConfig.branding.favicon : undefined}
       alt=""
       width="32"
       height="32"
@@ -20,14 +22,16 @@ const { href = "/" } = Astro.props as Props;
   <span class="logo__name" aria-hidden="true">
     <img
       class="logo__brand-image logo__brand-image--light"
-      src={siteConfig.branding.logo.light}
+      src={deferLoading ? undefined : siteConfig.branding.logo.light}
+      data-home-src={deferLoading ? siteConfig.branding.logo.light : undefined}
       alt=""
       width="76"
       height="40"
     />
     <img
       class="logo__brand-image logo__brand-image--dark"
-      src={siteConfig.branding.logo.dark}
+      src={deferLoading ? undefined : siteConfig.branding.logo.dark}
+      data-home-src={deferLoading ? siteConfig.branding.logo.dark : undefined}
       alt=""
       width="76"
       height="40"

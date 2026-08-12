@@ -1,11 +1,11 @@
 ---
 title: AI-assisted development
-description: How this starter is wired for AI coding agents — config files, the design knowledge base, and ready-to-paste prompts.
+description: How this project is wired for AI coding agents — config files, the design knowledge base, and reusable prompts.
 sidebar:
   order: 4
 ---
 
-This starter is built to be operated by AI coding agents (Cursor, Claude, Copilot,
+This project is built to be operated by AI coding agents (Codex, Cursor, Claude, Copilot,
 Windsurf, ChatGPT, …). It ships a small "operating system" of instructions, a
 canonical design knowledge base, and portable audit prompts so an agent — or you —
 can make changes that stay **on-system** instead of drifting.
@@ -14,14 +14,14 @@ can make changes that stay **on-system** instead of drifting.
 
 Each tool picks up its own instruction file, but they all point at the same rules:
 
-| File | Used by | Purpose |
-| --- | --- | --- |
-| `AGENTS.md` | Cursor, Codex, most agents | The universal brief: architecture tiers, hard rules, verification commands |
-| `.cursor/rules/*.mdc` | Cursor | Project rules (`architecture`, `design-system`) applied automatically |
-| `.cursor/hooks/` + `.cursor/hooks.json` | Cursor | Guard hooks that flag off-convention edits |
-| `.windsurfrules` | Windsurf | Same rules in Windsurf's format |
-| `.github/copilot-instructions.md` | GitHub Copilot | Same rules for Copilot Chat |
-| `.agents/skills/` + `.agent-skills.lock.md` | Skill-aware agents | Project-scoped skills; the lock file pins reviewed skills (checked in CI) |
+| File                                        | Used by                    | Purpose                                                                    |
+| ------------------------------------------- | -------------------------- | -------------------------------------------------------------------------- |
+| `AGENTS.md`                                 | Cursor, Codex, most agents | The universal brief: architecture tiers, hard rules, verification commands |
+| `.cursor/rules/*.mdc`                       | Cursor                     | Project rules (`architecture`, `design-system`) applied automatically      |
+| `.cursor/hooks/` + `.cursor/hooks.json`     | Cursor                     | Guard hooks that flag off-convention edits                                 |
+| `.windsurfrules`                            | Windsurf                   | Same rules in Windsurf's format                                            |
+| `.github/copilot-instructions.md`           | GitHub Copilot             | Same rules for Copilot Chat                                                |
+| `.agents/skills/` + `.agent-skills.lock.md` | Skill-aware agents         | Project-scoped skills; the lock file pins reviewed skills (checked in CI)  |
 
 ## The design knowledge base
 
@@ -81,14 +81,14 @@ Keep dark mode and i18n intact, then run `pnpm build` and `pnpm lint`.
 project against its conventions. They reference `system/globals/` and the `check:kpis`
 script.
 
-| Prompt | Audits |
-| --- | --- |
-| `system/prompts/tokens.md` | Hardcoded colors / off-token usage |
+| Prompt                            | Audits                                        |
+| --------------------------------- | --------------------------------------------- |
+| `system/prompts/tokens.md`        | Hardcoded colors / off-token usage            |
 | `system/prompts/accessibility.md` | WCAG AA: keyboard, focus, alt text, landmarks |
-| `system/prompts/responsive.md` | Layout integrity from 375–1920px |
-| `system/prompts/darkmode.md` | Dark-mode parity & contrast |
-| `system/prompts/performance.md` | Islands, assets, Lighthouse |
-| `system/prompts/seo.md` | Metadata, OG, sitemap, structured data |
+| `system/prompts/responsive.md`    | Layout integrity from 375–1920px              |
+| `system/prompts/darkmode.md`      | Dark-mode parity & contrast                   |
+| `system/prompts/performance.md`   | Islands, assets, Lighthouse                   |
+| `system/prompts/seo.md`           | Metadata, OG, sitemap, structured data        |
 
 Example:
 

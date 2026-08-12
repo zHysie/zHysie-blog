@@ -13,8 +13,7 @@ export function localePrefix(locale: Locale): string {
 
 /**
  * Resolve a full localized route path.
- * Example: resolveRoute("en", "/services") → "/services"
- *          resolveRoute("id", "/services") → "/id/services"
+ * Example: resolveRoute("zh-CN", "/posts") → "/posts"
  */
 export function resolveRoute(locale: Locale, path: string): string {
   const prefix = localePrefix(locale);

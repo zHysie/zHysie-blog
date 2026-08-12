@@ -1,6 +1,6 @@
 ---
 title: Overview
-description: What this starter template provides and how it's built.
+description: What the zHysie blog provides and how it is built.
 sidebar:
   order: 1
 ---
@@ -9,7 +9,7 @@ A production-ready marketing, blog, and docs site built with **Astro** and **Clo
 
 ## Features
 
-- **English-first, multilanguage-ready** — i18n engine wired so you can add locales anytime
+- **Chinese public site** — `zh-CN` is the only public locale; development docs remain English
 - **Git-based content** — edit Markdown in `src/content`; deploy on merge
 - **Performance** — Astro's zero-JS architecture with static generation and Cloudflare CDN
 - **Docs** — Starlight-powered documentation with full-text search
@@ -17,13 +17,13 @@ A production-ready marketing, blog, and docs site built with **Astro** and **Clo
 
 ## Tech Stack
 
-| Layer | Technology |
-| --- | --- |
-| Framework | [Astro](https://astro.build) v7 |
-| Docs | [Starlight](https://starlight.astro.build) |
-| Styling | [Tailwind CSS](https://tailwindcss.com) v4 |
-| Hosting | [Cloudflare Pages](https://pages.cloudflare.com) |
-| Media | [Cloudflare R2](https://developers.cloudflare.com/r2/) (optional) |
+| Layer     | Technology                                                        |
+| --------- | ----------------------------------------------------------------- |
+| Framework | [Astro](https://astro.build) v7                                   |
+| Docs      | [Starlight](https://starlight.astro.build)                        |
+| Styling   | [Tailwind CSS](https://tailwindcss.com) v4                        |
+| Hosting   | [Cloudflare Pages](https://pages.cloudflare.com)                  |
+| Media     | [Cloudflare R2](https://developers.cloudflare.com/r2/) (optional) |
 
 ## Next Steps
 

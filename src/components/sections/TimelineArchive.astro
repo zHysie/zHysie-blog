@@ -1,0 +1,1214 @@
+---
+import type { Locale } from "../../lib/site-config";
+import { groupTimelineItems, type TimelineItem } from "../../lib/timeline";
+import { t } from "../../i18n/ui";
+import { resolveRoute } from "../../i18n/routes";
+import ThemeToggle from "../layout/ThemeToggle.astro";
+import { Icon } from "../ui/index";
+
+export interface Props {
+  items: TimelineItem[];
+  locale?: Locale;
+}
+
+type TimelineSide = "above" | "below";
+
+interface TrackEvent {
+  item: TimelineItem;
+  x: number;
+  side: TimelineSide;
+  tilt: number;
+}
+
+interface TrackMonth {
+  month: number;
+  x: number;
+  populated: boolean;
+  posts: number;
+  moments: number;
+  thinkings: number;
+}
+
+const { items, locale = "zh-CN" } = Astro.props as Props;
+const years = groupTimelineItems(items);
+const monthLabels = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
+const monthFullLabels = [
+  "JANUARY",
+  "FEBRUARY",
+  "MARCH",
+  "APRIL",
+  "MAY",
+  "JUNE",
+  "JULY",
+  "AUGUST",
+  "SEPTEMBER",
+  "OCTOBER",
+  "NOVEMBER",
+  "DECEMBER",
+];
+const monthNames = [
+  "一月",
+  "二月",
+  "三月",
+  "四月",
+  "五月",
+  "六月",
+  "七月",
+  "八月",
+  "九月",
+  "十月",
+  "十一月",
+  "十二月",
+];
+const homeHref = resolveRoute(locale, "/");
+
+function stableTilt(id: string) {
+  const hash = [...id].reduce(
+    (total, character) => total + character.charCodeAt(0),
+    0,
+  );
+  return ((hash % 9) - 4) * 0.22;
+}
+
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+const monthMinimumWidth = 150;
+const eventStep = 278;
+const eventInset = 136;
+const yearGap = 300;
+let cursor = 180;
+let eventIndex = 0;
+
+const trackYears = years.map((year) => {
+  const start = cursor;
+  const months: TrackMonth[] = [];
+  const events: TrackEvent[] = [];
+
+  for (const month of year.months) {
+    const monthWidth = Math.max(
+      monthMinimumWidth,
+      eventInset + month.items.length * eventStep,
+    );
+    months.push({
+      month: month.month,
+      x: cursor,
+      populated: month.items.length > 0,
+      posts: month.items.filter((item) => item.kind === "post").length,
+      moments: month.items.filter((item) => item.kind === "daily").length,
+      thinkings: 0,
+    });
+
+    month.items.forEach((item, index) => {
+      events.push({
+        item,
+        x: cursor + eventInset + index * eventStep,
+        side: eventIndex % 2 === 0 ? "above" : "below",
+        tilt: stableTilt(item.id),
+      });
+      eventIndex += 1;
+    });
+
+    cursor += monthWidth;
+  }
+
+  const end = cursor;
+  cursor += yearGap;
+  return { ...year, start, end, months, events };
+});
+
+const trackWidth = Math.max(cursor + 360, 1800);
+const fallbackTravel = Math.max(2400, Math.round(trackWidth * 1.12));
+const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
+---
+
+<section
+  class="timeline"
+  data-timeline-root
+  data-quality="standard"
+  aria-labelledby="timeline-title"
+>
+  <div class="timeline__texture" aria-hidden="true"></div>
+
+  <nav class="timeline-tools" aria-label={t(locale, "timeline.tools")}>
+    <a class="timeline-tools__control" href={homeHref}>
+      <Icon name="lucide:house" size="1.125rem" decorative />
+      <span>{t(locale, "timeline.home")}</span>
+    </a>
+    <button
+      class="timeline-tools__control"
+      type="button"
+      data-search-trigger
+      aria-label={t(locale, "aria.searchButton")}
+    >
+      <Icon name="lucide:search" size="1.125rem" decorative />
+      <span>{t(locale, "nav.search")}</span>
+    </button>
+    <div class="timeline-tools__theme">
+      <ThemeToggle locale={locale} />
+    </div>
+  </nav>
+
+  <button
+    class="timeline-quality"
+    type="button"
+    aria-pressed="false"
+    aria-label={t(locale, "timeline.qualityEnable")}
+    data-quality-toggle
+    data-quality-enable={t(locale, "timeline.qualityEnable")}
+    data-quality-disable={t(locale, "timeline.qualityDisable")}
+  >
+    <Icon name="lucide:sparkles" size="0.95rem" decorative />
+    <span class="timeline-quality__name">HQ</span>
+    <span class="timeline-quality__state" data-quality-state>OFF</span>
+  </button>
+
+  <h1 id="timeline-title" class="timeline__title">
+    {t(locale, "timeline.title")}
+  </h1>
+
+  {
+    years.length > 0 ? (
+      <>
+        <div
+          class="timeline-scroll"
+          data-timeline-scroll
+          style={`--timeline-fallback-travel: ${fallbackTravel}px;`}
+          aria-label={t(locale, "timeline.archive")}
+        >
+          <div class="timeline-canvas">
+            <div class="timeline-year-summaries" aria-live="polite">
+              {trackYears.map((year, index) => {
+                const initialMonth =
+                  year.months.find((month) => month.populated) ??
+                  year.months[0];
+
+                return (
+                  <header
+                    class="timeline-year-summary"
+                    data-year-summary={year.year}
+                    data-active={index === 0 ? "" : undefined}
+                  >
+                    <h2>{year.year}</h2>
+                    <div
+                      class="timeline-year-summary__rule"
+                      aria-hidden="true"
+                    />
+                    <section class="timeline-year-summary__month">
+                      <p data-summary-month>
+                        {monthFullLabels[initialMonth.month - 1]}
+                      </p>
+                      <dl>
+                        <div>
+                          <dt>{t(locale, "timeline.statsPosts")}</dt>
+                          <dd data-summary-month-posts>{initialMonth.posts}</dd>
+                        </div>
+                        <div>
+                          <dt>{t(locale, "timeline.statsMoments")}</dt>
+                          <dd data-summary-month-moments>
+                            {initialMonth.moments}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>{t(locale, "timeline.statsThinkings")}</dt>
+                          <dd data-summary-month-thinkings>
+                            {initialMonth.thinkings}
+                          </dd>
+                        </div>
+                      </dl>
+                    </section>
+                    <section class="timeline-year-summary__yearly">
+                      <p>{t(locale, "timeline.yearlyTotal")}</p>
+                      <dl>
+                        <div>
+                          <dt>{t(locale, "timeline.statsPosts")}</dt>
+                          <dd>{year.stats.posts}</dd>
+                        </div>
+                        <div>
+                          <dt>{t(locale, "timeline.statsMoments")}</dt>
+                          <dd>{year.stats.daily}</dd>
+                        </div>
+                        <div>
+                          <dt>{t(locale, "timeline.statsThinkings")}</dt>
+                          <dd>0</dd>
+                        </div>
+                      </dl>
+                    </section>
+                  </header>
+                );
+              })}
+            </div>
+
+            <div
+              class="timeline-track"
+              data-timeline-track
+              data-first-event-x={firstEventX}
+              style={`--timeline-track-width: ${trackWidth}px;`}
+            >
+              <div class="timeline-track__line" aria-hidden="true" />
+
+              {trackYears.map((year) => (
+                <div
+                  class="timeline-year-range"
+                  data-track-year={year.year}
+                  data-year-start={year.start}
+                  data-year-end={year.end}
+                  style={`--year-start: ${year.start}px; --year-width: ${year.end - year.start}px;`}
+                  aria-hidden="true"
+                />
+              ))}
+
+              <ol class="timeline-months" aria-hidden="true">
+                {trackYears.flatMap((year) =>
+                  year.months.map((month) => (
+                    <li
+                      style={`--month-x: ${month.x}px;`}
+                      data-populated={month.populated ? "" : undefined}
+                      data-track-month={month.month}
+                      data-month-label={monthFullLabels[month.month - 1]}
+                      data-month-year={year.year}
+                      data-month-x={month.x}
+                      data-month-posts={month.posts}
+                      data-month-moments={month.moments}
+                      data-month-thinkings={month.thinkings}
+                    >
+                      <i />
+                      <span>
+                        {monthLabels[month.month - 1]}
+                        {month.month === 1 && <em>{year.year}</em>}
+                      </span>
+                    </li>
+                  )),
+                )}
+              </ol>
+
+              <ol class="timeline-events">
+                {trackYears.flatMap((year) =>
+                  year.events.map(({ item, x, side, tilt }) => (
+                    <li
+                      class={`timeline-event timeline-event--${side}`}
+                      data-event-x={x}
+                      data-event-side={side}
+                      style={`--event-x: ${x}px; --event-tilt: ${tilt}deg;`}
+                    >
+                      <span class="timeline-event__node" aria-hidden="true" />
+                      <span
+                        class="timeline-event__connector"
+                        aria-hidden="true"
+                      />
+                      <a class="timeline-event__card" href={item.href}>
+                        <span class="timeline-event__meta">
+                          <span>
+                            {item.kind === "post"
+                              ? t(locale, "timeline.post")
+                              : t(locale, "timeline.dailyOne")}
+                          </span>
+                          <time datetime={item.date.toISOString()}>
+                            {formatDate(item.date)}
+                          </time>
+                        </span>
+                        <strong>{item.title}</strong>
+                        <span class="timeline-event__read">
+                          {t(locale, "timeline.open")}
+                          <Icon
+                            name="lucide:arrow-up-right"
+                            size="0.85rem"
+                            decorative
+                          />
+                        </span>
+                      </a>
+                    </li>
+                  )),
+                )}
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-static" aria-label={t(locale, "timeline.archive")}>
+          {years.map((year) => (
+            <section class="timeline-static-year">
+              <header>
+                <h2>{year.year}</h2>
+                <p>
+                  {year.stats.posts} {t(locale, "timeline.posts")} ·{" "}
+                  {year.stats.daily} {t(locale, "timeline.daily")}
+                </p>
+              </header>
+              {year.months
+                .filter((month) => month.items.length > 0)
+                .map((month) => (
+                  <section class="timeline-static-month">
+                    <h3>
+                      <span>{String(month.month).padStart(2, "0")}</span>
+                      {monthNames[month.month - 1]}
+                    </h3>
+                    <ol>
+                      {month.items.map((item) => (
+                        <li>
+                          <a href={item.href}>
+                            <span>
+                              {item.kind === "post"
+                                ? t(locale, "timeline.post")
+                                : t(locale, "timeline.dailyOne")}
+                              <time datetime={item.date.toISOString()}>
+                                {formatDate(item.date)}
+                              </time>
+                            </span>
+                            <strong>{item.title}</strong>
+                          </a>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                ))}
+            </section>
+          ))}
+        </div>
+        <noscript>
+          <style
+            is:global
+            set:html={
+              ".timeline-scroll{display:none!important}.timeline-static{display:grid!important}"
+            }
+          />
+        </noscript>
+      </>
+    ) : (
+      <p class="timeline-empty">{t(locale, "timeline.empty")}</p>
+    )
+  }
+</section>
+
+<script>
+  const timelineRoot = document.querySelector<HTMLElement>(
+    "[data-timeline-root]",
+  );
+
+  if (timelineRoot) {
+    const scrollArea = timelineRoot.querySelector<HTMLElement>(
+      "[data-timeline-scroll]",
+    );
+    const track = timelineRoot.querySelector<HTMLElement>(
+      "[data-timeline-track]",
+    );
+    const canvas = timelineRoot.querySelector<HTMLElement>(".timeline-canvas");
+    const yearRanges = [
+      ...timelineRoot.querySelectorAll<HTMLElement>("[data-track-year]"),
+    ];
+    const yearSummaries = [
+      ...timelineRoot.querySelectorAll<HTMLElement>("[data-year-summary]"),
+    ];
+    const monthMarkers = [
+      ...timelineRoot.querySelectorAll<HTMLElement>("[data-track-month]"),
+    ];
+    const eventNodes = [
+      ...timelineRoot.querySelectorAll<HTMLElement>(".timeline-event"),
+    ];
+    const qualityButton = timelineRoot.querySelector<HTMLButtonElement>(
+      "[data-quality-toggle]",
+    );
+    const qualityState = qualityButton?.querySelector<HTMLElement>(
+      "[data-quality-state]",
+    );
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const precisePointer = window.matchMedia(
+      "(hover: hover) and (pointer: fine)",
+    );
+    const qualityStorageKey = "timeline-quality";
+    let quality: "standard" | "hq" = "standard";
+    let frame = 0;
+    let pointerFrame = 0;
+
+    const syncQuality = (nextQuality: "standard" | "hq") => {
+      quality = nextQuality;
+      const isHighQuality = quality === "hq";
+      timelineRoot.dataset.quality = quality;
+      qualityButton?.setAttribute("aria-pressed", String(isHighQuality));
+      qualityButton?.setAttribute(
+        "aria-label",
+        isHighQuality
+          ? (qualityButton.dataset.qualityDisable ?? "")
+          : (qualityButton.dataset.qualityEnable ?? ""),
+      );
+      if (qualityState) qualityState.textContent = isHighQuality ? "ON" : "OFF";
+    };
+
+    try {
+      syncQuality(
+        localStorage.getItem(qualityStorageKey) === "hq" ? "hq" : "standard",
+      );
+    } catch {
+      syncQuality("standard");
+    }
+
+    qualityButton?.addEventListener("click", () => {
+      const nextQuality = quality === "hq" ? "standard" : "hq";
+      syncQuality(nextQuality);
+      try {
+        localStorage.setItem(qualityStorageKey, nextQuality);
+      } catch {
+        // The visual mode still works when storage is unavailable.
+      }
+    });
+
+    const updateTimeline = () => {
+      frame = 0;
+      if (!scrollArea || !track || reducedMotion.matches) return;
+
+      const viewportWidth = canvas?.clientWidth ?? window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const rect = scrollArea.getBoundingClientRect();
+      const focusPoint = viewportWidth * 0.56;
+      const firstEventX = Number(track.dataset.firstEventX ?? 0);
+      const startOffset = focusPoint - firstEventX;
+      const endOffset = Math.max(0, track.scrollWidth - focusPoint);
+      const distance = Math.max(0, endOffset + startOffset);
+      const travel = Math.max(1, scrollArea.offsetHeight - viewportHeight);
+      const progress = Math.min(1, Math.max(0, -rect.top / travel));
+      const trackX = startOffset - progress * distance;
+      const focus = -trackX + focusPoint;
+
+      track.style.transform = `translate3d(${trackX}px, 0, 0)`;
+      timelineRoot.style.setProperty("--timeline-progress", String(progress));
+
+      let activeYear = yearRanges[0]?.dataset.trackYear;
+      for (const range of yearRanges) {
+        const start = Number(range.dataset.yearStart ?? 0);
+        const end = Number(range.dataset.yearEnd ?? 0);
+        if (focus >= start && focus < end) {
+          activeYear = range.dataset.trackYear;
+          break;
+        }
+        if (focus >= end) activeYear = range.dataset.trackYear;
+      }
+
+      for (const summary of yearSummaries) {
+        if (summary.dataset.yearSummary === activeYear) {
+          summary.dataset.active = "";
+
+          const activeMonths = monthMarkers.filter(
+            (month) => month.dataset.monthYear === activeYear,
+          );
+          let activeMonth = activeMonths[0];
+          for (const month of activeMonths) {
+            if (focus >= Number(month.dataset.monthX ?? 0)) {
+              activeMonth = month;
+            } else {
+              break;
+            }
+          }
+
+          if (activeMonth) {
+            const monthNumber = Number(activeMonth.dataset.trackMonth ?? 1);
+            const monthName = summary.querySelector<HTMLElement>(
+              "[data-summary-month]",
+            );
+            const monthPosts = summary.querySelector<HTMLElement>(
+              "[data-summary-month-posts]",
+            );
+            const monthMoments = summary.querySelector<HTMLElement>(
+              "[data-summary-month-moments]",
+            );
+            const monthThinkings = summary.querySelector<HTMLElement>(
+              "[data-summary-month-thinkings]",
+            );
+            if (monthName)
+              monthName.textContent =
+                activeMonth.dataset.monthLabel ?? String(monthNumber);
+            if (monthPosts)
+              monthPosts.textContent = activeMonth.dataset.monthPosts ?? "0";
+            if (monthMoments)
+              monthMoments.textContent =
+                activeMonth.dataset.monthMoments ?? "0";
+            if (monthThinkings)
+              monthThinkings.textContent =
+                activeMonth.dataset.monthThinkings ?? "0";
+          }
+        } else {
+          delete summary.dataset.active;
+        }
+      }
+
+      for (const eventNode of eventNodes) {
+        const eventX = Number(eventNode.dataset.eventX ?? 0) + trackX;
+        const normalized = Math.min(
+          1.25,
+          Math.max(-1.25, (eventX - focusPoint) / (viewportWidth * 0.5)),
+        );
+        const distanceFromCenter = Math.min(1, Math.abs(normalized));
+        const direction = eventNode.dataset.eventSide === "above" ? -1 : 1;
+        eventNode.style.setProperty("--event-drift-x", `${normalized * 72}px`);
+        eventNode.style.setProperty(
+          "--event-drift-y",
+          `${direction * distanceFromCenter * 22}px`,
+        );
+        eventNode.style.setProperty(
+          "--event-drift-rotate",
+          `${normalized * 2.8}deg`,
+        );
+        eventNode.style.setProperty(
+          "--event-drift-scale",
+          String(1 - distanceFromCenter * 0.09),
+        );
+      }
+    };
+
+    const syncTravel = () => {
+      if (!scrollArea || !track || reducedMotion.matches) return;
+      const viewportWidth = canvas?.clientWidth ?? window.innerWidth;
+      const focusPoint = viewportWidth * 0.56;
+      const firstEventX = Number(track.dataset.firstEventX ?? 0);
+      const startOffset = focusPoint - firstEventX;
+      const endOffset = Math.max(0, track.scrollWidth - focusPoint);
+      const distance = Math.max(0, endOffset + startOffset);
+      scrollArea.style.height = `${window.innerHeight + distance * 1.5}px`;
+      updateTimeline();
+    };
+
+    const requestUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateTimeline);
+    };
+
+    timelineRoot.dataset.enhanced = "";
+    syncTravel();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", syncTravel, { passive: true });
+
+    timelineRoot.addEventListener("pointermove", (event) => {
+      if (
+        quality !== "hq" ||
+        reducedMotion.matches ||
+        !precisePointer.matches ||
+        pointerFrame
+      ) {
+        return;
+      }
+
+      pointerFrame = window.requestAnimationFrame(() => {
+        pointerFrame = 0;
+        const x = event.clientX / window.innerWidth - 0.5;
+        const y = event.clientY / window.innerHeight - 0.5;
+        timelineRoot.style.setProperty("--timeline-pointer-x", String(x));
+        timelineRoot.style.setProperty("--timeline-pointer-y", String(y));
+      });
+    });
+  }
+</script>
+
+<style>
+  .timeline {
+    --timeline-pointer-x: 0;
+    --timeline-pointer-y: 0;
+    --timeline-progress: 0;
+    position: relative;
+    isolation: isolate;
+    min-height: 100svh;
+    overflow-x: clip;
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+  }
+
+  .timeline__title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .timeline__texture {
+    position: fixed;
+    z-index: var(--z-index-base);
+    inset: 0;
+    background-image:
+      radial-gradient(
+        circle at 18% 28%,
+        color-mix(in srgb, var(--brand-logo-blue) 8%, transparent) 0,
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 82% 72%,
+        color-mix(in srgb, var(--brand-logo-pink) 7%, transparent) 0,
+        transparent 30%
+      );
+    opacity: 0;
+    pointer-events: none;
+    transform: translate3d(
+      calc(var(--timeline-pointer-x) * var(--space-sm)),
+      calc(var(--timeline-pointer-y) * var(--space-sm)),
+      0
+    );
+    transition: opacity 300ms ease;
+  }
+
+  .timeline[data-quality="hq"] .timeline__texture {
+    opacity: 1;
+  }
+
+  .timeline-tools,
+  .timeline-quality {
+    position: fixed;
+    z-index: var(--z-index-sticky);
+    border: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-bg-primary) 88%, transparent);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(var(--space-sm));
+  }
+
+  .timeline-tools {
+    top: var(--space-md);
+    left: 50%;
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-1);
+    border-radius: var(--radius-full);
+    transform: translateX(-50%);
+  }
+
+  .timeline-tools__control,
+  .timeline-tools__theme {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-2xl);
+    height: var(--space-2xl);
+  }
+
+  .timeline-tools__control {
+    border: 0;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+  }
+
+  .timeline-tools__control > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .timeline-tools__control:hover,
+  .timeline-tools__control:focus-visible {
+    background: var(--interactive-hover-surface);
+    color: var(--color-text-primary);
+  }
+
+  .timeline-tools__theme :global(.theme-toggle) {
+    width: var(--space-2xl);
+    height: var(--space-2xl);
+    color: var(--color-text-secondary);
+  }
+
+  .timeline-quality {
+    right: var(--space-md);
+    bottom: var(--space-md);
+    display: inline-flex;
+    gap: var(--spacing-1);
+    align-items: center;
+    min-height: var(--space-xl);
+    padding-inline: var(--space-sm);
+    border-radius: var(--radius-full);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    cursor: pointer;
+  }
+
+  .timeline-quality[aria-pressed="true"] {
+    border-color: color-mix(
+      in srgb,
+      var(--brand-logo-blue) 56%,
+      var(--color-border)
+    );
+    color: var(--color-text-primary);
+  }
+
+  .timeline-quality__name {
+    font-weight: var(--font-weight-bold);
+  }
+
+  .timeline-quality__state {
+    opacity: 0.62;
+  }
+
+  .timeline-scroll {
+    position: relative;
+    z-index: var(--z-index-base);
+    height: calc(100svh + var(--timeline-fallback-travel));
+  }
+
+  .timeline-canvas {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    min-height: 42rem;
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+
+  .timeline-track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--timeline-track-width);
+    height: 100%;
+    will-change: transform;
+  }
+
+  .timeline-track__line {
+    position: absolute;
+    top: 52%;
+    right: 0;
+    left: 0;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  .timeline-year-range {
+    position: absolute;
+    top: calc(52% - var(--spacing-1));
+    left: var(--year-start);
+    width: var(--year-width);
+    height: var(--spacing-2);
+    border-left: 1px solid var(--color-border);
+  }
+
+  .timeline-months,
+  .timeline-events {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .timeline-months li {
+    position: absolute;
+    top: 52%;
+    left: var(--month-x);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+  }
+
+  .timeline-months li i {
+    position: absolute;
+    top: calc(var(--spacing-1) / -2);
+    left: calc(var(--spacing-1) / -2);
+    width: var(--spacing-1);
+    height: var(--spacing-1);
+    border-radius: var(--radius-full);
+    background: var(--color-border);
+  }
+
+  .timeline-months li span {
+    position: absolute;
+    top: var(--space-md);
+    left: 0;
+    display: flex;
+    gap: var(--space-sm);
+    align-items: baseline;
+    color: color-mix(in srgb, var(--color-text-secondary) 58%, transparent);
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  .timeline-months li em {
+    color: var(--color-text-secondary);
+    font-size: 0.62rem;
+    font-style: normal;
+  }
+
+  .timeline-months li[data-populated] i {
+    background: var(--brand-logo-blue);
+  }
+
+  .timeline-months li[data-populated] span {
+    color: var(--color-text-secondary);
+  }
+
+  .timeline-event {
+    --event-drift-x: 0px;
+    --event-drift-y: 0px;
+    --event-drift-rotate: 0deg;
+    --event-drift-scale: 1;
+    position: absolute;
+    top: 52%;
+    left: var(--event-x);
+    width: 0;
+    height: 0;
+  }
+
+  .timeline-event__node {
+    position: absolute;
+    z-index: 3;
+    top: calc(var(--spacing-2) / -2);
+    left: calc(var(--spacing-2) / -2);
+    width: var(--spacing-2);
+    height: var(--spacing-2);
+    border: 2px solid var(--color-bg-primary);
+    border-radius: var(--radius-full);
+    background: var(--brand-logo-pink);
+    box-shadow: 0 0 0 var(--spacing-1)
+      color-mix(in srgb, var(--brand-logo-pink) 16%, transparent);
+  }
+
+  .timeline-event__connector {
+    position: absolute;
+    left: 0;
+    width: 1px;
+    height: 7.5rem;
+    background: var(--color-border);
+  }
+
+  .timeline-event--above .timeline-event__connector {
+    bottom: 0;
+  }
+
+  .timeline-event--below .timeline-event__connector {
+    top: 0;
+  }
+
+  .timeline-event__card {
+    position: absolute;
+    left: 0;
+    display: grid;
+    gap: var(--space-sm);
+    width: 15rem;
+    height: 7.5rem;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xs);
+    background: color-mix(in srgb, var(--color-bg-primary) 94%, transparent);
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-sm);
+    transform: translateX(-50%)
+      translate3d(var(--event-drift-x), var(--event-drift-y), 0)
+      rotate(calc(var(--event-tilt) + var(--event-drift-rotate)))
+      scale(var(--event-drift-scale));
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 700ms cubic-bezier(0, 0, 0.2, 1);
+    will-change: transform;
+  }
+
+  .timeline-event--above .timeline-event__card {
+    bottom: 7.5rem;
+  }
+
+  .timeline-event--below .timeline-event__card {
+    top: 7.5rem;
+  }
+
+  .timeline-event__card:hover,
+  .timeline-event__card:focus-visible {
+    z-index: 4;
+    border-color: color-mix(
+      in srgb,
+      var(--brand-logo-blue) 54%,
+      var(--color-border)
+    );
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-50%) rotate(0deg)
+      translateY(calc(var(--spacing-1) * -1));
+  }
+
+  .timeline[data-quality="hq"] .timeline-event__card {
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(var(--spacing-2));
+  }
+
+  .timeline-event__meta,
+  .timeline-event__read,
+  .timeline-year-summary dt,
+  .timeline-year-summary p {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+  }
+
+  .timeline-event__meta {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .timeline-event__meta > span {
+    color: var(--brand-logo-blue);
+  }
+
+  .timeline-event__card strong {
+    display: -webkit-box;
+    overflow: hidden;
+    font-family: var(--font-cjk-serif);
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--leading-snug);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .timeline-event__read {
+    position: absolute;
+    right: var(--space-md);
+    bottom: var(--space-sm);
+    display: flex;
+    gap: var(--spacing-1);
+    align-items: center;
+    color: var(--color-text-secondary);
+    opacity: 0;
+  }
+
+  .timeline-event__card:hover .timeline-event__read,
+  .timeline-event__card:focus-visible .timeline-event__read {
+    opacity: 1;
+  }
+
+  .timeline-year-summary {
+    position: absolute;
+    z-index: 5;
+    top: var(--space-2xl);
+    right: var(--space-2xl);
+    width: min(19rem, 32vw);
+    text-align: right;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(calc(var(--space-md) * -1));
+    transition:
+      opacity 180ms ease,
+      transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .timeline-year-summary[data-active] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .timeline-year-summary h2 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: clamp(4rem, 7vw, 7rem);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: var(--tracking-tighter);
+    line-height: 0.86;
+  }
+
+  .timeline-year-summary__rule {
+    width: 62%;
+    margin: var(--space-md) 0 var(--space-md) auto;
+    border-top: 1px solid var(--color-text-primary);
+  }
+
+  .timeline-year-summary p {
+    margin: 0 0 var(--space-sm);
+  }
+
+  .timeline-year-summary__month > p {
+    color: var(--brand-logo-blue);
+    text-align: right;
+  }
+
+  .timeline-year-summary__yearly {
+    padding-top: var(--space-md);
+    margin-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .timeline-year-summary__yearly > p {
+    color: var(--color-text-secondary);
+    text-align: right;
+  }
+
+  .timeline-year-summary dl {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+    margin: 0;
+  }
+
+  .timeline-year-summary dl > div {
+    display: grid;
+    gap: var(--spacing-1);
+  }
+
+  .timeline-year-summary dt {
+    color: var(--color-text-secondary);
+  }
+
+  .timeline-year-summary dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+
+  .timeline-static {
+    display: none;
+  }
+
+  .timeline-empty {
+    min-height: 100svh;
+    padding: var(--space-3xl) var(--container-px);
+    color: var(--color-text-secondary);
+  }
+
+  .timeline-tools__control:focus-visible,
+  .timeline-quality:focus-visible,
+  .timeline-event__card:focus-visible,
+  .timeline-static a:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: var(--spacing-1);
+  }
+
+  @media (width < 48rem) {
+    .timeline-year-summary {
+      top: calc(var(--space-3xl) + var(--space-lg));
+      right: var(--space-md);
+      width: 13rem;
+    }
+
+    .timeline-year-summary h2 {
+      font-size: var(--text-5xl);
+    }
+
+    .timeline-track__line,
+    .timeline-months li,
+    .timeline-event {
+      top: 56%;
+    }
+
+    .timeline-event__card {
+      width: 13rem;
+      height: 7rem;
+      padding: var(--space-sm);
+    }
+
+    .timeline-event--above .timeline-event__card {
+      bottom: 6.5rem;
+    }
+
+    .timeline-event--below .timeline-event__card {
+      top: 6.5rem;
+    }
+
+    .timeline-event__connector {
+      height: 6.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .timeline-scroll {
+      display: none;
+    }
+
+    .timeline-static {
+      display: grid;
+      gap: var(--space-3xl);
+      padding: calc(var(--space-3xl) + var(--space-xl)) var(--container-px)
+        var(--space-3xl);
+    }
+
+    .timeline-static-year {
+      display: grid;
+      gap: var(--space-xl);
+    }
+
+    .timeline-static-year > header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .timeline-static-year h2,
+    .timeline-static-year p {
+      margin: 0;
+    }
+
+    .timeline-static-year h2 {
+      font-family: var(--font-heading);
+      font-size: var(--text-4xl);
+    }
+
+    .timeline-static-year p,
+    .timeline-static-month h3,
+    .timeline-static-month a > span {
+      color: var(--color-text-secondary);
+      font-family: var(--font-cjk-sans);
+      font-size: var(--text-xs);
+    }
+
+    .timeline-static-month {
+      display: grid;
+      grid-template-columns: var(--space-2xl) 1fr;
+      gap: var(--space-lg);
+    }
+
+    .timeline-static-month h3 {
+      display: grid;
+      gap: var(--spacing-1);
+      align-content: start;
+      margin: 0;
+    }
+
+    .timeline-static-month h3 span {
+      color: var(--brand-logo-blue);
+      font-family: var(--font-mono);
+      font-size: var(--text-lg);
+    }
+
+    .timeline-static-month ol {
+      display: grid;
+      gap: var(--space-md);
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .timeline-static-month a {
+      display: grid;
+      gap: var(--space-sm);
+      padding: var(--space-lg);
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-primary);
+      color: var(--color-text-primary);
+    }
+
+    .timeline-static-month a > span {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .timeline-static-month strong {
+      font-family: var(--font-cjk-serif);
+      font-weight: var(--font-weight-medium);
+    }
+  }
+</style>

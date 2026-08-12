@@ -1,0 +1,113 @@
+---
+import { render, type CollectionEntry } from "astro:content";
+import { Prose } from "../ui/index";
+
+export interface Props {
+  entry: CollectionEntry<"daily">;
+}
+
+const { entry } = Astro.props as Props;
+const publishDate = new Date(entry.data.publishDate);
+const { Content } = await render(entry);
+const dateLabel = new Intl.DateTimeFormat("zh-CN", {
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: "UTC",
+}).format(publishDate);
+const weekdayLabel = new Intl.DateTimeFormat("zh-CN", {
+  weekday: "long",
+  timeZone: "UTC",
+}).format(publishDate);
+---
+
+<li class="daily-entry-wrap">
+  <article id={`daily-${entry.id}`} class="daily-entry">
+    <time class="daily-entry__date" datetime={publishDate.toISOString()}>
+      <span class="daily-entry__date-number">{dateLabel}</span>
+      <span class="daily-entry__weekday">{weekdayLabel}</span>
+    </time>
+
+    <div class="daily-entry__content">
+      {entry.data.title && <h3>{entry.data.title}</h3>}
+      <Prose as="div" size="md" class="daily-entry__prose">
+        <Content />
+      </Prose>
+    </div>
+  </article>
+</li>
+
+<style>
+  .daily-entry-wrap {
+    margin: 0;
+  }
+
+  .daily-entry {
+    display: grid;
+    gap: var(--space-md);
+    padding-block: var(--space-xl);
+    border-top: 1px solid var(--color-border);
+    scroll-margin-top: calc(var(--header-height-mobile) + var(--space-md));
+  }
+
+  .daily-entry__date {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: baseline;
+    color: var(--color-text-secondary);
+  }
+
+  .daily-entry__date-number {
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .daily-entry__weekday {
+    font-family: var(--font-cjk-sans);
+    font-size: var(--text-xs);
+  }
+
+  .daily-entry__content {
+    min-width: 0;
+  }
+
+  .daily-entry__content h3 {
+    margin: 0 0 var(--space-sm);
+    font-family: var(--font-cjk-serif);
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--leading-snug);
+    text-wrap: balance;
+  }
+
+  .daily-entry__prose {
+    font-family: var(--font-cjk-sans);
+    color: var(--color-text-primary);
+  }
+
+  .daily-entry__prose :global(> :first-child) {
+    margin-top: 0;
+  }
+
+  .daily-entry__prose :global(> :last-child) {
+    margin-bottom: 0;
+  }
+
+  .daily-entry:target {
+    background: var(--interactive-hover-surface);
+  }
+
+  @media (width >= 40rem) {
+    .daily-entry {
+      grid-template-columns: 6.5rem minmax(0, 1fr);
+      gap: var(--space-xl);
+      scroll-margin-top: calc(var(--header-height) + var(--space-md));
+    }
+
+    .daily-entry__date {
+      flex-direction: column;
+      gap: var(--spacing-1);
+    }
+  }
+</style>

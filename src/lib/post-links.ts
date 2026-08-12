@@ -10,7 +10,7 @@ export function resolvePostByUid(uid: string, posts: BlogLinkEntry[]) {
 }
 
 export function buildPostHref(post: BlogLinkEntry, locale: Locale) {
-  return resolveRoute(locale, `/blog/${post.id}`);
+  return resolveRoute(locale, `/posts/${post.id}`);
 }
 
 export function buildServiceHref(service: ServiceLinkEntry, locale: Locale) {

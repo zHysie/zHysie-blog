@@ -1,0 +1,402 @@
+---
+import { cn } from "../../../../lib/cn";
+
+export interface Props {
+  text: string;
+  class?: string;
+}
+
+const { text, class: className } = Astro.props as Props;
+---
+
+<div class={cn("dot-wordmark", className)} data-dot-wordmark data-text={text}>
+  <span class="sr-only">{text}</span>
+  <span class="dot-wordmark__fallback" aria-hidden="true">{text}</span>
+  <canvas class="dot-wordmark__canvas" aria-hidden="true"></canvas>
+</div>
+
+<script>
+  interface Particle {
+    originX: number;
+    originY: number;
+    x: number;
+    y: number;
+    velocityX: number;
+    velocityY: number;
+    ease: number;
+    targetEase: number;
+    returnEase: number;
+    repelled: boolean;
+    friction: number;
+    size: number;
+  }
+
+  class DotMatrixWordmark {
+    private root: HTMLElement;
+    private canvas: HTMLCanvasElement;
+    private context: CanvasRenderingContext2D;
+    private text: string;
+    private particles: Particle[] = [];
+    private pixelRatio = 1;
+    private pointer = {
+      x: -1000,
+      y: -1000,
+      active: false,
+      radiusSquared: 0,
+      radius: 0,
+    };
+    private pointerTimeout = 0;
+    private animationFrame = 0;
+    private resizeFrame = 0;
+    private visible = false;
+    private destroyed = false;
+    private resizeObserver: ResizeObserver;
+    private intersectionObserver: IntersectionObserver;
+    private themeObserver: MutationObserver;
+    private reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    );
+
+    constructor(root: HTMLElement) {
+      const canvas = root.querySelector<HTMLCanvasElement>(
+        ".dot-wordmark__canvas",
+      );
+      const context = canvas?.getContext("2d", { alpha: true });
+
+      if (!canvas || !context) {
+        throw new Error("Dot matrix wordmark canvas is unavailable.");
+      }
+
+      this.root = root;
+      this.canvas = canvas;
+      this.context = context;
+      this.text = root.dataset.text ?? "";
+
+      this.resizeObserver = new ResizeObserver(() => this.queueResize());
+      this.intersectionObserver = new IntersectionObserver(
+        ([entry]) => {
+          this.visible = entry?.isIntersecting ?? false;
+          if (this.visible) this.startAnimation();
+          else this.stopAnimation();
+        },
+        { threshold: 0 },
+      );
+      this.themeObserver = new MutationObserver(() => {
+        if (this.reduceMotion.matches) this.drawStatic();
+      });
+
+      this.resizeObserver.observe(root);
+      this.intersectionObserver.observe(canvas);
+      this.themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+
+      if (!this.reduceMotion.matches) {
+        window.addEventListener("mousemove", this.handlePointerMove, {
+          passive: true,
+        });
+      }
+
+      void document.fonts.ready.then(() => this.initialize());
+    }
+
+    private queueResize = () => {
+      window.cancelAnimationFrame(this.resizeFrame);
+      this.resizeFrame = window.requestAnimationFrame(() => this.initialize());
+    };
+
+    private initialize() {
+      if (this.destroyed || !this.text) return;
+
+      const bounds = this.root.getBoundingClientRect();
+      const rootWidth = Math.max(1, bounds.width);
+      const rootHeight = Math.max(1, bounds.height);
+      const canvasWidth = rootWidth * 1.5;
+      const canvasHeight = rootHeight * 3;
+
+      this.pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      this.canvas.width = Math.round(canvasWidth * this.pixelRatio);
+      this.canvas.height = Math.round(canvasHeight * this.pixelRatio);
+      this.canvas.style.width = `${canvasWidth}px`;
+      this.canvas.style.height = `${canvasHeight}px`;
+
+      const computed = window.getComputedStyle(this.root);
+      const mask = document.createElement("canvas");
+      mask.width = this.canvas.width;
+      mask.height = this.canvas.height;
+      const maskContext = mask.getContext("2d", { willReadFrequently: true });
+
+      if (!maskContext) return;
+
+      const availableWidth = rootWidth * this.pixelRatio * 0.9;
+      const availableHeight = rootHeight * this.pixelRatio * 0.86;
+      const baseFontSize = 100 * this.pixelRatio;
+      maskContext.font = `${computed.fontWeight} ${baseFontSize}px ${computed.fontFamily}`;
+
+      const baseMetrics = maskContext.measureText(this.text);
+      const baseHeight = Math.max(
+        1,
+        baseMetrics.actualBoundingBoxAscent +
+          baseMetrics.actualBoundingBoxDescent,
+      );
+      const scale = Math.min(
+        availableWidth / Math.max(1, baseMetrics.width),
+        availableHeight / baseHeight,
+      );
+      const fontSize = baseFontSize * scale;
+
+      maskContext.font = `${computed.fontWeight} ${fontSize}px ${computed.fontFamily}`;
+      maskContext.textAlign = "center";
+      maskContext.textBaseline = "alphabetic";
+      maskContext.fillStyle = computed.color;
+
+      const metrics = maskContext.measureText(this.text);
+      const textHeight =
+        metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      const baseline =
+        this.canvas.height / 2 -
+        textHeight / 2 +
+        metrics.actualBoundingBoxAscent;
+
+      maskContext.fillText(this.text, this.canvas.width / 2, baseline);
+
+      const pixels = maskContext.getImageData(
+        0,
+        0,
+        this.canvas.width,
+        this.canvas.height,
+      ).data;
+      const gap = Math.max(2, Math.round(4 * this.pixelRatio));
+      const particleSize = 2 * this.pixelRatio;
+      const particles: Particle[] = [];
+
+      for (let y = 0; y < this.canvas.height; y += gap) {
+        for (let x = 0; x < this.canvas.width; x += gap) {
+          const alpha = pixels[(y * this.canvas.width + x) * 4 + 3];
+          if (alpha === 0) continue;
+
+          particles.push({
+            originX: x,
+            originY: y,
+            x: this.reduceMotion.matches
+              ? x
+              : Math.random() * this.canvas.width,
+            y: this.reduceMotion.matches
+              ? y
+              : Math.random() * this.canvas.height,
+            velocityX: 0,
+            velocityY: 0,
+            ease: 0.04 + Math.random() * 0.04,
+            targetEase: 0.2 + Math.random() * 0.2,
+            returnEase: 0.018 + Math.random() * 0.014,
+            repelled: false,
+            friction: 0.8 + Math.random() * 0.15,
+            size: particleSize,
+          });
+        }
+      }
+
+      this.particles = particles;
+      const pointerArea = 3000 * this.pixelRatio;
+      this.pointer.radiusSquared = pointerArea;
+      this.pointer.radius = Math.sqrt(pointerArea);
+      this.root.dataset.ready = "true";
+
+      if (this.reduceMotion.matches) this.drawStatic();
+      else if (this.visible) this.startAnimation();
+    }
+
+    private updateParticle(particle: Particle) {
+      let repelledThisFrame = false;
+
+      if (this.pointer.active) {
+        const deltaX = this.pointer.x - particle.x;
+        const deltaY = this.pointer.y - particle.y;
+        const distanceSquared = deltaX * deltaX + deltaY * deltaY;
+
+        if (distanceSquared < this.pointer.radiusSquared) {
+          particle.ease = particle.targetEase;
+          particle.repelled = true;
+          repelledThisFrame = true;
+          const distance = Math.max(0.01, Math.sqrt(distanceSquared));
+          const force =
+            -((this.pointer.radius - distance) / this.pointer.radius) *
+            150 *
+            this.pixelRatio *
+            (0.5 + Math.random());
+
+          particle.velocityX +=
+            (deltaX / distance) * force + (Math.random() - 0.5);
+          particle.velocityY +=
+            (deltaY / distance) * force + (Math.random() - 0.5);
+        }
+      }
+
+      if (particle.repelled && !repelledThisFrame) {
+        particle.ease = particle.returnEase;
+      }
+
+      particle.velocityX *= particle.friction;
+      particle.velocityY *= particle.friction;
+      particle.x +=
+        particle.velocityX + (particle.originX - particle.x) * particle.ease;
+      particle.y +=
+        particle.velocityY + (particle.originY - particle.y) * particle.ease;
+    }
+
+    private drawFrame = () => {
+      this.animationFrame = 0;
+      if (!this.visible || this.destroyed) return;
+
+      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.context.fillStyle = window.getComputedStyle(this.root).color;
+
+      for (const particle of this.particles) {
+        this.updateParticle(particle);
+        this.context.beginPath();
+        this.context.arc(
+          particle.x,
+          particle.y,
+          particle.size / 2,
+          0,
+          Math.PI * 2,
+        );
+        this.context.fill();
+      }
+
+      this.animationFrame = window.requestAnimationFrame(this.drawFrame);
+    };
+
+    private drawStatic() {
+      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.context.fillStyle = window.getComputedStyle(this.root).color;
+
+      for (const particle of this.particles) {
+        this.context.beginPath();
+        this.context.arc(
+          particle.originX,
+          particle.originY,
+          particle.size / 2,
+          0,
+          Math.PI * 2,
+        );
+        this.context.fill();
+      }
+    }
+
+    private startAnimation() {
+      if (!this.animationFrame && !this.reduceMotion.matches) {
+        this.animationFrame = window.requestAnimationFrame(this.drawFrame);
+      }
+    }
+
+    private stopAnimation() {
+      window.cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = 0;
+    }
+
+    private handlePointerMove = (event: MouseEvent) => {
+      const bounds = this.canvas.getBoundingClientRect();
+      this.pointer.x = (event.clientX - bounds.left) * this.pixelRatio;
+      this.pointer.y = (event.clientY - bounds.top) * this.pixelRatio;
+      this.pointer.active = true;
+
+      window.clearTimeout(this.pointerTimeout);
+      this.pointerTimeout = window.setTimeout(() => {
+        this.pointer.active = false;
+      }, 100);
+    };
+
+    destroy() {
+      this.destroyed = true;
+      this.stopAnimation();
+      window.cancelAnimationFrame(this.resizeFrame);
+      window.clearTimeout(this.pointerTimeout);
+      window.removeEventListener("mousemove", this.handlePointerMove);
+      this.resizeObserver.disconnect();
+      this.intersectionObserver.disconnect();
+      this.themeObserver.disconnect();
+    }
+  }
+
+  const mountedWordmarks = new Map<HTMLElement, DotMatrixWordmark>();
+
+  const initializeDotMatrixWordmarks = () => {
+    document
+      .querySelectorAll<HTMLElement>("[data-dot-wordmark]")
+      .forEach((root) => {
+        if (!mountedWordmarks.has(root)) {
+          mountedWordmarks.set(root, new DotMatrixWordmark(root));
+        }
+      });
+  };
+
+  const destroyDotMatrixWordmarks = () => {
+    mountedWordmarks.forEach((wordmark) => wordmark.destroy());
+    mountedWordmarks.clear();
+  };
+
+  initializeDotMatrixWordmarks();
+  document.addEventListener("astro:page-load", initializeDotMatrixWordmarks);
+  document.addEventListener("astro:before-swap", destroyDotMatrixWordmarks);
+</script>
+
+<style>
+  .dot-wordmark {
+    position: relative;
+    width: calc(100% - var(--container-px) * 2);
+    max-width: var(--container-max);
+    height: clamp(var(--spacing-9), 17vw, calc(var(--spacing-11) * 1.25));
+    margin-inline: auto;
+    color: var(--footer-dot-wordmark);
+    font-family: var(--font-sans);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .dot-wordmark__canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: block;
+    max-width: none;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+  }
+
+  .dot-wordmark__fallback {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: transparent;
+    font-size: clamp(var(--spacing-9), 17vw, calc(var(--spacing-11) * 1.25));
+    font-weight: var(--font-weight-bold);
+    line-height: var(--leading-tight);
+    white-space: nowrap;
+    background-image: radial-gradient(
+      circle,
+      var(--border) 0 18%,
+      transparent 20%
+    );
+    background-position: center;
+    background-size: var(--spacing-1) var(--spacing-1);
+    background-clip: text;
+    -webkit-background-clip: text;
+  }
+
+  .dot-wordmark[data-ready="true"] .dot-wordmark__fallback {
+    opacity: 0;
+  }
+
+  @media (max-width: 40rem) {
+    .dot-wordmark {
+      height: clamp(var(--spacing-9), 24vw, var(--spacing-10));
+    }
+
+    .dot-wordmark__fallback {
+      font-size: clamp(var(--spacing-9), 24vw, var(--spacing-10));
+    }
+  }
+</style>

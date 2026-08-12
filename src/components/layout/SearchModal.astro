@@ -8,7 +8,7 @@ export interface Props {
 }
 
 const isProd = import.meta.env.PROD;
-const { locale = "en" } = Astro.props as Props;
+const { locale = "zh-CN" } = Astro.props as Props;
 ---
 
 <dialog
@@ -45,7 +45,6 @@ const { locale = "en" } = Astro.props as Props;
 
 <script is:inline>
   const dialog = document.getElementById("search-modal");
-  const triggers = document.querySelectorAll("[data-search-trigger]");
   const closeButton = dialog?.querySelector("[data-search-close]");
   // The mount point only exists in production builds (Pagefind index).
   const pagefindMount = dialog?.querySelector("[data-pagefind-ui]");
@@ -98,8 +97,13 @@ const { locale = "en" } = Astro.props as Props;
     }
   };
 
-  triggers.forEach((trigger) => {
-    trigger.addEventListener("click", openSearch);
+  document.addEventListener("click", (event) => {
+    if (
+      event.target instanceof Element &&
+      event.target.closest("[data-search-trigger]")
+    ) {
+      openSearch();
+    }
   });
 
   closeButton?.addEventListener("click", closeSearch);

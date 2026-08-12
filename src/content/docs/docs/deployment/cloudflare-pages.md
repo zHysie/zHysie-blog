@@ -7,13 +7,13 @@ sidebar:
 
 ## Automatic Deployments
 
-Every push to `main` triggers a Cloudflare Pages deployment via GitHub Actions. The CI pipeline also runs linting, type checking, and security scans before building.
+Every push to `master` can trigger a Cloudflare Pages deployment. The CI pipeline also runs linting, type checking, and security scans before building.
 
 The `release.yml` workflow handles production deployments from version tags.
 
 ## Preview Deployments
 
-Pull requests get automatic preview deployments, so you can review changes before merging to `main`.
+Pull requests can get preview deployments, so changes can be reviewed before merging to `master`.
 
 ## Manual Deployment
 
@@ -21,7 +21,7 @@ Pull requests get automatic preview deployments, so you can review changes befor
 pnpm build
 
 # Deploy via wrangler
-npx wrangler pages deploy dist --branch=main
+npx wrangler pages deploy dist --project-name=zhysie-blog --branch=master
 
 # Or via Cloudflare Dashboard
 # Project: astro-cloudflare
@@ -31,11 +31,11 @@ npx wrangler pages deploy dist --branch=main
 
 Set these in your Cloudflare Pages dashboard or GitHub repository:
 
-| Secret | Purpose |
-| --- | --- |
-| `CF_API_TOKEN` | Cloudflare API token for deployments |
-| `CF_ACCOUNT_ID` | Your Cloudflare account ID |
-| `SITE_URL` | Canonical URL of your site |
+| Secret           | Purpose                                                            |
+| ---------------- | ------------------------------------------------------------------ |
+| `CF_API_TOKEN`   | Cloudflare API token for deployments                               |
+| `CF_ACCOUNT_ID`  | Your Cloudflare account ID                                         |
+| `SITE_URL`       | Canonical URL of your site                                         |
 | `CLEANUP_SECRET` | Bearer token guarding the R2 cleanup endpoint (only if you use R2) |
 
 ## R2 Media (optional)
@@ -46,5 +46,5 @@ prune orphaned objects. Remove the binding and worker if you don't need R2.
 
 ## Branch Configuration
 
-- **`main`** — Production builds
+- **`master`** — Production builds
 - **Feature branches** — Preview builds triggered from pull requests

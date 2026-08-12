@@ -1,13 +1,17 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { Icon } from "astro-icon/components";
+import { resolveRoute } from "../../i18n/routes";
+import type { Locale } from "../../lib/site-config";
+import { formatNumericDate } from "../../lib/utils";
 
 export interface Props {
   daily: CollectionEntry<"daily">[];
-  locale?: string;
+  locale?: Locale;
 }
 
-const { daily, locale = "en" } = Astro.props;
+const { daily, locale = "zh-CN" } = Astro.props;
+const dailyHref = resolveRoute(locale, "/daily");
 ---
 
 <div class="grt-section">
@@ -18,8 +22,7 @@ const { daily, locale = "en" } = Astro.props;
         日常
       </h2>
     </div>
-    <!-- Since the user wants 'daily' instead of 'moments', we point this to a generic path or ignore for now, assuming there's no dedicated page yet. -->
-    <a href="#" class="grt-section__more group">
+    <a href={dailyHref} class="grt-section__more group">
       <span>查看全部</span>
       <Icon
         name="lucide:arrow-right"
@@ -32,14 +35,7 @@ const { daily, locale = "en" } = Astro.props;
     {
       daily.map((entry) => {
         const dateObj = new Date(entry.data.publishDate);
-        const formattedDate = dateObj.toLocaleDateString(
-          locale === "en" ? "en-US" : "zh-CN",
-          {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          },
-        );
+        const formattedDate = formatNumericDate(dateObj);
 
         // Use title if exists, otherwise a snippet of body
         const displayTitle =
@@ -47,7 +43,10 @@ const { daily, locale = "en" } = Astro.props;
           (entry.body ? entry.body.slice(0, 30) + "..." : "记录");
 
         return (
-          <a href="#" class="grt-card grt-card--moment">
+          <a
+            href={`${dailyHref}#daily-${entry.id}`}
+            class="grt-card grt-card--moment"
+          >
             <div class="grt-card__content">
               <h3 class="grt-card__title">
                 <span class="grt-card__title-text">{displayTitle}</span>
@@ -89,7 +88,7 @@ const { daily, locale = "en" } = Astro.props;
 
 <style>
   .grt-section {
-    --color-primary: var(--color-brand-primary);
+    --color-primary: var(--brand-logo-pink);
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -118,7 +117,7 @@ const { daily, locale = "en" } = Astro.props;
     gap: 0.25rem;
     font-size: var(--text-xs);
     font-family: var(--font-sans);
-    color: var(--color-text-tertiary);
+    color: var(--muted-foreground);
     text-decoration: none;
     transition: color 0.2s ease;
   }
@@ -221,7 +220,7 @@ const { daily, locale = "en" } = Astro.props;
     gap: 0.5rem;
     font-size: var(--text-xs);
     font-family: var(--font-mono);
-    color: var(--color-text-tertiary);
+    color: var(--muted-foreground);
   }
 
   .grt-card__arrow {

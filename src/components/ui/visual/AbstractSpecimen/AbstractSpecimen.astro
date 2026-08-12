@@ -1,0 +1,147 @@
+---
+import { cn } from "../../../../lib/cn";
+
+export interface Props {
+  variant: "about" | "lab" | "uses";
+  class?: string;
+}
+
+const { variant, class: className } = Astro.props as Props;
+---
+
+<div
+  class={cn("abstract-specimen", `abstract-specimen--${variant}`, className)}
+  aria-hidden="true"
+>
+  <span class="abstract-specimen__orbit abstract-specimen__orbit--outer"></span>
+  <span class="abstract-specimen__orbit abstract-specimen__orbit--inner"></span>
+  <span class="abstract-specimen__axis abstract-specimen__axis--x"></span>
+  <span class="abstract-specimen__axis abstract-specimen__axis--y"></span>
+  <span class="abstract-specimen__mark abstract-specimen__mark--blue"></span>
+  <span class="abstract-specimen__mark abstract-specimen__mark--pink"></span>
+  <span class="abstract-specimen__label">{variant.toUpperCase()}</span>
+</div>
+
+<style>
+  .abstract-specimen {
+    position: relative;
+    min-height: clamp(18rem, 38vw, 29rem);
+    overflow: hidden;
+    border-block: 1px solid var(--border);
+    background:
+      radial-gradient(
+        circle at 50% 48%,
+        color-mix(in oklab, var(--brand-logo-blue) 9%, transparent),
+        transparent 34%
+      ),
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size:
+      auto,
+      2rem 2rem,
+      2rem 2rem;
+    color: var(--foreground);
+  }
+
+  .abstract-specimen__orbit,
+  .abstract-specimen__axis,
+  .abstract-specimen__mark {
+    position: absolute;
+    display: block;
+  }
+
+  .abstract-specimen__orbit {
+    inset: 50% auto auto 50%;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-full);
+    opacity: 0.4;
+    transform: translate(-50%, -50%);
+  }
+
+  .abstract-specimen__orbit--outer {
+    width: min(78%, 23rem);
+    aspect-ratio: 1;
+  }
+
+  .abstract-specimen__orbit--inner {
+    width: min(42%, 12rem);
+    aspect-ratio: 1;
+    border-style: dashed;
+  }
+
+  .abstract-specimen__axis--x {
+    inset: 50% 8% auto;
+    border-top: 1px solid currentColor;
+    opacity: 0.48;
+  }
+
+  .abstract-specimen__axis--y {
+    inset: 8% auto 8% 50%;
+    border-left: 1px solid currentColor;
+    opacity: 0.48;
+  }
+
+  .abstract-specimen__mark {
+    width: clamp(2.75rem, 7vw, 5.5rem);
+    aspect-ratio: 1;
+    border-radius: var(--radius-full);
+    filter: blur(0.08rem);
+    opacity: 0.7;
+  }
+
+  .abstract-specimen__mark--blue {
+    top: 28%;
+    left: 31%;
+    background: var(--brand-logo-blue);
+  }
+
+  .abstract-specimen__mark--pink {
+    right: 29%;
+    bottom: 25%;
+    width: clamp(1.75rem, 4vw, 3.25rem);
+    background: var(--brand-logo-pink);
+  }
+
+  .abstract-specimen__label {
+    position: absolute;
+    right: var(--space-md);
+    bottom: var(--space-md);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+  }
+
+  .abstract-specimen--lab .abstract-specimen__orbit--outer {
+    border-radius: var(--radius-xs);
+    transform: translate(-50%, -50%) rotate(8deg);
+  }
+
+  .abstract-specimen--lab .abstract-specimen__orbit--inner {
+    border-radius: var(--radius-xs);
+    transform: translate(-50%, -50%) rotate(-12deg);
+  }
+
+  .abstract-specimen--uses .abstract-specimen__orbit--outer {
+    width: min(80%, 27rem);
+    height: min(46%, 12rem);
+    border-radius: var(--radius-md);
+  }
+
+  .abstract-specimen--uses .abstract-specimen__orbit--inner {
+    width: min(62%, 20rem);
+    height: min(28%, 7rem);
+    border-radius: var(--radius-xs);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .abstract-specimen__orbit--inner {
+      animation: specimen-drift 18s ease-in-out infinite alternate;
+    }
+  }
+
+  @keyframes specimen-drift {
+    to {
+      transform: translate(-50%, -50%) rotate(12deg);
+    }
+  }
+</style>

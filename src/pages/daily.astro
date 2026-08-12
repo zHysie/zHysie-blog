@@ -1,0 +1,26 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import { DailyArchive } from "../components/sections";
+import { t } from "../i18n/ui";
+import { resolveRoute } from "../i18n/routes";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import type { Locale } from "../lib/site-config";
+
+const locale = "zh-CN" as Locale;
+const entries = (
+  (await getCollection("daily")) as CollectionEntry<"daily">[]
+).sort(
+  (a, b) =>
+    new Date(b.data.publishDate).getTime() -
+    new Date(a.data.publishDate).getTime(),
+);
+---
+
+<BaseLayout
+  title={t(locale, "daily.title")}
+  description={t(locale, "daily.lead")}
+  locale={locale}
+  path={resolveRoute(locale, "/daily")}
+>
+  <DailyArchive entries={entries} locale={locale} />
+</BaseLayout>
