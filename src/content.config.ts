@@ -74,28 +74,6 @@ const pages = defineCollection({
     title: z.string(),
     description: z.string(),
     sections: z.array(pageSectionSchema).default([]),
-    isLegal: z.boolean().default(false),
-    order: z.number().default(0),
-    translationKey: z.string().optional(),
-  }),
-});
-
-const services = defineCollection({
-  loader: glob({
-    pattern: "**/*.{md,mdx}",
-    base: "./src/content/services",
-    generateId: ({ entry }) => entry.replace(/\.[^/.]+$/, ""),
-  }),
-  schema: z.object({
-    locale: localeSchema,
-    slug: z.string(),
-    title: z.string(),
-    description: z.string(),
-    image: z.string().optional(),
-    featured: z.boolean().default(false),
-    tags: z.array(z.string()).default([]),
-    features: z.array(z.string()).default([]),
-    priceRange: z.string().optional(),
     order: z.number().default(0),
     translationKey: z.string().optional(),
   }),
@@ -192,7 +170,6 @@ export const collections = {
   blog,
   docs,
   pages,
-  services,
   settings,
   authors,
   faqs,

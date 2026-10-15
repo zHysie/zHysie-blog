@@ -23,7 +23,7 @@ export function resolveRoute(locale: Locale, path: string): string {
 
 /**
  * Strip locale prefix from a path to get the content key.
- * Example: stripLocale("/en/services") → "/services"
+ * Example: stripLocale("/en/posts") → "/posts"
  */
 export function stripLocale(path: string): string {
   for (const loc of SITE_CONFIG.locales) {

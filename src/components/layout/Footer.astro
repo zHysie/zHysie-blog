@@ -1,19 +1,14 @@
 ---
 import { Icon } from "astro-icon/components";
 import { siteConfig } from "../../config/site.config";
-import { footerNav } from "../../config/nav.config";
-import { t } from "../../i18n/ui";
-import { resolveRoute } from "../../i18n/routes";
-import type { Locale } from "../../lib/site-config";
 import DotMatrixWordmark from "../ui/marketing/DotMatrixWordmark/DotMatrixWordmark.astro";
 import Logo from "./Logo.astro";
 
 export interface Props {
-  currentLocale: Locale;
   deferBrandLoading?: boolean;
 }
 
-const { currentLocale, deferBrandLoading = false } = Astro.props as Props;
+const { deferBrandLoading = false } = Astro.props as Props;
 const year = new Date().getFullYear();
 
 const socialIcon = (url: string) => {
@@ -32,36 +27,6 @@ const socialIcon = (url: string) => {
       <div class="footer__brand">
         <Logo deferLoading={deferBrandLoading} />
         <p>{siteConfig.description}</p>
-      </div>
-
-      <div class="footer__column">
-        <h2>{t(currentLocale, "nav.services")}</h2>
-        <ul>
-          {
-            footerNav.product.map((item) => (
-              <li>
-                <a href={resolveRoute(currentLocale, item.href)}>
-                  {t(currentLocale, item.labelKey)}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </div>
-
-      <div class="footer__column">
-        <h2>{t(currentLocale, "nav.contact")}</h2>
-        <ul>
-          {
-            footerNav.legal.map((item) => (
-              <li>
-                <a href={resolveRoute(currentLocale, item.href)}>
-                  {t(currentLocale, item.labelKey)}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
       </div>
 
       {
@@ -89,15 +54,6 @@ const socialIcon = (url: string) => {
 
     <div class="footer__meta">
       <p>&copy; {year} {siteConfig.name}</p>
-      <div class="footer__legal">
-        {
-          footerNav.legal.map((item) => (
-            <a href={resolveRoute(currentLocale, item.href)}>
-              {t(currentLocale, item.labelKey)}
-            </a>
-          ))
-        }
-      </div>
     </div>
   </div>
   <DotMatrixWordmark
@@ -121,7 +77,7 @@ const socialIcon = (url: string) => {
   .footer__grid {
     display: grid;
     gap: var(--space-xl);
-    grid-template-columns: 1.5fr repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1.5fr minmax(0, 1fr);
   }
 
   .footer__brand p {
@@ -174,16 +130,6 @@ const socialIcon = (url: string) => {
     padding-top: var(--space-lg);
     border-top: 1px solid var(--color-border);
     color: var(--color-text-secondary);
-  }
-
-  .footer__legal {
-    display: flex;
-    gap: var(--space-lg);
-  }
-
-  .footer__legal a {
-    color: inherit;
-    text-decoration: none;
   }
 
   .footer__wordmark {

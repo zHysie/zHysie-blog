@@ -13,8 +13,7 @@ pull request — Cloudflare Pages rebuilds on merge.
 
 | Collection   | Description                                | Files                             |
 | ------------ | ------------------------------------------ | --------------------------------- |
-| **Pages**    | Marketing pages (about, contact, pricing…) | `src/content/pages/*.md`          |
-| **Services** | Service offerings with pricing             | `src/content/services/*.md`       |
+| **Pages**    | Standalone pages (about, contact…)         | `src/content/pages/*.md`          |
 | **Blog**     | Articles and news posts                    | `src/content/blog/*.md`           |
 | **Docs**     | Documentation pages                        | `src/content/docs/**` (Starlight) |
 

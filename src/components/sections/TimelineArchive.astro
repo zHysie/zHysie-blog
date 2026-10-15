@@ -17,16 +17,19 @@ interface TrackEvent {
   item: TimelineItem;
   x: number;
   side: TimelineSide;
-  tilt: number;
+  y: number;
 }
 
 interface TrackMonth {
+  year: number;
   month: number;
+  start: number;
+  width: number;
   x: number;
   populated: boolean;
   posts: number;
-  moments: number;
-  thinkings: number;
+  daily: number;
+  total: number;
 }
 
 const { items, locale = "zh-CN" } = Astro.props as Props;
@@ -75,14 +78,6 @@ const monthNames = [
 ];
 const homeHref = resolveRoute(locale, "/");
 
-function stableTilt(id: string) {
-  const hash = [...id].reduce(
-    (total, character) => total + character.charCodeAt(0),
-    0,
-  );
-  return ((hash % 9) - 4) * 0.22;
-}
-
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("zh-CN", {
     month: "2-digit",
@@ -91,53 +86,134 @@ function formatDate(date: Date) {
   }).format(date);
 }
 
-const monthMinimumWidth = 150;
-const eventStep = 278;
-const eventInset = 136;
-const yearGap = 300;
-let cursor = 180;
-let eventIndex = 0;
+const sortedItems = items.toSorted(
+  (left, right) => left.date.getTime() - right.date.getTime(),
+);
+const emptyMonthWidth = 80;
+const pixelsPerItem = 280;
+const minimumActiveMonthWidth = 350;
+const cardWidth = 250;
+const cardHeight = 150;
+const lanes = [-75, 75, -220, 220];
 
-const trackYears = years.map((year) => {
-  const start = cursor;
-  const months: TrackMonth[] = [];
-  const events: TrackEvent[] = [];
+const firstDate = sortedItems[0]?.date;
+const lastDate = sortedItems.at(-1)?.date;
+const startYear = firstDate?.getUTCFullYear() ?? 0;
+const startMonth = firstDate?.getUTCMonth() ?? 0;
+const endYear = lastDate?.getUTCFullYear() ?? startYear;
+const endMonth = lastDate?.getUTCMonth() ?? startMonth;
+const totalMonths = firstDate
+  ? (endYear - startYear) * 12 + (endMonth - startMonth) + 1
+  : 0;
+const monthItems = Array.from(
+  { length: totalMonths },
+  () => [] as TimelineItem[],
+);
 
-  for (const month of year.months) {
-    const monthWidth = Math.max(
-      monthMinimumWidth,
-      eventInset + month.items.length * eventStep,
-    );
-    months.push({
-      month: month.month,
-      x: cursor,
-      populated: month.items.length > 0,
-      posts: month.items.filter((item) => item.kind === "post").length,
-      moments: month.items.filter((item) => item.kind === "daily").length,
-      thinkings: 0,
-    });
+for (const item of sortedItems) {
+  const monthIndex =
+    (item.date.getUTCFullYear() - startYear) * 12 +
+    (item.date.getUTCMonth() - startMonth);
+  monthItems[monthIndex]?.push(item);
+}
 
-    month.items.forEach((item, index) => {
-      events.push({
-        item,
-        x: cursor + eventInset + index * eventStep,
-        side: eventIndex % 2 === 0 ? "above" : "below",
-        tilt: stableTilt(item.id),
-      });
-      eventIndex += 1;
-    });
+const monthWidths = monthItems.map((month) =>
+  month.length === 0
+    ? emptyMonthWidth
+    : Math.max(minimumActiveMonthWidth, month.length * pixelsPerItem),
+);
+const monthStarts: number[] = [];
+let trackWidth = 0;
+for (const width of monthWidths) {
+  monthStarts.push(trackWidth);
+  trackWidth += width;
+}
 
-    cursor += monthWidth;
-  }
-
-  const end = cursor;
-  cursor += yearGap;
-  return { ...year, start, end, months, events };
+const trackMonths: TrackMonth[] = monthItems.map((month, index) => {
+  const absoluteMonth = startMonth + index;
+  const year = startYear + Math.floor(absoluteMonth / 12);
+  const monthNumber = (absoluteMonth % 12) + 1;
+  const width = monthWidths[index];
+  const start = monthStarts[index];
+  return {
+    year,
+    month: monthNumber,
+    start,
+    width,
+    x: start + width / 2,
+    populated: month.length > 0,
+    posts: month.filter((item) => item.kind === "post").length,
+    daily: month.filter((item) => item.kind === "daily").length,
+    total: month.length,
+  };
 });
 
-const trackWidth = Math.max(cursor + 360, 1800);
-const fallbackTravel = Math.max(2400, Math.round(trackWidth * 1.12));
-const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
+const trackEvents: TrackEvent[] = [];
+const placed: Array<{ x: number; y: number }> = [];
+
+monthItems.forEach((month, monthIndex) => {
+  const monthStart = monthStarts[monthIndex];
+  const monthWidth = monthWidths[monthIndex];
+  const padding = cardWidth * 0.55;
+  const usableWidth = monthWidth - padding * 2;
+
+  month.forEach((item, localIndex) => {
+    const x =
+      month.length === 1
+        ? monthStart + monthWidth / 2
+        : monthStart +
+          padding +
+          (usableWidth / (month.length - 1)) * localIndex;
+    let y = lanes[0];
+    let minimumOverlap = Number.POSITIVE_INFINITY;
+    const startLane = localIndex % lanes.length;
+
+    for (let laneIndex = 0; laneIndex < lanes.length; laneIndex += 1) {
+      const lane = lanes[(startLane + laneIndex) % lanes.length];
+      let worstOverlap = 0;
+      for (const previous of placed) {
+        const overlapX = Math.max(0, cardWidth - Math.abs(x - previous.x));
+        const overlapY = Math.max(0, cardHeight - Math.abs(lane - previous.y));
+        worstOverlap = Math.max(worstOverlap, overlapX * overlapY);
+      }
+      if (worstOverlap < minimumOverlap) {
+        minimumOverlap = worstOverlap;
+        y = lane;
+        if (worstOverlap === 0) break;
+      }
+    }
+
+    placed.push({ x, y });
+    trackEvents.push({
+      item,
+      x,
+      y,
+      side: y < 0 ? "above" : "below",
+    });
+  });
+});
+
+const trackYears = years
+  .map((year) => {
+    const months = trackMonths.filter((month) => month.year === year.year);
+    const events = trackEvents.filter(
+      (event) => event.item.date.getUTCFullYear() === year.year,
+    );
+    return {
+      ...year,
+      months,
+      events,
+      start: months[0]?.start ?? 0,
+      end: months.length ? months.at(-1)!.start + months.at(-1)!.width : 0,
+    };
+  })
+  .filter((year) => year.months.length > 0);
+
+const firstTrackYear = trackYears[0];
+const firstTrackMonth =
+  firstTrackYear?.months.find((month) => month.populated) ??
+  firstTrackYear?.months[0];
+const fallbackTravel = Math.round(trackWidth * 1.5);
 ---
 
 <section
@@ -195,72 +271,68 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
           aria-label={t(locale, "timeline.archive")}
         >
           <div class="timeline-canvas">
-            <div class="timeline-year-summaries" aria-live="polite">
-              {trackYears.map((year, index) => {
-                const initialMonth =
-                  year.months.find((month) => month.populated) ??
-                  year.months[0];
-
-                return (
-                  <header
-                    class="timeline-year-summary"
-                    data-year-summary={year.year}
-                    data-active={index === 0 ? "" : undefined}
-                  >
-                    <h2>{year.year}</h2>
-                    <div
-                      class="timeline-year-summary__rule"
-                      aria-hidden="true"
-                    />
-                    <section class="timeline-year-summary__month">
-                      <p data-summary-month>
-                        {monthFullLabels[initialMonth.month - 1]}
-                      </p>
-                      <dl>
-                        <div>
-                          <dt>{t(locale, "timeline.statsPosts")}</dt>
-                          <dd data-summary-month-posts>{initialMonth.posts}</dd>
-                        </div>
-                        <div>
-                          <dt>{t(locale, "timeline.statsMoments")}</dt>
-                          <dd data-summary-month-moments>
-                            {initialMonth.moments}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt>{t(locale, "timeline.statsThinkings")}</dt>
-                          <dd data-summary-month-thinkings>
-                            {initialMonth.thinkings}
-                          </dd>
-                        </div>
-                      </dl>
-                    </section>
-                    <section class="timeline-year-summary__yearly">
-                      <p>{t(locale, "timeline.yearlyTotal")}</p>
-                      <dl>
-                        <div>
-                          <dt>{t(locale, "timeline.statsPosts")}</dt>
-                          <dd>{year.stats.posts}</dd>
-                        </div>
-                        <div>
-                          <dt>{t(locale, "timeline.statsMoments")}</dt>
-                          <dd>{year.stats.daily}</dd>
-                        </div>
-                        <div>
-                          <dt>{t(locale, "timeline.statsThinkings")}</dt>
-                          <dd>0</dd>
-                        </div>
-                      </dl>
-                    </section>
-                  </header>
-                );
-              })}
-            </div>
+            {firstTrackYear && firstTrackMonth && (
+              <header class="timeline-year-summary" data-year-summary>
+                <div
+                  class="timeline-year-summary__year-viewport"
+                  data-year-viewport
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  <span class="timeline-year-summary__year" data-year-value>
+                    {firstTrackYear.year}
+                  </span>
+                </div>
+                <div class="timeline-year-summary__rule" aria-hidden="true" />
+                <section class="timeline-year-summary__month">
+                  <p data-summary-month>
+                    {monthFullLabels[firstTrackMonth.month - 1]}
+                  </p>
+                  <dl>
+                    <div>
+                      <dt>{t(locale, "timeline.statsPosts")}</dt>
+                      <dd data-summary-month-posts>{firstTrackMonth.posts}</dd>
+                    </div>
+                    <div>
+                      <dt>{t(locale, "timeline.statsDaily")}</dt>
+                      <dd data-summary-month-daily>{firstTrackMonth.daily}</dd>
+                    </div>
+                    <div>
+                      <dt>{t(locale, "timeline.statsTotal")}</dt>
+                      <dd data-summary-month-total>{firstTrackMonth.total}</dd>
+                    </div>
+                  </dl>
+                </section>
+                <section class="timeline-year-summary__yearly">
+                  <p>{t(locale, "timeline.yearlyTotal")}</p>
+                  <dl>
+                    <div>
+                      <dt>{t(locale, "timeline.statsPosts")}</dt>
+                      <dd data-summary-year-posts>
+                        {firstTrackYear.stats.posts}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>{t(locale, "timeline.statsDaily")}</dt>
+                      <dd data-summary-year-daily>
+                        {firstTrackYear.stats.daily}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>{t(locale, "timeline.statsTotal")}</dt>
+                      <dd data-summary-year-total>
+                        {firstTrackYear.stats.total}
+                      </dd>
+                    </div>
+                  </dl>
+                </section>
+              </header>
+            )}
 
             <div
               class="timeline-track"
               data-timeline-track
-              data-first-event-x={firstEventX}
+              data-track-width={trackWidth}
               style={`--timeline-track-width: ${trackWidth}px;`}
             >
               <div class="timeline-track__line" aria-hidden="true" />
@@ -287,8 +359,11 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
                       data-month-year={year.year}
                       data-month-x={month.x}
                       data-month-posts={month.posts}
-                      data-month-moments={month.moments}
-                      data-month-thinkings={month.thinkings}
+                      data-month-daily={month.daily}
+                      data-month-total={month.total}
+                      data-year-posts={year.stats.posts}
+                      data-year-daily={year.stats.daily}
+                      data-year-total={year.stats.total}
                     >
                       <i />
                       <span>
@@ -302,39 +377,41 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
 
               <ol class="timeline-events">
                 {trackYears.flatMap((year) =>
-                  year.events.map(({ item, x, side, tilt }) => (
+                  year.events.map(({ item, x, side, y }) => (
                     <li
                       class={`timeline-event timeline-event--${side}`}
                       data-event-x={x}
+                      data-event-y={y}
                       data-event-side={side}
-                      style={`--event-x: ${x}px; --event-tilt: ${tilt}deg;`}
+                      style={`--event-x: ${x}px; --event-target-y: ${y}px;`}
                     >
-                      <span class="timeline-event__node" aria-hidden="true" />
-                      <span
-                        class="timeline-event__connector"
-                        aria-hidden="true"
-                      />
-                      <a class="timeline-event__card" href={item.href}>
-                        <span class="timeline-event__meta">
-                          <span>
-                            {item.kind === "post"
-                              ? t(locale, "timeline.post")
-                              : t(locale, "timeline.dailyOne")}
+                      <span class="timeline-event__anchor" aria-hidden="true">
+                        <span class="timeline-event__node" />
+                        <span class="timeline-event__connector" />
+                      </span>
+                      <div class="timeline-event__motion">
+                        <a class="timeline-event__card" href={item.href}>
+                          <span class="timeline-event__meta">
+                            <span>
+                              {item.kind === "post"
+                                ? t(locale, "timeline.post")
+                                : t(locale, "timeline.dailyOne")}
+                            </span>
+                            <time datetime={item.date.toISOString()}>
+                              {formatDate(item.date)}
+                            </time>
                           </span>
-                          <time datetime={item.date.toISOString()}>
-                            {formatDate(item.date)}
-                          </time>
-                        </span>
-                        <strong>{item.title}</strong>
-                        <span class="timeline-event__read">
-                          {t(locale, "timeline.open")}
-                          <Icon
-                            name="lucide:arrow-up-right"
-                            size="0.85rem"
-                            decorative
-                          />
-                        </span>
-                      </a>
+                          <strong>{item.title}</strong>
+                          <span class="timeline-event__read">
+                            {t(locale, "timeline.open")}
+                            <Icon
+                              name="lucide:arrow-up-right"
+                              size="0.85rem"
+                              decorative
+                            />
+                          </span>
+                        </a>
+                      </div>
                     </li>
                   )),
                 )}
@@ -411,12 +488,12 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
       "[data-timeline-track]",
     );
     const canvas = timelineRoot.querySelector<HTMLElement>(".timeline-canvas");
-    const yearRanges = [
-      ...timelineRoot.querySelectorAll<HTMLElement>("[data-track-year]"),
-    ];
-    const yearSummaries = [
-      ...timelineRoot.querySelectorAll<HTMLElement>("[data-year-summary]"),
-    ];
+    const yearSummary = timelineRoot.querySelector<HTMLElement>(
+      "[data-year-summary]",
+    );
+    const yearViewport = timelineRoot.querySelector<HTMLElement>(
+      "[data-year-viewport]",
+    );
     const monthMarkers = [
       ...timelineRoot.querySelectorAll<HTMLElement>("[data-track-month]"),
     ];
@@ -430,13 +507,75 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
       "[data-quality-state]",
     );
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const precisePointer = window.matchMedia(
-      "(hover: hover) and (pointer: fine)",
-    );
     const qualityStorageKey = "timeline-quality";
     let quality: "standard" | "hq" = "standard";
     let frame = 0;
-    let pointerFrame = 0;
+    let yearFrame = 0;
+    let yearTransitionToken = 0;
+    let visibleYear = yearViewport
+      ?.querySelector<HTMLElement>("[data-year-value]")
+      ?.textContent?.trim();
+
+    const createYearNode = (year: string) => {
+      const template =
+        yearViewport?.querySelector<HTMLElement>("[data-year-value]");
+      const node = template
+        ? (template.cloneNode(false) as HTMLElement)
+        : document.createElement("span");
+      node.classList.add("timeline-year-summary__year");
+      node.dataset.yearValue = "";
+      node.textContent = year;
+      return node;
+    };
+
+    const transitionYear = (nextYear: string) => {
+      if (!yearViewport || !nextYear || nextYear === visibleYear) return;
+
+      yearTransitionToken += 1;
+      const transitionToken = yearTransitionToken;
+      if (yearFrame) cancelAnimationFrame(yearFrame);
+
+      const outgoing = createYearNode(visibleYear ?? nextYear);
+      const incoming = createYearNode(nextYear);
+      yearViewport.replaceChildren(outgoing, incoming);
+      visibleYear = nextYear;
+
+      if (reducedMotion.matches) {
+        yearViewport.replaceChildren(incoming);
+        return;
+      }
+
+      outgoing.style.transform = "translate3d(0, 0, 0)";
+      outgoing.style.opacity = "1";
+      incoming.style.transform = "translate3d(0, 50px, 0)";
+      incoming.style.opacity = "0";
+
+      const duration = 600;
+      let startedAt = 0;
+      const animate = (now: number) => {
+        if (transitionToken !== yearTransitionToken) return;
+        if (!startedAt) startedAt = now;
+        const elapsed = Math.min(1, (now - startedAt) / duration);
+        const eased = 1 - (1 - elapsed) ** 3;
+
+        outgoing.style.transform = `translate3d(0, ${-50 * eased}px, 0)`;
+        outgoing.style.opacity = String(1 - eased);
+        incoming.style.transform = `translate3d(0, ${50 * (1 - eased)}px, 0)`;
+        incoming.style.opacity = String(eased);
+
+        if (elapsed < 1) {
+          yearFrame = requestAnimationFrame(animate);
+          return;
+        }
+
+        yearFrame = 0;
+        incoming.style.removeProperty("transform");
+        incoming.style.removeProperty("opacity");
+        yearViewport.replaceChildren(incoming);
+      };
+
+      yearFrame = requestAnimationFrame(animate);
+    };
 
     const syncQuality = (nextQuality: "standard" | "hq") => {
       quality = nextQuality;
@@ -463,6 +602,7 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
     qualityButton?.addEventListener("click", () => {
       const nextQuality = quality === "hq" ? "standard" : "hq";
       syncQuality(nextQuality);
+      updateTimeline();
       try {
         localStorage.setItem(qualityStorageKey, nextQuality);
       } catch {
@@ -476,111 +616,116 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
 
       const viewportWidth = canvas?.clientWidth ?? window.innerWidth;
       const viewportHeight = window.innerHeight;
+      const totalWidth = Number(track.dataset.trackWidth ?? 0);
       const rect = scrollArea.getBoundingClientRect();
-      const focusPoint = viewportWidth * 0.56;
-      const firstEventX = Number(track.dataset.firstEventX ?? 0);
-      const startOffset = focusPoint - firstEventX;
-      const endOffset = Math.max(0, track.scrollWidth - focusPoint);
-      const distance = Math.max(0, endOffset + startOffset);
       const travel = Math.max(1, scrollArea.offsetHeight - viewportHeight);
       const progress = Math.min(1, Math.max(0, -rect.top / travel));
-      const trackX = startOffset - progress * distance;
-      const focus = -trackX + focusPoint;
+      const timelineX = progress * totalWidth;
+      const trackX = viewportWidth / 2 - timelineX;
 
       track.style.transform = `translate3d(${trackX}px, 0, 0)`;
       timelineRoot.style.setProperty("--timeline-progress", String(progress));
 
-      let activeYear = yearRanges[0]?.dataset.trackYear;
-      for (const range of yearRanges) {
-        const start = Number(range.dataset.yearStart ?? 0);
-        const end = Number(range.dataset.yearEnd ?? 0);
-        if (focus >= start && focus < end) {
-          activeYear = range.dataset.trackYear;
-          break;
-        }
-        if (focus >= end) activeYear = range.dataset.trackYear;
-      }
+      const activeMonth =
+        monthMarkers.find(
+          (month) => Number(month.dataset.monthX ?? 0) >= timelineX,
+        ) ?? monthMarkers.at(-1);
+      const activeYear = activeMonth?.dataset.monthYear;
 
-      for (const summary of yearSummaries) {
-        if (summary.dataset.yearSummary === activeYear) {
-          summary.dataset.active = "";
-
-          const activeMonths = monthMarkers.filter(
-            (month) => month.dataset.monthYear === activeYear,
-          );
-          let activeMonth = activeMonths[0];
-          for (const month of activeMonths) {
-            if (focus >= Number(month.dataset.monthX ?? 0)) {
-              activeMonth = month;
-            } else {
-              break;
-            }
-          }
-
-          if (activeMonth) {
-            const monthNumber = Number(activeMonth.dataset.trackMonth ?? 1);
-            const monthName = summary.querySelector<HTMLElement>(
-              "[data-summary-month]",
-            );
-            const monthPosts = summary.querySelector<HTMLElement>(
-              "[data-summary-month-posts]",
-            );
-            const monthMoments = summary.querySelector<HTMLElement>(
-              "[data-summary-month-moments]",
-            );
-            const monthThinkings = summary.querySelector<HTMLElement>(
-              "[data-summary-month-thinkings]",
-            );
-            if (monthName)
-              monthName.textContent =
-                activeMonth.dataset.monthLabel ?? String(monthNumber);
-            if (monthPosts)
-              monthPosts.textContent = activeMonth.dataset.monthPosts ?? "0";
-            if (monthMoments)
-              monthMoments.textContent =
-                activeMonth.dataset.monthMoments ?? "0";
-            if (monthThinkings)
-              monthThinkings.textContent =
-                activeMonth.dataset.monthThinkings ?? "0";
-          }
-        } else {
-          delete summary.dataset.active;
-        }
+      if (yearSummary && activeMonth && activeYear) {
+        transitionYear(activeYear);
+        const monthNumber = Number(activeMonth.dataset.trackMonth ?? 1);
+        const monthName = yearSummary.querySelector<HTMLElement>(
+          "[data-summary-month]",
+        );
+        const monthPosts = yearSummary.querySelector<HTMLElement>(
+          "[data-summary-month-posts]",
+        );
+        const monthDaily = yearSummary.querySelector<HTMLElement>(
+          "[data-summary-month-daily]",
+        );
+        const monthTotal = yearSummary.querySelector<HTMLElement>(
+          "[data-summary-month-total]",
+        );
+        const yearPosts = yearSummary.querySelector<HTMLElement>(
+          "[data-summary-year-posts]",
+        );
+        const yearDaily = yearSummary.querySelector<HTMLElement>(
+          "[data-summary-year-daily]",
+        );
+        const yearTotal = yearSummary.querySelector<HTMLElement>(
+          "[data-summary-year-total]",
+        );
+        if (monthName)
+          monthName.textContent =
+            activeMonth.dataset.monthLabel ?? String(monthNumber);
+        if (monthPosts)
+          monthPosts.textContent = activeMonth.dataset.monthPosts ?? "0";
+        if (monthDaily)
+          monthDaily.textContent = activeMonth.dataset.monthDaily ?? "0";
+        if (monthTotal)
+          monthTotal.textContent = activeMonth.dataset.monthTotal ?? "0";
+        if (yearPosts)
+          yearPosts.textContent = activeMonth.dataset.yearPosts ?? "0";
+        if (yearDaily)
+          yearDaily.textContent = activeMonth.dataset.yearDaily ?? "0";
+        if (yearTotal)
+          yearTotal.textContent = activeMonth.dataset.yearTotal ?? "0";
       }
 
       for (const eventNode of eventNodes) {
-        const eventX = Number(eventNode.dataset.eventX ?? 0) + trackX;
-        const normalized = Math.min(
-          1.25,
-          Math.max(-1.25, (eventX - focusPoint) / (viewportWidth * 0.5)),
-        );
-        const distanceFromCenter = Math.min(1, Math.abs(normalized));
-        const direction = eventNode.dataset.eventSide === "above" ? -1 : 1;
-        eventNode.style.setProperty("--event-drift-x", `${normalized * 72}px`);
+        const targetX = Number(eventNode.dataset.eventX ?? 0);
+        const targetY = Number(eventNode.dataset.eventY ?? 0);
+        const delta = targetX - timelineX;
+        const distance = Math.abs(delta);
+        const entry = Math.max(0, Math.min(1, 1 - delta / 1000));
+        const passed = delta < 0;
+        const opacity = passed
+          ? Math.max(0, 1 - Math.max(0, distance - viewportWidth * 0.35) / 150)
+          : Math.max(0.4, 1 - distance / 1500);
+        const liveY = passed ? targetY : targetY * entry;
+        const enterX = passed ? 0 : (1 - entry) * 400;
+        const enterY = passed ? 0 : (1 - entry) * 300;
+        const scale = 0.9 + opacity * 0.1;
+        const rotate = passed ? 0 : (1 - entry) * 10;
+        const rotateY =
+          quality === "hq" ? Math.max(-5, Math.min(5, delta * 0.004)) : 0;
+
+        eventNode.style.setProperty("--event-opacity", String(opacity));
         eventNode.style.setProperty(
-          "--event-drift-y",
-          `${direction * distanceFromCenter * 22}px`,
+          "--event-z",
+          String(Math.round(100 - distance / 20)),
+        );
+        eventNode.style.setProperty("--event-entry", String(entry));
+        eventNode.style.setProperty("--event-enter-x", `${enterX}px`);
+        eventNode.style.setProperty("--event-enter-y", `${enterY}px`);
+        eventNode.style.setProperty("--event-live-y", `${liveY}px`);
+        eventNode.style.setProperty(
+          "--event-line-y",
+          `${Math.min(0, liveY)}px`,
         );
         eventNode.style.setProperty(
-          "--event-drift-rotate",
-          `${normalized * 2.8}deg`,
+          "--event-line-height",
+          `${Math.abs(liveY)}px`,
+        );
+        eventNode.style.setProperty("--event-scale", String(scale));
+        eventNode.style.setProperty("--event-rotate", `${rotate}deg`);
+        eventNode.style.setProperty("--event-rotate-y", `${rotateY}deg`);
+        eventNode.style.setProperty(
+          "--event-blur",
+          quality === "hq" ? `${(1 - opacity) * 4}px` : "0px",
         );
         eventNode.style.setProperty(
-          "--event-drift-scale",
-          String(1 - distanceFromCenter * 0.09),
+          "--event-grayscale",
+          quality === "hq" ? String((1 - opacity) * 0.5) : "0",
         );
       }
     };
 
     const syncTravel = () => {
       if (!scrollArea || !track || reducedMotion.matches) return;
-      const viewportWidth = canvas?.clientWidth ?? window.innerWidth;
-      const focusPoint = viewportWidth * 0.56;
-      const firstEventX = Number(track.dataset.firstEventX ?? 0);
-      const startOffset = focusPoint - firstEventX;
-      const endOffset = Math.max(0, track.scrollWidth - focusPoint);
-      const distance = Math.max(0, endOffset + startOffset);
-      scrollArea.style.height = `${window.innerHeight + distance * 1.5}px`;
+      const totalWidth = Number(track.dataset.trackWidth ?? 0);
+      scrollArea.style.height = `${window.innerHeight + totalWidth * 1.5}px`;
       updateTimeline();
     };
 
@@ -593,31 +738,162 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
     window.addEventListener("scroll", requestUpdate, { passive: true });
     window.addEventListener("resize", syncTravel, { passive: true });
 
-    timelineRoot.addEventListener("pointermove", (event) => {
-      if (
-        quality !== "hq" ||
-        reducedMotion.matches ||
-        !precisePointer.matches ||
-        pointerFrame
-      ) {
-        return;
-      }
+    if (canvas && scrollArea && !reducedMotion.matches) {
+      const scrollFactor = 1.5;
+      const clampScroll = (value: number) => {
+        const start = scrollArea.offsetTop;
+        const end = start + Math.max(0, scrollArea.offsetHeight - innerHeight);
+        return Math.min(end, Math.max(start, value));
+      };
+      const isActive = () => {
+        const start = scrollArea.offsetTop;
+        const end = start + Math.max(0, scrollArea.offsetHeight - innerHeight);
+        return scrollY >= start && scrollY <= end;
+      };
+      const canConsume = (delta: number) => {
+        const start = scrollArea.offsetTop;
+        const end = start + Math.max(0, scrollArea.offsetHeight - innerHeight);
+        return delta > 0 ? scrollY < end - 0.5 : scrollY > start + 0.5;
+      };
+      const consumeHorizontalDelta = (delta: number) => {
+        if (delta === 0) return;
+        scrollTo({
+          top: clampScroll(scrollY + delta * scrollFactor),
+          behavior: "auto",
+        });
+      };
 
-      pointerFrame = window.requestAnimationFrame(() => {
-        pointerFrame = 0;
-        const x = event.clientX / window.innerWidth - 0.5;
-        const y = event.clientY / window.innerHeight - 0.5;
-        timelineRoot.style.setProperty("--timeline-pointer-x", String(x));
-        timelineRoot.style.setProperty("--timeline-pointer-y", String(y));
+      let wheelAxis: "x" | "y" | null = null;
+      let wheelX = 0;
+      let wheelY = 0;
+      let lastWheel = 0;
+      let pendingWheel = 0;
+      let wheelFrame = 0;
+
+      canvas.addEventListener(
+        "wheel",
+        (event) => {
+          if (!isActive()) return;
+          const now = performance.now();
+          if (now - lastWheel > 120) {
+            wheelAxis = null;
+            wheelX = 0;
+            wheelY = 0;
+          }
+          lastWheel = now;
+
+          const unit =
+            event.deltaMode === WheelEvent.DOM_DELTA_LINE
+              ? 16
+              : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+                ? innerHeight
+                : 1;
+          const rawX = event.deltaX * unit;
+          const deltaX =
+            event.shiftKey && Math.abs(rawX) < 0.5 ? event.deltaY * unit : rawX;
+          const deltaY = event.shiftKey ? 0 : event.deltaY * unit;
+          wheelX += deltaX;
+          wheelY += deltaY;
+
+          if (!wheelAxis) {
+            if (Math.max(Math.abs(wheelX), Math.abs(wheelY)) < 6) return;
+            wheelAxis =
+              event.shiftKey || Math.abs(wheelX) >= Math.abs(wheelY) * 0.8
+                ? "x"
+                : "y";
+          }
+          if (wheelAxis !== "x" || deltaX === 0 || !canConsume(deltaX)) {
+            return;
+          }
+
+          event.preventDefault();
+          pendingWheel += deltaX;
+          if (!wheelFrame) {
+            wheelFrame = requestAnimationFrame(() => {
+              wheelFrame = 0;
+              const delta = pendingWheel;
+              pendingWheel = 0;
+              consumeHorizontalDelta(delta);
+            });
+          }
+        },
+        { passive: false },
+      );
+
+      let pointerId: number | null = null;
+      let pointerStartX = 0;
+      let pointerStartY = 0;
+      let pointerLastX = 0;
+      let pointerAxis: "x" | "y" | null = null;
+      let pointerTravel = 0;
+      let suppressClickUntil = 0;
+
+      canvas.addEventListener("pointerdown", (event) => {
+        if (
+          !isActive() ||
+          !event.isPrimary ||
+          (event.pointerType !== "touch" && event.pointerType !== "pen")
+        ) {
+          return;
+        }
+        pointerId = event.pointerId;
+        pointerStartX = pointerLastX = event.clientX;
+        pointerStartY = event.clientY;
+        pointerAxis = null;
+        pointerTravel = 0;
+        canvas.setPointerCapture(event.pointerId);
       });
-    });
+
+      canvas.addEventListener(
+        "pointermove",
+        (event) => {
+          if (pointerId !== event.pointerId || !isActive()) return;
+          const totalX = event.clientX - pointerStartX;
+          const totalY = event.clientY - pointerStartY;
+          if (!pointerAxis) {
+            if (Math.abs(totalX) < 8 && Math.abs(totalY) < 8) return;
+            pointerAxis = Math.abs(totalX) > Math.abs(totalY) ? "x" : "y";
+          }
+          if (pointerAxis !== "x") return;
+          const delta = pointerLastX - event.clientX;
+          pointerLastX = event.clientX;
+          pointerTravel += Math.abs(delta);
+          if (delta !== 0 && canConsume(delta)) {
+            event.preventDefault();
+            consumeHorizontalDelta(delta);
+          }
+        },
+        { passive: false },
+      );
+
+      const finishPointer = (event: PointerEvent) => {
+        if (pointerId !== event.pointerId) return;
+        if (pointerTravel > 6) suppressClickUntil = Date.now() + 180;
+        if (canvas.hasPointerCapture(pointerId)) {
+          canvas.releasePointerCapture(pointerId);
+        }
+        pointerId = null;
+        pointerAxis = null;
+      };
+      canvas.addEventListener("pointerup", finishPointer);
+      canvas.addEventListener("pointercancel", finishPointer);
+      window.addEventListener(
+        "click",
+        (event) => {
+          if (Date.now() <= suppressClickUntil) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+          }
+        },
+        true,
+      );
+    }
   }
 </script>
 
 <style>
   .timeline {
-    --timeline-pointer-x: 0;
-    --timeline-pointer-y: 0;
     --timeline-progress: 0;
     position: relative;
     isolation: isolate;
@@ -656,8 +932,8 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
     opacity: 0;
     pointer-events: none;
     transform: translate3d(
-      calc(var(--timeline-pointer-x) * var(--space-sm)),
-      calc(var(--timeline-pointer-y) * var(--space-sm)),
+      calc(var(--timeline-progress) * 12.5rem - 6.25rem),
+      calc(var(--timeline-progress) * 5rem - 2.5rem),
       0
     );
     transition: opacity 300ms ease;
@@ -782,7 +1058,7 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
 
   .timeline-track__line {
     position: absolute;
-    top: 52%;
+    top: 50%;
     right: 0;
     left: 0;
     height: 1px;
@@ -791,7 +1067,7 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
 
   .timeline-year-range {
     position: absolute;
-    top: calc(52% - var(--spacing-1));
+    top: calc(50% - var(--spacing-1));
     left: var(--year-start);
     width: var(--year-width);
     height: var(--spacing-2);
@@ -807,7 +1083,7 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
 
   .timeline-months li {
     position: absolute;
-    top: 52%;
+    top: 50%;
     left: var(--month-x);
     font-family: var(--font-mono);
     font-size: var(--text-xs);
@@ -852,22 +1128,44 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
   }
 
   .timeline-event {
-    --event-drift-x: 0px;
-    --event-drift-y: 0px;
-    --event-drift-rotate: 0deg;
-    --event-drift-scale: 1;
+    --event-opacity: 1;
+    --event-z: 1;
+    --event-entry: 1;
+    --event-enter-x: 0px;
+    --event-enter-y: 0px;
+    --event-live-y: var(--event-target-y);
+    --event-line-y: min(0px, var(--event-target-y));
+    --event-line-height: 4.6875rem;
+    --event-scale: 1;
+    --event-rotate: 0deg;
+    --event-rotate-y: 0deg;
+    --event-blur: 0px;
+    --event-grayscale: 0;
     position: absolute;
-    top: 52%;
+    z-index: var(--event-z);
+    top: 50%;
     left: var(--event-x);
+    width: 15rem;
+    height: 7.5rem;
+    opacity: var(--event-opacity);
+    transform: translate(-50%, -50%);
+    will-change: opacity;
+  }
+
+  .timeline-event__anchor {
+    position: absolute;
+    top: 50%;
+    left: 50%;
     width: 0;
     height: 0;
+    transform: translateX(var(--event-enter-x));
   }
 
   .timeline-event__node {
     position: absolute;
     z-index: 3;
-    top: calc(var(--spacing-2) / -2);
-    left: calc(var(--spacing-2) / -2);
+    top: 0;
+    left: 0;
     width: var(--spacing-2);
     height: var(--spacing-2);
     border: 2px solid var(--color-bg-primary);
@@ -875,54 +1173,50 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
     background: var(--brand-logo-pink);
     box-shadow: 0 0 0 var(--spacing-1)
       color-mix(in srgb, var(--brand-logo-pink) 16%, transparent);
+    transform: translate(-50%, -50%) scale(var(--event-entry));
   }
 
   .timeline-event__connector {
     position: absolute;
-    left: 0;
+    top: var(--event-line-y);
+    left: -0.5px;
     width: 1px;
-    height: 7.5rem;
+    height: var(--event-line-height);
     background: var(--color-border);
   }
 
-  .timeline-event--above .timeline-event__connector {
-    bottom: 0;
-  }
-
-  .timeline-event--below .timeline-event__connector {
-    top: 0;
+  .timeline-event__motion {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    filter: blur(var(--event-blur)) grayscale(var(--event-grayscale));
+    transform: translate3d(
+        var(--event-enter-x),
+        calc(var(--event-enter-y) + var(--event-live-y)),
+        0
+      )
+      scale(var(--event-scale)) rotate(var(--event-rotate));
+    will-change: transform, filter;
   }
 
   .timeline-event__card {
-    position: absolute;
-    left: 0;
+    position: relative;
     display: grid;
     gap: var(--space-sm);
-    width: 15rem;
-    height: 7.5rem;
+    width: 100%;
+    height: 100%;
     padding: var(--space-md);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xs);
     background: color-mix(in srgb, var(--color-bg-primary) 94%, transparent);
     color: var(--color-text-primary);
     box-shadow: var(--shadow-sm);
-    transform: translateX(-50%)
-      translate3d(var(--event-drift-x), var(--event-drift-y), 0)
-      rotate(calc(var(--event-tilt) + var(--event-drift-rotate)))
-      scale(var(--event-drift-scale));
+    transform: none;
     transition:
       border-color 180ms ease,
       box-shadow 180ms ease,
-      transform 700ms cubic-bezier(0, 0, 0.2, 1);
-    will-change: transform;
-  }
-
-  .timeline-event--above .timeline-event__card {
-    bottom: 7.5rem;
-  }
-
-  .timeline-event--below .timeline-event__card {
-    top: 7.5rem;
+      transform 250ms cubic-bezier(0, 0, 0.2, 1);
   }
 
   .timeline-event__card:hover,
@@ -934,8 +1228,19 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
       var(--color-border)
     );
     box-shadow: var(--shadow-lg);
-    transform: translateX(-50%) rotate(0deg)
-      translateY(calc(var(--spacing-1) * -1));
+    transform: scale(1.02);
+  }
+
+  .timeline[data-quality="hq"] .timeline-event__motion {
+    box-shadow: var(--shadow-md);
+    transform: perspective(50rem)
+      translate3d(
+        var(--event-enter-x),
+        calc(var(--event-enter-y) + var(--event-live-y)),
+        0
+      )
+      scale(var(--event-scale)) rotate(var(--event-rotate))
+      rotateY(var(--event-rotate-y));
   }
 
   .timeline[data-quality="hq"] .timeline-event__card {
@@ -998,26 +1303,25 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
     right: var(--space-2xl);
     width: min(19rem, 32vw);
     text-align: right;
-    opacity: 0;
     pointer-events: none;
-    transform: translateY(calc(var(--space-md) * -1));
-    transition:
-      opacity 180ms ease,
-      transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .timeline-year-summary[data-active] {
-    opacity: 1;
-    transform: none;
+  .timeline-year-summary__year-viewport {
+    position: relative;
+    height: clamp(3.5rem, 6vw, 6rem);
+    overflow: hidden;
   }
 
-  .timeline-year-summary h2 {
-    margin: 0;
+  .timeline-year-summary__year {
+    position: absolute;
+    top: 0;
+    right: var(--spacing-1);
     font-family: var(--font-heading);
     font-size: clamp(4rem, 7vw, 7rem);
     font-weight: var(--font-weight-medium);
     letter-spacing: var(--tracking-tighter);
     line-height: 0.86;
+    will-change: transform, opacity;
   }
 
   .timeline-year-summary__rule {
@@ -1093,32 +1397,21 @@ const firstEventX = trackYears.flatMap((year) => year.events)[0]?.x ?? 0;
       width: 13rem;
     }
 
-    .timeline-year-summary h2 {
+    .timeline-year-summary__year {
       font-size: var(--text-5xl);
     }
 
-    .timeline-track__line,
-    .timeline-months li,
-    .timeline-event {
-      top: 56%;
+    .timeline-year-summary__year-viewport {
+      height: var(--text-5xl);
     }
 
     .timeline-event__card {
-      width: 13rem;
-      height: 7rem;
       padding: var(--space-sm);
     }
 
-    .timeline-event--above .timeline-event__card {
-      bottom: 6.5rem;
-    }
-
-    .timeline-event--below .timeline-event__card {
-      top: 6.5rem;
-    }
-
-    .timeline-event__connector {
-      height: 6.5rem;
+    .timeline-event {
+      width: 13rem;
+      height: 7rem;
     }
   }
 

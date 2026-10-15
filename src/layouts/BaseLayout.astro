@@ -10,6 +10,25 @@ import "../styles/global.css";
 // Preload the primary heading + body fonts so they are ready before first paint.
 import anthropicSans from "../assets/fonts/anthropic/AnthropicSans-Text-Regular-Static.otf?url";
 import anthropicSerif from "../assets/fonts/anthropic/AnthropicSerif-Text-Medium-Static.otf?url";
+import notoSans400Common1 from "@fontsource/noto-sans-sc/files/noto-sans-sc-117-400-normal.woff2?url";
+import notoSans400Common2 from "@fontsource/noto-sans-sc/files/noto-sans-sc-118-400-normal.woff2?url";
+import notoSans400Common3 from "@fontsource/noto-sans-sc/files/noto-sans-sc-119-400-normal.woff2?url";
+import notoSerif500Common1 from "@fontsource/noto-serif-sc/files/noto-serif-sc-117-500-normal.woff2?url";
+import notoSerif500Common2 from "@fontsource/noto-serif-sc/files/noto-serif-sc-118-500-normal.woff2?url";
+import notoSerif500Common3 from "@fontsource/noto-serif-sc/files/noto-serif-sc-119-500-normal.woff2?url";
+import notoSerif700Archive1 from "@fontsource/noto-serif-sc/files/noto-serif-sc-113-700-normal.woff2?url";
+import notoSerif700Archive2 from "@fontsource/noto-serif-sc/files/noto-serif-sc-114-700-normal.woff2?url";
+import notoSerif700Common1 from "@fontsource/noto-serif-sc/files/noto-serif-sc-117-700-normal.woff2?url";
+import notoSerif700Common2 from "@fontsource/noto-serif-sc/files/noto-serif-sc-118-700-normal.woff2?url";
+
+const primaryChineseFonts = [
+  notoSans400Common1,
+  notoSans400Common2,
+  notoSans400Common3,
+  notoSerif500Common1,
+  notoSerif500Common2,
+  notoSerif500Common3,
+];
 
 export interface Props {
   title: string;
@@ -25,6 +44,7 @@ export interface Props {
   preloadPrimaryFonts?: boolean;
   colorPreview?: boolean;
   deferPageResources?: boolean;
+  pageId?: string;
 }
 
 // For i18n routing, prefer path from Astro.currentRoute
@@ -46,6 +66,7 @@ const {
   preloadPrimaryFonts = true,
   colorPreview = false,
   deferPageResources = false,
+  pageId,
 } = restProps;
 const homeEntranceSessionKey = "hero-ascii-ripple:v3";
 
@@ -54,19 +75,50 @@ function defaultOgImage(routePath: string) {
   if (routePath === "/posts") return `/og/blog-list/${locale}`;
   if (routePath.startsWith("/posts/"))
     return `/og/blog/${locale}/${routePath.replace(/^\/posts\//, "")}`;
-  if (routePath === "/services") return `/og/services-list/${locale}`;
-  if (routePath.startsWith("/services/"))
-    return `/og/service/${locale}/${routePath.replace(/^\/services\//, "")}`;
   return `/og/page/${locale}${routePath}`;
 }
 ---
 
 <!doctype html>
-<html lang={locale} data-color-preview={colorPreview ? "true" : undefined}>
+<html
+  lang={locale}
+  data-color-preview={colorPreview ? "true" : undefined}
+  data-page={pageId}
+>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <style is:inline>
+      html[data-font-gate] body {
+        transition: opacity 150ms ease-out;
+      }
+
+      html[data-font-gate="pending"] body {
+        opacity: 0;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html[data-font-gate] body {
+          transition: none;
+        }
+      }
+    </style>
+    <script
+      is:inline
+      define:vars={{
+        gatePrimaryFonts: preloadPrimaryFonts && !deferPageResources,
+      }}
+    >
+      if (gatePrimaryFonts) {
+        document.documentElement.dataset.fontGate = "pending";
+        // Never leave the page hidden if a font request or script fails.
+        window.setTimeout(() => {
+          document.documentElement.dataset.fontGate = "ready";
+        }, 4000);
+      }
+    </script>
 
     {
       preloadPrimaryFonts && !deferPageResources && (
@@ -85,6 +137,25 @@ function defaultOgImage(routePath: string) {
             type="font/otf"
             crossorigin="anonymous"
           />
+          {[
+            ...primaryChineseFonts,
+            ...(path === "/posts"
+              ? [
+                  notoSerif700Archive1,
+                  notoSerif700Archive2,
+                  notoSerif700Common1,
+                  notoSerif700Common2,
+                ]
+              : []),
+          ].map((href) => (
+            <link
+              rel="preload"
+              href={href}
+              as="font"
+              type="font/woff2"
+              crossorigin="anonymous"
+            />
+          ))}
         </>
       )
     }
@@ -254,8 +325,87 @@ function defaultOgImage(routePath: string) {
 
     {
       showFooter && (
-        <Footer currentLocale={locale} deferBrandLoading={deferPageResources} />
+        <Footer deferBrandLoading={deferPageResources} />
       )
     }
+
+    <script
+      is:inline
+      define:vars={{
+        gatePrimaryFonts: preloadPrimaryFonts && !deferPageResources,
+      }}
+    >
+      if (gatePrimaryFonts) {
+        (() => {
+          const root = document.documentElement;
+          if (!document.fonts) {
+            root.dataset.fontGate = "ready";
+            return;
+          }
+
+          const visibleFonts = new Map();
+          const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+          );
+          const range = document.createRange();
+          const inViewport = (rect) =>
+            rect.bottom > 0 &&
+            rect.top < window.innerHeight &&
+            rect.right > 0 &&
+            rect.left < window.innerWidth;
+
+          const addFont = (family, style, text) => {
+            const font = `${style.fontStyle} ${style.fontWeight} 16px "${family}"`;
+            visibleFonts.set(font, (visibleFonts.get(font) || "") + text);
+          };
+
+          while (walker.nextNode()) {
+            const node = walker.currentNode;
+            const element = node.parentElement;
+            const text = node.textContent?.trim();
+            if (
+              !element ||
+              !text ||
+              element.closest("script, style, noscript")
+            ) {
+              continue;
+            }
+
+            range.selectNodeContents(node);
+            if (!Array.from(range.getClientRects()).some(inViewport)) continue;
+
+            const style = window.getComputedStyle(element);
+            if (style.visibility !== "visible" || style.opacity === "0") {
+              continue;
+            }
+
+            if (/[\u2e80-\u9fff\u3000-\u303f\uff00-\uffef]/u.test(text)) {
+              if (style.fontFamily.includes("Noto Serif SC")) {
+                addFont("Noto Serif SC", style, text);
+              } else if (style.fontFamily.includes("Noto Sans SC")) {
+                addFont("Noto Sans SC", style, text);
+              }
+            }
+
+            if (style.fontFamily.startsWith('"Anthropic Serif"')) {
+              addFont("Anthropic Serif", style, text);
+            } else if (style.fontFamily.startsWith('"Anthropic Sans"')) {
+              addFont("Anthropic Sans", style, text);
+            } else if (style.fontFamily.includes("JetBrains Mono Variable")) {
+              addFont("JetBrains Mono Variable", style, text);
+            }
+          }
+
+          Promise.allSettled(
+            Array.from(visibleFonts, ([font, text]) =>
+              document.fonts.load(font, text),
+            ),
+          ).then(() => {
+            root.dataset.fontGate = "ready";
+          });
+        })();
+      }
+    </script>
   </body>
 </html>

@@ -34,30 +34,3 @@ export const mainNav: NavItem[] = [
     ],
   },
 ] as const;
-
-/** Footer navigation grouped by section */
-export const footerNav = {
-  /** Product and service links */
-  product: [
-    { href: "/services", labelKey: "nav.services" },
-    { href: "/pricing", labelKey: "nav.pricing" },
-  ] as const,
-  /** Legal pages and terms */
-  legal: [
-    { href: "/privacy", labelKey: "footer.privacy" },
-    { href: "/terms", labelKey: "footer.terms" },
-  ] as const,
-  /** Social media and contact links */
-  social: [
-    {
-      href: "https://github.com/zHysie",
-      labelKey: "footer.github",
-    },
-    { href: "mailto:milzamsz@gmail.com", labelKey: "footer.email" },
-  ] as const,
-} as const;
-
-/** Helper function to get navigation items by section */
-export function getFooterNav(section: keyof typeof footerNav): NavItem[] {
-  return footerNav[section] as unknown as NavItem[];
-}

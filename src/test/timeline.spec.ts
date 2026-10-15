@@ -10,14 +10,68 @@ test.describe("immersive timeline", () => {
       page.getByRole("heading", { name: "时光", level: 1 }),
     ).toHaveCount(1);
     await expect(page.locator(".timeline-event__card").first()).toBeVisible();
-    const summary = page.locator(".timeline-year-summary[data-active]");
+    const summary = page.locator(".timeline-year-summary");
     await expect(summary.locator("[data-summary-month]")).toHaveText("MARCH");
     await expect(summary).toContainText("POSTS");
-    await expect(summary).toContainText("MOMENTS");
-    await expect(summary).toContainText("THINKINGS");
+    await expect(summary).toContainText("DAILY");
+    await expect(summary).toContainText("TOTAL");
     await expect(summary).toContainText("YEARLY TOTAL");
+    await expect(summary.locator("[data-summary-month-total]")).toHaveText("1");
+    await expect(summary.locator("[data-summary-year-total]")).toHaveText("2");
     await expect(page.locator(".header")).toHaveCount(0);
     await expect(page.locator("footer")).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () => getComputedStyle(document.documentElement).scrollbarWidth,
+      ),
+    ).toBe("none");
+  });
+
+  test("flies only the year number when crossing a year boundary", async ({
+    page,
+  }) => {
+    await page.goto("/timeline", { waitUntil: "domcontentloaded" });
+
+    const initialYear = await page
+      .locator("[data-year-value]")
+      .first()
+      .innerText();
+    const nextYear = await page
+      .locator("[data-track-month]")
+      .evaluateAll((months, currentYear) => {
+        const next = months.find(
+          (month) => (month as HTMLElement).dataset.monthYear !== currentYear,
+        ) as HTMLElement | undefined;
+        return next
+          ? {
+              year: next.dataset.monthYear,
+              x: Number(next.dataset.monthX),
+            }
+          : null;
+      }, initialYear);
+
+    expect(nextYear).not.toBeNull();
+    await page.evaluate(
+      (targetX) => window.scrollTo(0, targetX * 1.5 + 1),
+      nextYear!.x,
+    );
+    await page.waitForFunction(
+      () => document.querySelectorAll("[data-year-value]").length === 2,
+    );
+
+    const flyingYears = page.locator("[data-year-value]");
+    await expect(flyingYears).toHaveCount(2);
+    await expect(flyingYears.last()).toHaveText(nextYear!.year!);
+    await expect(flyingYears.first()).toHaveCSS("position", "absolute");
+    await expect(flyingYears.last()).toHaveCSS("position", "absolute");
+    const transforms = await flyingYears.evaluateAll((years) =>
+      years.map((year) => (year as HTMLElement).style.transform),
+    );
+    expect(transforms[0]).toContain("translate3d(0");
+    expect(transforms[1]).toContain("translate3d(0");
+
+    await expect(flyingYears).toHaveCount(1, { timeout: 1_000 });
+    await expect(flyingYears).toHaveText(nextYear!.year!);
   });
 
   test("opens search and switches theme from the floating tools", async ({
@@ -72,6 +126,31 @@ test.describe("immersive timeline", () => {
     expect(
       await canvas.evaluate((element) => element.getBoundingClientRect().y),
     ).toBe(0);
+  });
+
+  test("matches the reference scroll and card-entry formulas", async ({
+    page,
+  }) => {
+    await page.goto("/timeline", { waitUntil: "domcontentloaded" });
+
+    const track = page.locator("[data-timeline-track]");
+    const firstEvent = page.locator(".timeline-event").first();
+    const startX = await track.evaluate(
+      (element) => element.getBoundingClientRect().x,
+    );
+
+    await page.evaluate(() => window.scrollTo(0, 600));
+    await expect
+      .poll(() =>
+        track.evaluate((element) => element.getBoundingClientRect().x),
+      )
+      .toBeCloseTo(startX - 400, 0);
+    await expect
+      .poll(() => firstEvent.evaluate((element) => element.style.cssText))
+      .toContain("--event-enter-x: 0px");
+    await expect
+      .poll(() => firstEvent.evaluate((element) => element.style.cssText))
+      .toContain("--event-live-y: -75px");
   });
 
   test("persists HQ mode and supports keyboard activation", async ({

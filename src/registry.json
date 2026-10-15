@@ -271,13 +271,6 @@
       "i18nAware": true
     },
     {
-      "name": "ServiceCard",
-      "tier": "component",
-      "path": "src/components/services/ServiceCard.astro",
-      "props": ["service", "locale", "headingLevel"],
-      "i18nAware": true
-    },
-    {
       "name": "AbstractSpecimen",
       "tier": "component",
       "path": "src/components/ui/visual/AbstractSpecimen/AbstractSpecimen.astro",
@@ -392,13 +385,6 @@
       "i18nAware": true
     },
     {
-      "name": "Pricing",
-      "tier": "section",
-      "path": "src/components/sections/Pricing.astro",
-      "props": ["title", "description", "plans"],
-      "i18nAware": true
-    },
-    {
       "name": "Team",
       "tier": "section",
       "path": "src/components/sections/Team.astro",
@@ -458,16 +444,6 @@
     { "name": "About", "path": "src/pages/about.astro", "locales": ["zh-CN"] },
     { "name": "Lab", "path": "src/pages/lab.astro", "locales": ["zh-CN"] },
     { "name": "Uses", "path": "src/pages/uses.astro", "locales": ["zh-CN"] },
-    {
-      "name": "Services",
-      "path": "src/pages/services.astro",
-      "locales": ["zh-CN"]
-    },
-    {
-      "name": "Pricing",
-      "path": "src/pages/pricing.astro",
-      "locales": ["zh-CN"]
-    },
     {
       "name": "Contact",
       "path": "src/pages/contact.astro",

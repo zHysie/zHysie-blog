@@ -30,6 +30,7 @@ export interface Props {
   scrollLabel?: string;
   footerText?: string;
   animatedHeadlineText?: string;
+  mobileHeadlineBreakAfter?: string;
   typewriterLoop?: boolean;
   scrollZoom?: boolean;
   asciiBackground?: ImageMetadata;
@@ -54,6 +55,20 @@ const hasAnimatedHeadline = Boolean(
 );
 const headlinePrefix = hasAnimatedHeadline
   ? headline.slice(0, -animatedHeadlineText!.length).trimEnd()
+  : "";
+const mobileHeadlineBreakIndex =
+  hasAnimatedHeadline && props.mobileHeadlineBreakAfter
+    ? animatedHeadlineText!.indexOf(props.mobileHeadlineBreakAfter) +
+      props.mobileHeadlineBreakAfter.length
+    : 0;
+const hasMobileHeadlineBreak =
+  mobileHeadlineBreakIndex > 0 &&
+  mobileHeadlineBreakIndex < (animatedHeadlineText?.length ?? 0);
+const animatedHeadlineFirstLine = hasMobileHeadlineBreak
+  ? animatedHeadlineText!.slice(0, mobileHeadlineBreakIndex)
+  : animatedHeadlineText;
+const animatedHeadlineSecondLine = hasMobileHeadlineBreak
+  ? animatedHeadlineText!.slice(mobileHeadlineBreakIndex)
   : "";
 ---
 
@@ -132,13 +147,28 @@ const headlinePrefix = hasAnimatedHeadline
                   class="hero__headline-typed"
                   aria-label={animatedHeadlineText}
                   data-hero-typewriter={animatedHeadlineText}
+                  data-typewriter-mobile-break-index={
+                    hasMobileHeadlineBreak
+                      ? mobileHeadlineBreakIndex
+                      : undefined
+                  }
                   data-typewriter-loop={props.typewriterLoop ? "" : undefined}
                 >
                   <span class="hero__headline-sizer" aria-hidden="true">
-                    {animatedHeadlineText}
+                    {animatedHeadlineFirstLine}
+                    {hasMobileHeadlineBreak && (
+                      <br class="hero__headline-mobile-break" />
+                    )}
+                    {animatedHeadlineSecondLine}
                   </span>
                   <span class="hero__headline-live" aria-hidden="true">
-                    <span data-typewriter-output>{animatedHeadlineText}</span>
+                    <span data-typewriter-output>
+                      {animatedHeadlineFirstLine}
+                      {hasMobileHeadlineBreak && (
+                        <br class="hero__headline-mobile-break" />
+                      )}
+                      {animatedHeadlineSecondLine}
+                    </span>
                     <span class="hero__headline-caret">|</span>
                   </span>
                 </span>
@@ -519,6 +549,16 @@ const headlinePrefix = hasAnimatedHeadline
     animation: hero-typewriter-caret 0.75s step-end infinite;
   }
 
+  .hero__headline-typed[data-typewriter-state="complete"]
+    .hero__headline-caret {
+    visibility: hidden;
+    animation: none;
+  }
+
+  :global(.hero__headline-mobile-break) {
+    display: none;
+  }
+
   .hero__subheadline {
     margin: 0;
     max-width: 38rem;
@@ -644,6 +684,10 @@ const headlinePrefix = hasAnimatedHeadline
       white-space: normal;
     }
 
+    :global(.hero__headline-mobile-break) {
+      display: block;
+    }
+
     .hero__ascii {
       opacity: 34%;
     }
@@ -665,10 +709,6 @@ const headlinePrefix = hasAnimatedHeadline
       transition: none;
     }
 
-    .hero__headline-caret {
-      opacity: 1;
-    }
-
     .hero-wrap[data-ascii-entrance-state] .hero__content,
     .hero-wrap[data-ascii-entrance-state] .hero__footer {
       opacity: 1;
@@ -682,9 +722,10 @@ const headlinePrefix = hasAnimatedHeadline
 </style>
 
 <script>
-  const reduceMotion = window.matchMedia(
+  const motionPreference = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
-  ).matches;
+  );
+  const reduceMotion = motionPreference.matches;
 
   const ASCII_ENTRANCE_SESSION_KEY = "hero-ascii-ripple:v3";
 
@@ -727,12 +768,43 @@ const headlinePrefix = hasAnimatedHeadline
     if (!(output instanceof HTMLElement) || !text) return;
 
     element.dataset.typewriterReady = "true";
+    const characters = Array.from(text);
+    const mobileBreakIndex = Number(
+      element.dataset.typewriterMobileBreakIndex ?? 0,
+    );
+    const mobileBreakCharacterIndex = Array.from(
+      text.slice(0, mobileBreakIndex),
+    ).length;
+    const renderText = (length: number) => {
+      const visibleCharacters = characters.slice(0, length);
+      if (
+        mobileBreakCharacterIndex <= 0 ||
+        mobileBreakCharacterIndex >= characters.length ||
+        length < mobileBreakCharacterIndex
+      ) {
+        output.textContent = visibleCharacters.join("");
+        return;
+      }
+
+      const mobileBreak = document.createElement("br");
+      mobileBreak.className = "hero__headline-mobile-break";
+      output.replaceChildren(
+        document.createTextNode(
+          visibleCharacters.slice(0, mobileBreakCharacterIndex).join(""),
+        ),
+        mobileBreak,
+        document.createTextNode(
+          visibleCharacters.slice(mobileBreakCharacterIndex).join(""),
+        ),
+      );
+    };
+
     if (reduceMotion) {
-      output.textContent = text;
+      renderText(text.length);
+      element.dataset.typewriterState = "complete";
       return;
     }
 
-    const characters = Array.from(text);
     const shouldLoop = element.hasAttribute("data-typewriter-loop");
     const characterDelay = 150;
     const phrasePause = 1100;
@@ -741,7 +813,7 @@ const headlinePrefix = hasAnimatedHeadline
     const typeNextCharacter = () => {
       if (!element.isConnected) return;
       index += 1;
-      output.textContent = characters.slice(0, index).join("");
+      renderText(index);
       if (index < characters.length) {
         const currentCharacter = characters[index - 1];
         const nextDelay =
@@ -749,13 +821,16 @@ const headlinePrefix = hasAnimatedHeadline
         window.setTimeout(typeNextCharacter, nextDelay);
       } else if (shouldLoop) {
         window.setTimeout(startTypingCycle, 2500);
+      } else {
+        element.dataset.typewriterState = "complete";
       }
     };
 
     const startTypingCycle = () => {
       if (!element.isConnected) return;
       index = 0;
-      output.textContent = "";
+      delete element.dataset.typewriterState;
+      renderText(0);
       window.setTimeout(typeNextCharacter, 450);
     };
 
@@ -829,12 +904,18 @@ const headlinePrefix = hasAnimatedHeadline
   });
 
   const ASCII_CHARACTERS = " .,:;irsXA253hMHGS#9B&@";
+  const ASCII_MOTION_CHARACTERS = "abcdefghijklmnopqrstuvwxyz!@#$%&*";
   const ASCII_CELL_SIZE = 13;
   const ASCII_CONTRAST = 1.15;
   const ASCII_GRAYSCALE = 0.28;
   const ASCII_TINT_OPACITY = 0.38;
   const ASCII_FOREGROUND_MIX = 0.72;
+  const ASCII_BACKGROUND_ALPHA = 0.12;
+  const ASCII_BACKGROUND_FADE_START = 0.04;
+  const ASCII_BACKGROUND_FADE_RANGE = 0.16;
   const ASCII_ENTRANCE_FRAME_INTERVAL = 1000 / 30;
+  const ASCII_MOTION_FRAME_INTERVAL = 1000 / 12;
+  const ASCII_MOTION_CELLS_PER_FRAME = 0.06;
   const ASCII_ENTRANCE_RING_END = 1100;
   const ASCII_ENTRANCE_MORPH_START = 900;
   const ASCII_ENTRANCE_LANDSCAPE_START = 1150;
@@ -921,6 +1002,7 @@ const headlinePrefix = hasAnimatedHeadline
       green: number;
       blue: number;
       alpha: number;
+      glyph: string;
       glyphIndex: number;
       glyphDrift: number;
     }
@@ -946,6 +1028,88 @@ const headlinePrefix = hasAnimatedHeadline
     let entranceStartTime = 0;
     let entranceStarted = false;
     let entranceFallbackTimer = 0;
+    let glyphMotionTimer = 0;
+    let glyphMotionVisible = false;
+    let glyphMotionOrder: number[] = [];
+    let glyphMotionCursor = 0;
+    let displayedGlyphs: string[] = [];
+
+    const stopGlyphMotion = () => {
+      window.clearTimeout(glyphMotionTimer);
+      glyphMotionTimer = 0;
+    };
+
+    const shuffleGlyphMotionOrder = () => {
+      for (let index = glyphMotionOrder.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [glyphMotionOrder[index], glyphMotionOrder[swapIndex]] = [
+          glyphMotionOrder[swapIndex],
+          glyphMotionOrder[index],
+        ];
+      }
+      glyphMotionCursor = 0;
+    };
+
+    const canRunGlyphMotion = () =>
+      !motionPreference.matches &&
+      glyphMotionVisible &&
+      !document.hidden &&
+      !entranceStarted &&
+      root.dataset.asciiEntranceState !== "armed" &&
+      root.dataset.asciiEntranceState !== "playing" &&
+      cells.length > 0;
+
+    const drawNextGlyphs = () => {
+      glyphMotionTimer = 0;
+      if (!canRunGlyphMotion()) return;
+
+      const cellCount = Math.min(
+        450,
+        Math.max(1, Math.ceil(cells.length * ASCII_MOTION_CELLS_PER_FRAME)),
+      );
+      for (let updated = 0; updated < cellCount; updated += 1) {
+        if (glyphMotionCursor >= glyphMotionOrder.length) {
+          shuffleGlyphMotionOrder();
+        }
+        const cellIndex = glyphMotionOrder[glyphMotionCursor++];
+        const cell = cells[cellIndex];
+        const previousGlyph = displayedGlyphs[cellIndex];
+        let nextGlyph =
+          ASCII_MOTION_CHARACTERS[
+            Math.floor(Math.random() * ASCII_MOTION_CHARACTERS.length)
+          ];
+        if (nextGlyph === previousGlyph) {
+          nextGlyph =
+            ASCII_MOTION_CHARACTERS[
+              (ASCII_MOTION_CHARACTERS.indexOf(nextGlyph) + 1) %
+                ASCII_MOTION_CHARACTERS.length
+            ];
+        }
+
+        displayedGlyphs[cellIndex] = nextGlyph;
+        context.clearRect(
+          cell.x - ASCII_CELL_SIZE / 2,
+          cell.y - ASCII_CELL_SIZE / 2,
+          ASCII_CELL_SIZE,
+          ASCII_CELL_SIZE,
+        );
+        context.fillStyle = `rgb(${cell.red} ${cell.green} ${cell.blue} / ${cell.alpha})`;
+        context.fillText(nextGlyph, cell.x, cell.y);
+      }
+
+      glyphMotionTimer = window.setTimeout(
+        drawNextGlyphs,
+        ASCII_MOTION_FRAME_INTERVAL,
+      );
+    };
+
+    const startGlyphMotion = () => {
+      if (glyphMotionTimer || !canRunGlyphMotion()) return;
+      glyphMotionTimer = window.setTimeout(
+        drawNextGlyphs,
+        ASCII_MOTION_FRAME_INTERVAL,
+      );
+    };
 
     const readCanvasColor = (color: string) => {
       colorContext.clearRect(0, 0, 1, 1);
@@ -1076,16 +1240,14 @@ const headlinePrefix = hasAnimatedHeadline
 
       for (const cell of cells) {
         finalSceneContext.fillStyle = `rgb(${cell.red} ${cell.green} ${cell.blue} / ${cell.alpha})`;
-        finalSceneContext.fillText(
-          ASCII_CHARACTERS[cell.glyphIndex],
-          cell.x,
-          cell.y,
-        );
+        finalSceneContext.fillText(cell.glyph, cell.x, cell.y);
       }
     };
 
     const buildCells = () => {
       if (!imageDecoded || sourceImage.naturalWidth <= 0) return;
+
+      stopGlyphMotion();
 
       const bounds = element.getBoundingClientRect();
       displayWidth = Math.max(1, Math.round(bounds.width));
@@ -1146,13 +1308,26 @@ const headlinePrefix = hasAnimatedHeadline
             1,
             Math.max(0, (255 - adjustedLuminance) / 218),
           );
-          if (darkness < 0.035) continue;
+          const isBackground = darkness < 0.035;
+          const backgroundBlend = smoothStep(
+            clampUnit(
+              (darkness - ASCII_BACKGROUND_FADE_START) /
+                ASCII_BACKGROUND_FADE_RANGE,
+            ),
+          );
 
           red = mixChannel(red, foreground[0], ASCII_FOREGROUND_MIX);
           green = mixChannel(green, foreground[1], ASCII_FOREGROUND_MIX);
           blue = mixChannel(blue, foreground[2], ASCII_FOREGROUND_MIX);
 
           const glyphNoise = seededNoise(column, row, 5);
+          const glyphIndex = Math.max(
+            1,
+            Math.min(
+              ASCII_CHARACTERS.length - 1,
+              Math.floor(darkness * ASCII_CHARACTERS.length),
+            ),
+          );
 
           nextCells.push({
             x: (column + 0.5) * ASCII_CELL_SIZE,
@@ -1160,17 +1335,26 @@ const headlinePrefix = hasAnimatedHeadline
             red: clampChannel(red),
             green: clampChannel(green),
             blue: clampChannel(blue),
-            alpha: Math.min(0.92, 0.18 + darkness * 0.78),
-            glyphIndex: Math.min(
-              ASCII_CHARACTERS.length - 1,
-              Math.floor(darkness * ASCII_CHARACTERS.length),
+            alpha: interpolate(
+              ASCII_BACKGROUND_ALPHA,
+              Math.min(0.92, 0.18 + darkness * 0.78),
+              backgroundBlend,
             ),
+            glyph: isBackground
+              ? ASCII_MOTION_CHARACTERS[
+                  Math.floor(glyphNoise * ASCII_MOTION_CHARACTERS.length)
+                ]
+              : ASCII_CHARACTERS[glyphIndex],
+            glyphIndex,
             glyphDrift: Math.floor(glyphNoise * 5) - 2,
           });
         }
       }
 
       cells = nextCells;
+      displayedGlyphs = cells.map((cell) => cell.glyph);
+      glyphMotionOrder = cells.map((_, index) => index);
+      shuffleGlyphMotionOrder();
       element.dataset.asciiCellCount = String(cells.length);
       renderFinalScene(
         getComputedStyle(element).getPropertyValue("--font-mono").trim(),
@@ -1178,6 +1362,7 @@ const headlinePrefix = hasAnimatedHeadline
       buildEntranceCells();
       beginEntrance();
       renderFrame(performance.now(), true);
+      startGlyphMotion();
     };
 
     const drawRotatedGlyph = (
@@ -1309,7 +1494,24 @@ const headlinePrefix = hasAnimatedHeadline
 
       context.drawImage(finalSceneCanvas, 0, 0, displayWidth, displayHeight);
       element.dataset.asciiGlyphCount = String(cells.length);
+      startGlyphMotion();
     };
+
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      glyphMotionVisible = entry.isIntersecting;
+      if (glyphMotionVisible) startGlyphMotion();
+      else stopGlyphMotion();
+    });
+    visibilityObserver.observe(element);
+    root.addEventListener("hero-ascii-ready", startGlyphMotion);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopGlyphMotion();
+      else startGlyphMotion();
+    });
+    motionPreference.addEventListener("change", () => {
+      if (motionPreference.matches) stopGlyphMotion();
+      else startGlyphMotion();
+    });
 
     const scheduleBuild = () => {
       window.clearTimeout(resizeTimer);
@@ -1322,6 +1524,7 @@ const headlinePrefix = hasAnimatedHeadline
 
     const resizeObserver = new ResizeObserver(scheduleBuild);
     resizeObserver.observe(element);
+    window.addEventListener("resize", scheduleBuild, { passive: true });
 
     const themeObserver = new MutationObserver(() => {
       buildCells();

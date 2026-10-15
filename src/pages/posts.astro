@@ -67,7 +67,11 @@ const tags = [...tagCounts.entries()].sort(([a], [b]) =>
 
     <div class="posts-page__layout">
       <aside class="posts-taxonomy" aria-label="文章筛选">
-        <details class="posts-taxonomy__disclosure" data-taxonomy-disclosure>
+        <details
+          class="posts-taxonomy__disclosure"
+          data-taxonomy-disclosure
+          open
+        >
           <summary class="posts-taxonomy__summary">
             <span>分类与标签</span>
             <span data-filter-summary>全部文章</span>
@@ -143,6 +147,33 @@ const tags = [...tagCounts.entries()].sort(([a], [b]) =>
             </button>
           </div>
         </details>
+        <script is:inline>
+          (() => {
+            const script = document.currentScript;
+            const disclosure = script?.previousElementSibling;
+            if (disclosure instanceof HTMLDetailsElement) {
+              disclosure.open = window.matchMedia("(min-width: 64rem)").matches;
+            }
+
+            const taxonomy = script?.parentElement;
+            if (!(taxonomy instanceof HTMLElement)) return;
+
+            const syncHeight = () => {
+              taxonomy.style.setProperty(
+                "--posts-taxonomy-height",
+                `${taxonomy.getBoundingClientRect().height}px`,
+              );
+            };
+
+            syncHeight();
+            taxonomy.dataset.stickyReady = "";
+            if ("ResizeObserver" in window) {
+              new ResizeObserver(syncHeight).observe(taxonomy);
+            } else {
+              window.addEventListener("resize", syncHeight);
+            }
+          })();
+        </script>
       </aside>
 
       <section class="posts-archive" aria-label="文章列表">
@@ -866,8 +897,15 @@ const tags = [...tagCounts.entries()].sort(([a], [b]) =>
     .posts-taxonomy {
       grid-column: 2;
       grid-row: 1;
+    }
+
+    .posts-taxonomy[data-sticky-ready] {
       position: sticky;
-      top: calc(var(--header-height) + var(--space-lg));
+      /* A tall sidebar scrolls with the page until its last tag is visible. */
+      top: min(
+        calc(var(--header-height) + var(--space-lg)),
+        calc(100dvh - var(--posts-taxonomy-height, 0px) - var(--space-lg))
+      );
     }
 
     .posts-taxonomy__summary {

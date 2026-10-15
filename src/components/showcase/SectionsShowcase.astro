@@ -11,7 +11,6 @@ import {
   FeatureGrid,
   FAQ,
   Newsletter,
-  Pricing,
   Team,
   Comparison,
   LogoCloud,
@@ -83,30 +82,6 @@ const features = [
   },
 ];
 
-const plans = [
-  {
-    name: "Starter",
-    price: "$0",
-    period: "forever",
-    description: "For personal projects.",
-    features: ["All sections", "Dark mode", "MIT"],
-    cta: { label: "Get started", href: "#" },
-  },
-  {
-    name: "Pro",
-    price: "$29",
-    period: "mo",
-    description: "For teams.",
-    features: [
-      "Everything in Starter",
-      "Priority support",
-      "Premium components",
-    ],
-    cta: { label: "Try Pro", href: "#" },
-    featured: true,
-  },
-];
-
 const team = [
   { name: "Ada Lovelace", role: "Engineer" },
   { name: "Alan Turing", role: "Designer" },
@@ -160,15 +135,14 @@ const blocks = [
   { name: "LogoCloud", node: 2 },
   { name: "Credibility (Stats)", node: 3 },
   { name: "StackMarquee", node: 4 },
-  { name: "Pricing", node: 5 },
-  { name: "Comparison", node: 6 },
-  { name: "Team", node: 7 },
-  { name: "SocialProof", node: 8 },
-  { name: "FeatureGrid", node: 9 },
-  { name: "LighthouseScores", node: 10 },
-  { name: "Newsletter", node: 11 },
-  { name: "FAQ", node: 12 },
-  { name: "CTA", node: 13 },
+  { name: "Comparison", node: 5 },
+  { name: "Team", node: 6 },
+  { name: "SocialProof", node: 7 },
+  { name: "FeatureGrid", node: 8 },
+  { name: "LighthouseScores", node: 9 },
+  { name: "Newsletter", node: 10 },
+  { name: "FAQ", node: 11 },
+  { name: "CTA", node: 12 },
 ];
 ---
 
@@ -203,30 +177,23 @@ const blocks = [
           {block.node === 3 && <Credibility stats={stats} />}
           {block.node === 4 && <StackMarquee items={stack} />}
           {block.node === 5 && (
-            <Pricing
-              title="Pricing"
-              description="Simple and transparent."
-              plans={plans}
-            />
-          )}
-          {block.node === 6 && (
             <Comparison
               title="Compare plans"
               columns={comparisonColumns}
               rows={comparisonRows}
             />
           )}
-          {block.node === 7 && <Team title="Team" members={team} />}
-          {block.node === 8 && (
+          {block.node === 6 && <Team title="Team" members={team} />}
+          {block.node === 7 && (
             <SocialProof title="What people say" items={testimonials} />
           )}
-          {block.node === 9 && (
+          {block.node === 8 && (
             <FeatureGrid title="Features" features={features} />
           )}
-          {block.node === 10 && <LighthouseScores />}
-          {block.node === 11 && <Newsletter />}
-          {block.node === 12 && <FAQ title="FAQ" items={faqs} />}
-          {block.node === 13 && (
+          {block.node === 9 && <LighthouseScores />}
+          {block.node === 10 && <Newsletter />}
+          {block.node === 11 && <FAQ title="FAQ" items={faqs} />}
+          {block.node === 12 && (
             <CTA
               title="Ready to build?"
               content="Start from a clean foundation."

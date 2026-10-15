@@ -90,7 +90,6 @@ function contentValidationIntegration() {
         const contentBase = join(process.cwd(), "src", "content");
         const collections = [
           { dir: join(contentBase, "blog"), extensions: [".md", ".mdx"] },
-          { dir: join(contentBase, "services"), extensions: [".md", ".mdx"] },
           { dir: join(contentBase, "pages"), extensions: [".md"] },
           { dir: join(contentBase, "faqs"), extensions: [".json"] },
           { dir: join(contentBase, "stack"), extensions: [".md", ".mdx"] },
@@ -239,17 +238,6 @@ export default defineConfig({
         optional: true,
       }),
       PUBLIC_GTM_ID: envField.string({
-        context: "client",
-        access: "public",
-        optional: true,
-      }),
-      PUBLIC_CONSENT_ENABLED: envField.boolean({
-        context: "client",
-        access: "public",
-        optional: true,
-        default: false,
-      }),
-      PUBLIC_PRIVACY_POLICY_URL: envField.string({
         context: "client",
         access: "public",
         optional: true,
